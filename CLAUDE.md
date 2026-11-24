@@ -12,6 +12,9 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0004: Reaching the bridge on the local network](docs/decisions/0004-local-network-access.md)
 - [0005: Keeping the display awake](docs/decisions/0005-keeping-the-display-awake.md)
 - [0006: Builder grid, layouts and interaction](docs/decisions/0006-builder-grid-and-layouts.md)
+- [0007: No scrolling, paging instead](docs/decisions/0007-no-scrolling.md)
+- [0008: Builder interface layout](docs/decisions/0008-builder-interface-layout.md)
+- [0009: In-place editing on the display](docs/decisions/0009-in-place-editing.md) (Proposed)
 
 ## Commands
 
