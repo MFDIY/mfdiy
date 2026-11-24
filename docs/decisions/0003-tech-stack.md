@@ -21,6 +21,8 @@
 | `packages/schema` | Valibot schemas and version migrations for documents, themes and signals. |
 | `packages/adapter-star-citizen` | Maps the game's telemetry to MFDIY's game-agnostic signal catalogue and actions. |
 
+**npm naming:** every published package lives under the **`@mfdiy` scope** (npm org owned by the maintainer), e.g. `@mfdiy/bridge`, `@mfdiy/ui`. The unscoped name `mfdiy` was rejected by npm's typo-squatting filter as too similar to `fdir`. The repository root package is `private`.
+
 ### Two styling systems, kept apart
 
 **1. Builder chrome (`packages/ui`)**: a normal app design system, **forked from Bonsai** (`manage.vet/packages/bonsai`). It is a one-way copy: no syncing with Bonsai, and drift is accepted. Fork selectively, bringing over only the components the builder needs, and prune freely. Reuse the Bonsai pattern in full: `createGlobalThemeContract`, `createGlobalTheme`, Sprinkles with container, media and pseudo conditions, `Box` with style props, and Storybook. Users never theme this, and a user's MFD theme can never affect it.

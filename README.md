@@ -6,7 +6,7 @@ MFDIY is a no-code builder for custom multi-function displays (MFDs). Drag gauge
 
 Buttons on the display can trigger in-game actions and are labelled on screen, so you stop memorising key layouts.
 
-> 🚧 **Early days.** This package is a placeholder while the project takes shape. Nothing to install yet.
+> 🚧 **Early days.** The project is taking shape. Nothing to install yet. Packages will be published under the [`@mfdiy`](https://www.npmjs.com/org/mfdiy) scope.
 
 ## How it will work
 

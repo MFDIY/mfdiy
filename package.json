@@ -1,16 +1,8 @@
 {
   "name": "mfdiy",
-  "version": "0.0.1",
+  "version": "0.0.0",
+  "private": true,
   "description": "No-code builder for custom browser-based MFDs (multi-function displays) driven by live game telemetry.",
-  "keywords": [
-    "mfd",
-    "multi-function-display",
-    "cockpit",
-    "telemetry",
-    "flight-sim",
-    "space-sim",
-    "no-code"
-  ],
   "homepage": "https://mdingena.github.io/mfdiy/",
   "repository": {
     "type": "git",
@@ -19,9 +11,5 @@
   "bugs": {
     "url": "https://github.com/mdingena/mfdiy/issues"
   },
-  "license": "MIT",
-  "files": [
-    "README.md",
-    "LICENSE"
-  ]
+  "license": "MIT"
 }
