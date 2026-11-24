@@ -16,14 +16,14 @@
 | --- | --- |
 | `apps/app` | Builder and display. React Router 7 in SPA mode (no SSR). |
 | `apps/bridge` | Node app on the gaming PC: game gRPC → WebSocket. Also serves the built `apps/app` on the LAN (see consequences). |
-| `packages/ui` | Builder chrome design system, derived from Bonsai. |
+| `packages/ui` | Builder chrome design system, forked from Bonsai. |
 | `packages/instruments` | MFD primitives, widget manifests and the MFD theme contract. |
 | `packages/schema` | Valibot schemas and version migrations for documents, themes and signals. |
 | `packages/adapter-star-citizen` | Maps the game's telemetry to MFDIY's game-agnostic signal catalogue and actions. |
 
 ### Two styling systems, kept apart
 
-**1. Builder chrome (`packages/ui`)**: a normal app design system. Reuse the Bonsai pattern in full: `createGlobalThemeContract`, `createGlobalTheme`, Sprinkles with container, media and pseudo conditions, `Box` with style props, and Storybook. Users never theme this, and a user's MFD theme can never affect it.
+**1. Builder chrome (`packages/ui`)**: a normal app design system, **forked from Bonsai** (`manage.vet/packages/bonsai`). It is a one-way copy: no syncing with Bonsai, and drift is accepted. Fork selectively, bringing over only the components the builder needs, and prune freely. Reuse the Bonsai pattern in full: `createGlobalThemeContract`, `createGlobalTheme`, Sprinkles with container, media and pseudo conditions, `Box` with style props, and Storybook. Users never theme this, and a user's MFD theme can never affect it.
 
 **2. MFD layer (`packages/instruments`)**: what users build, theme and share. It uses the same vanilla-extract foundations, with three differences:
 
@@ -62,6 +62,5 @@
 
 ## Open questions
 
-- **Share Bonsai or fork it?** Copying what's needed into `packages/ui` is fastest but drifts over time. Extracting Bonsai into its own package for both projects costs more now. Leaning towards fork now, extract later if both projects stay active.
 - **Packaging the bridge** for non-technical Windows users (a single `.exe` via Node SEA or similar, auto-update, firewall prompt).
 - **Drag-and-drop library**: dnd-kit is the leading candidate (pointer and keyboard sensors); evaluate against 0001 before committing.
