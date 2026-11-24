@@ -16,6 +16,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0008: Builder interface layout](docs/decisions/0008-builder-interface-layout.md)
 - [0009: In-place editing on the display](docs/decisions/0009-in-place-editing.md) (Proposed)
 - [0010: How actions work on the display](docs/decisions/0010-actions-on-the-display.md)
+- [0011: Virtual input device as a second action channel](docs/decisions/0011-virtual-input-device.md) (Proposed)
 
 ## Commands
 
