@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MFDIY — Build your MFD. No code required.</title>
+  <meta name="description" content="MFDIY is a no-code builder for custom browser-based multi-function displays driven by live game telemetry.">
+  <meta name="theme-color" content="#0b0f0c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='5' fill='%230b0f0c' stroke='%2359ff9c' stroke-width='2'/%3E%3Crect x='8' y='8' width='16' height='16' rx='2' fill='none' stroke='%2359ff9c' stroke-width='2'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #0b0f0c;
+      --bezel: #1a1f1c;
+      --bezel-edge: #2a312d;
+      --phosphor: #59ff9c;
+      --phosphor-dim: #2a7a4b;
+      --amber: #ffb547;
+      --text: #d6e6dc;
+      --muted: #7f9488;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #13201a 0%, var(--bg) 60%);
+      color: var(--text);
+      font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 32px;
+    }
+    .mono { font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; }
+
+    header { text-align: center; max-width: 640px; }
+    h1 {
+      margin: 0;
+      font: 700 clamp(48px, 10vw, 88px)/1 ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+      letter-spacing: 0.06em;
+      color: var(--phosphor);
+      text-shadow: 0 0 18px rgba(89, 255, 156, 0.35);
+    }
+    .tagline { margin: 12px 0 0; font-size: clamp(18px, 3vw, 22px); color: var(--text); }
+    .sub { margin: 10px 0 0; color: var(--muted); }
+
+    /* The MFD */
+    .mfd {
+      margin: 40px 0;
+      width: min(520px, 100%);
+      background: linear-gradient(160deg, var(--bezel-edge), var(--bezel) 40%);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+      display: grid;
+      grid-template-columns: 34px 1fr 34px;
+      grid-template-rows: 34px 1fr 34px;
+      gap: 10px;
+    }
+    .osb-row, .osb-col { display: flex; justify-content: space-around; align-items: center; }
+    .osb-row { grid-column: 2; }
+    .osb-col { flex-direction: column; grid-row: 2; }
+    .osb {
+      width: 28px; height: 22px;
+      border-radius: 5px;
+      background: linear-gradient(#2c3430, #1c221f);
+      border: 1px solid #3a433e;
+      box-shadow: 0 2px 0 #0c0f0d;
+    }
+    .osb-col .osb { width: 22px; height: 28px; }
+    .screen {
+      grid-column: 2; grid-row: 2;
+      aspect-ratio: 1;
+      background: #050806;
+      border-radius: 8px;
+      border: 1px solid #000;
+      box-shadow: inset 0 0 40px rgba(89,255,156,.06);
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      color: var(--phosphor);
+      font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+      font-size: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: repeating-linear-gradient(transparent 0 2px, rgba(0,0,0,.18) 2px 3px);
+    }
+    .labels { display: flex; justify-content: space-between; color: var(--phosphor-dim); letter-spacing: .1em; }
+    .labels b { color: var(--phosphor); font-weight: 400; }
+    .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: center; }
+    .gauge { border: 1px solid var(--phosphor-dim); border-radius: 6px; padding: 10px; }
+    .gauge .k { color: var(--phosphor-dim); letter-spacing: .12em; }
+    .gauge .v { font-size: 22px; margin: 4px 0 6px; }
+    .bar { height: 6px; background: #0f2017; border-radius: 3px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--phosphor); width: 50%; transition: width .4s ease; }
+    .gauge.warn .v, .gauge.warn .bar i { color: var(--amber); background-color: transparent; }
+    .gauge.warn .bar i { background: var(--amber); }
+    .annun { display: flex; gap: 6px; flex-wrap: wrap; }
+    .annun span {
+      padding: 3px 7px; border: 1px solid var(--phosphor-dim); border-radius: 3px;
+      color: var(--phosphor-dim); letter-spacing: .08em; transition: all .3s;
+    }
+    .annun span.on { color: #050806; background: var(--phosphor); border-color: var(--phosphor); }
+    .annun span.caution { color: #050806; background: var(--amber); border-color: var(--amber); }
+    .demo-tag { position: absolute; right: 10px; bottom: 8px; color: var(--phosphor-dim); font-size: 10px; letter-spacing: .15em; }
+
+    section.how { max-width: 680px; width: 100%; }
+    h2 { font-size: 14px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .step {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .step .n { color: var(--phosphor); font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+    .step h3 { margin: 6px 0 4px; font-size: 17px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .cta { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      display: inline-block; padding: 11px 18px; border-radius: 10px;
+      text-decoration: none; font-weight: 600;
+      border: 1px solid var(--phosphor); color: var(--phosphor);
+    }
+    .btn.primary { background: var(--phosphor); color: #06140c; }
+    .btn:hover { filter: brightness(1.1); }
+
+    footer { margin-top: auto; padding-top: 48px; color: var(--muted); font-size: 12px; text-align: center; max-width: 560px; }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 20px;
+      font-size: 13px; color: var(--amber); font-family: ui-monospace, Consolas, monospace;
+    }
+    .status::before {
+      content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+      box-shadow: 0 0 10px var(--amber); animation: blink 1.6s infinite;
+    }
+    @keyframes blink { 50% { opacity: .25; } }
+    .gauge .k, .labels span, .labels b { white-space: nowrap; }
+    @media (max-width: 480px) {
+      .mfd { padding: 12px; gap: 6px; grid-template-columns: 26px 1fr 26px; grid-template-rows: 26px 1fr 26px; }
+      .osb { width: 22px; height: 18px; }
+      .osb-col .osb { width: 18px; height: 22px; }
+      .screen { padding: 10px; gap: 8px; font-size: 9px; }
+      .gauges { gap: 8px; }
+      .gauge { padding: 6px; }
+      .gauge .k { letter-spacing: .04em; }
+      .gauge .v { font-size: 16px; margin: 2px 0 4px; }
+      .annun { gap: 4px; }
+      .annun span { padding: 2px 4px; letter-spacing: 0; }
+      .demo-tag { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .status::before { animation: none; }
+      .bar i, .annun span { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MFDIY</h1>
+    <p class="tagline">Build your MFD. No code required.</p>
+    <p class="sub">Drag gauges, lights and buttons onto a screen, bind them to live game telemetry, and fly with it on your phone, tablet or a Raspberry Pi beside your HOTAS.</p>
+    <div class="status">In development</div>
+  </header>
+
+  <div class="mfd" aria-hidden="true">
+    <div class="osb-row" style="grid-row:1"><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span></div>
+    <div class="osb-col" style="grid-column:1"><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span></div>
+    <div class="screen">
+      <div class="labels"><b>PWR</b><span>SHLD</span><span>FUEL</span><span>NAV</span><span>SYS</span></div>
+      <div class="gauges">
+        <div class="gauge"><div class="k">SHIELD F</div><div class="v" data-g="sf">98%</div><div class="bar"><i data-b="sf"></i></div></div>
+        <div class="gauge"><div class="k">SHIELD A</div><div class="v" data-g="sa">91%</div><div class="bar"><i data-b="sa"></i></div></div>
+        <div class="gauge"><div class="k">HYDROGEN</div><div class="v" data-g="h2">74%</div><div class="bar"><i data-b="h2"></i></div></div>
+        <div class="gauge" data-w="qt"><div class="k">QUANTUM</div><div class="v" data-g="qt">32%</div><div class="bar"><i data-b="qt"></i></div></div>
+      </div>
+      <div class="annun">
+        <span class="on">GEAR</span><span class="on">CPLD</span><span>ESP</span><span class="on">GSAF</span><span data-a="caution">QT LOW</span>
+      </div>
+      <div class="demo-tag">DEMO DATA</div>
+    </div>
+    <div class="osb-col" style="grid-column:3"><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span></div>
+    <div class="osb-row" style="grid-row:3"><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span><span class="osb"></span></div>
+  </div>
+
+  <section class="how">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3>Run the bridge</h3><p>A small app on your gaming PC reads the game's local telemetry and shares it on your home network.</p></div>
+      <div class="step"><div class="n">02</div><h3>Build your layout</h3><p>Drag widgets onto screens and bind them to data and in-game actions. No code.</p></div>
+      <div class="step"><div class="n">03</div><h3>Open it anywhere</h3><p>Any browser becomes your MFD: phone, tablet, or a dedicated touchscreen.</p></div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/mdingena/mfdiy">Follow on GitHub</a>
+    </div>
+  </section>
+
+  <footer>
+    MFDIY is an unofficial fan project and is not affiliated with or endorsed by any game developer or publisher.
+  </footer>
+
+  <script>
+    // Demo-only animation: values drift so the preview feels alive.
+    (function () {
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var state = { sf: 98, sa: 91, h2: 74, qt: 32 };
+      function render() {
+        Object.keys(state).forEach(function (k) {
+          var v = Math.round(state[k]);
+          document.querySelector('[data-g="' + k + '"]').textContent = v + '%';
+          document.querySelector('[data-b="' + k + '"]').style.width = v + '%';
+        });
+        var low = state.qt < 25;
+        document.querySelector('[data-w="qt"]').classList.toggle('warn', low);
+        document.querySelector('[data-a="caution"]').classList.toggle('caution', low);
+      }
+      function tick() {
+        state.sf = Math.max(40, Math.min(100, state.sf + (Math.random() - 0.45) * 8));
+        state.sa = Math.max(40, Math.min(100, state.sa + (Math.random() - 0.45) * 8));
+        state.h2 = state.h2 > 15 ? state.h2 - Math.random() * 1.5 : 95;
+        state.qt = state.qt > 10 ? state.qt - Math.random() * 1.2 : 60;
+        render();
+      }
+      render();
+      if (!reduce) setInterval(tick, 900);
+    })();
+  </script>
+</body>
+</html>
