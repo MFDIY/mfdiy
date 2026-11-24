@@ -1,0 +1,28 @@
+# 0005: Keeping the display awake
+
+- **Status:** Accepted
+- **Date:** 2026-11-24
+
+## Decision
+
+Keeping the screen awake is the most important browser capability for an MFD. Because the display runs on plain HTTP (0004), the Wake Lock API is usually unavailable, so MFDIY uses a fallback chain:
+
+1. **"Tap to engage" screen.** The display starts on a themed start screen. The user's tap provides the gesture browsers require to enter full screen and start keep-awake.
+2. **Wake Lock API when available.** Use `navigator.wakeLock` when the page is a secure context.
+3. **Muted video fallback.** Otherwise, play a tiny, silent, inline video on loop (the NoSleep.js technique), which keeps phones and tablets awake without a secure context.
+4. **Recover automatically.** Re-acquire the lock or restart the video when the page becomes visible again (`visibilitychange`), since browsers release both when the tab is hidden.
+5. **Device setup guides** for dedicated screens, which are the most reliable option:
+   - **Raspberry Pi:** Chromium in kiosk mode with `--unsafely-treat-insecure-origin-as-secure=http://mfdiy.local`, which makes the page a secure context so Wake Lock and PWA features work; and screen blanking turned off in `raspi-config`.
+   - **Android:** "Stay awake while charging" (developer options), or the `chrome://flags` "Insecure origins treated as secure" setting, or a kiosk browser such as Fully Kiosk.
+   - **iOS:** Auto-Lock set to Never, optionally Guided Access to lock the device to the MFD.
+
+## Why
+
+Wake lock alone doesn't justify building HTTPS infrastructure (see "Revisit when" in 0004). The video fallback and device settings cover it for every platform, and a dedicated pit screen should be configured at device level anyway.
+
+## Consequences
+
+- The display shows which keep-awake method is active, so users can tell when to follow a setup guide.
+- The muted video costs a little battery; acceptable since pit screens are usually plugged in.
+- iOS has changed inline video behaviour in the past. The fallback must be tested on current iOS and Android versions, and re-tested on major OS releases.
+- If HTTPS is adopted later (0004), step 2 covers most users and the video fallback becomes a safety net.

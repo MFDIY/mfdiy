@@ -1,0 +1,35 @@
+# 0004: Reaching the bridge on the local network
+
+- **Status:** Accepted
+- **Date:** 2026-11-24
+
+## Decision
+
+1. **Plain HTTP on the LAN.** The bridge serves the app over `http://` and telemetry over `ws://` on the same origin (see 0003). No HTTPS in version 1.
+2. **A friendly name via mDNS.** The bridge advertises itself as `mfdiy.local`, so users open `http://mfdiy.local` instead of an IP address.
+   - Listen on port 80 when it's free, so no port is needed in the address; otherwise fall back to another port and show the full address.
+   - If the name is taken (e.g. two bridges on one network), rename automatically (`mfdiy-2.local`) and show the actual name.
+3. **A QR code as the primary way to connect.** The bridge's window shows a QR code containing a working address. It also lists the IP-and-port address as a fallback for devices that can't resolve `.local` names.
+
+## Why
+
+- WebSockets don't require HTTPS. An `http://` page may open `ws://` connections; only an `https://` page is blocked from doing so (mixed content). Serving everything from the bridge over HTTP avoids the problem entirely.
+- Public certificate authorities never issue certificates for private IPs or `.local` names. The alternatives, self-signed certificates or a custom certificate authority installed on every device, produce browser warnings or put users at risk.
+- mDNS is a small Node dependency with no router setup and no internet connection required. `.local` resolves out of the box on Windows 10+, macOS, iOS and Raspberry Pi OS.
+- A QR code avoids typing on phones entirely and covers the devices where mDNS doesn't work.
+
+## Consequences
+
+- The app is not a **secure context** on LAN addresses. APIs that need one (service workers and installable PWAs, Wake Lock, clipboard, `crypto.subtle`) are unavailable by default. See 0005 for keeping the display awake.
+- The app cannot be hosted on the public site (GitHub Pages) and talk to the bridge; the public site only hosts marketing material and a simulated-data demo.
+- Android support for `.local` names varies by version and browser; the QR code and IP fallback cover it.
+- The Windows firewall must allow the bridge's HTTP port and mDNS (UDP 5353). The bridge installer or first-run flow must handle this.
+
+## Revisit when
+
+Secure-context features become essential. The upgrade path is the Plex approach: give each bridge its own subdomain of an MFDIY domain (e.g. `<id>.local.mfdiy.gg`) pointing at its private IP, with a real certificate issued via a DNS challenge. Known costs:
+
+- An online service that issues DNS records and certificates.
+- Let's Encrypt rate limits per registered domain, probably needing a Public Suffix List entry.
+- Routers, Pi-hole and ISPs that block public DNS answers pointing to private IPs (DNS rebinding protection).
+- Browser permission prompts for public sites accessing the local network.
