@@ -8,6 +8,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 - [0001: Responsive everywhere, including the builder](docs/decisions/0001-responsive-everywhere.md)
 - [0002: Deep theming and customisation from day one](docs/decisions/0002-themable-from-day-one.md)
+- [0003: Tech stack and styling architecture](docs/decisions/0003-tech-stack.md) (Proposed)
 
 ## Planned architecture
 
