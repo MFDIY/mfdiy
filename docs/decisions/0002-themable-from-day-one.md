@@ -9,7 +9,7 @@ Theming and customisation are a **core feature, built in from the start**, not a
 
 ## Why
 
-This is the main way MFDIY stands apart. Once the game's telemetry became public, many similar MFD projects were bound to appear. Most will offer a handful of widgets on a fixed look. MFDIY's edge is that the result can match *your* cockpit.
+This is the main way MFDIY stands apart. Once the game's telemetry became public, many similar MFD projects were bound to appear. Most will offer a handful of widgets on a fixed look. MFDIY's edge is that the result can match _your_ cockpit.
 
 Adding theming later is expensive: every widget built before it would need reworking. Building every widget against theme tokens from the first commit avoids that.
 
