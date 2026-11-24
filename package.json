@@ -26,6 +26,7 @@
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint . --fix",
     "prepare": "husky",
     "start": "npm run start -w @mfdiy/bridge --",
+    "test": "npm test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {

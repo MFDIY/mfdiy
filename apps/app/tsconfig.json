@@ -5,5 +5,5 @@
     "rootDirs": [".", "./.react-router/types"],
     "types": ["vite/client", "node"]
   },
-  "include": [".react-router/types/**/*", "src/**/*", "react-router.config.ts", "vite.config.ts"]
+  "include": [".react-router/types/**/*", "src/**/*", "react-router.config.ts", "vite.config.ts", "vitest.config.ts"]
 }

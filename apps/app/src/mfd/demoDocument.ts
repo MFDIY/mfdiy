@@ -9,36 +9,53 @@ export const demoDocument: MfdDocument = {
     {
       id: 'flight',
       name: 'Flight',
-      grid: { columns: 4, rows: 4 },
+      layouts: [
+        {
+          orientation: 'any',
+          grid: { columns: 4, rows: 4 },
+          areas: {
+            speed: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 },
+            mode: { column: 3, row: 1, columnSpan: 2, rowSpan: 1 },
+            hydrogen: { column: 1, row: 2, columnSpan: 2, rowSpan: 1 },
+            quantum: { column: 3, row: 2, columnSpan: 2, rowSpan: 1 },
+            gear: { column: 1, row: 3, columnSpan: 1, rowSpan: 1 },
+            decoupled: { column: 2, row: 3, columnSpan: 1, rowSpan: 1 },
+            esp: { column: 3, row: 3, columnSpan: 1, rowSpan: 1 },
+            'g-safe': { column: 4, row: 3, columnSpan: 1, rowSpan: 1 },
+            lights: { column: 1, row: 4, columnSpan: 2, rowSpan: 1 },
+            doors: { column: 3, row: 4, columnSpan: 2, rowSpan: 1 }
+          }
+        }
+      ],
       widgets: [
         {
           id: 'speed',
           type: 'readout',
-          area: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 },
+
           bindings: { value: { signal: 'flight.speed' } }
         },
         {
           id: 'mode',
           type: 'readout',
-          area: { column: 3, row: 1, columnSpan: 2, rowSpan: 1 },
+
           bindings: { value: { signal: 'flight.master-mode' } }
         },
         {
           id: 'hydrogen',
           type: 'bar',
-          area: { column: 1, row: 2, columnSpan: 2, rowSpan: 1 },
+
           bindings: { value: { signal: 'fuel.hydrogen' } }
         },
         {
           id: 'quantum',
           type: 'bar',
-          area: { column: 3, row: 2, columnSpan: 2, rowSpan: 1 },
+
           bindings: { value: { signal: 'fuel.quantum' } }
         },
         {
           id: 'gear',
           type: 'light',
-          area: { column: 1, row: 3, columnSpan: 1, rowSpan: 1 },
+
           options: { label: 'Gear' },
           bindings: { value: { signal: 'vehicle.gear-down' } },
           action: 'vehicle.gear-toggle'
@@ -46,7 +63,7 @@ export const demoDocument: MfdDocument = {
         {
           id: 'decoupled',
           type: 'light',
-          area: { column: 2, row: 3, columnSpan: 1, rowSpan: 1 },
+
           options: { label: 'Decpl', litState: 'caution' },
           bindings: { value: { signal: 'ifcs.decoupled' } },
           action: 'ifcs.decouple-toggle'
@@ -54,7 +71,7 @@ export const demoDocument: MfdDocument = {
         {
           id: 'esp',
           type: 'light',
-          area: { column: 3, row: 3, columnSpan: 1, rowSpan: 1 },
+
           options: { label: 'ESP' },
           bindings: { value: { signal: 'ifcs.esp' } },
           action: 'ifcs.esp-toggle'
@@ -62,7 +79,7 @@ export const demoDocument: MfdDocument = {
         {
           id: 'g-safe',
           type: 'light',
-          area: { column: 4, row: 3, columnSpan: 1, rowSpan: 1 },
+
           options: { label: 'G-safe' },
           bindings: { value: { signal: 'ifcs.g-safe' } },
           action: 'ifcs.g-safe-toggle'
@@ -70,14 +87,14 @@ export const demoDocument: MfdDocument = {
         {
           id: 'lights',
           type: 'button',
-          area: { column: 1, row: 4, columnSpan: 2, rowSpan: 1 },
+
           options: { label: 'Lights' },
           action: 'vehicle.lights-toggle'
         },
         {
           id: 'doors',
           type: 'button',
-          area: { column: 3, row: 4, columnSpan: 2, rowSpan: 1 },
+
           options: { label: 'Doors' },
           action: 'vehicle.doors-toggle'
         }
@@ -86,36 +103,48 @@ export const demoDocument: MfdDocument = {
     {
       id: 'shields',
       name: 'Shields',
-      grid: { columns: 2, rows: 3 },
+      layouts: [
+        {
+          orientation: 'any',
+          grid: { columns: 2, rows: 3 },
+          areas: {
+            front: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 },
+            left: { column: 1, row: 2, columnSpan: 1, rowSpan: 1 },
+            right: { column: 2, row: 2, columnSpan: 1, rowSpan: 1 },
+            rear: { column: 1, row: 3, columnSpan: 1, rowSpan: 1 },
+            hull: { column: 2, row: 3, columnSpan: 1, rowSpan: 1 }
+          }
+        }
+      ],
       widgets: [
         {
           id: 'front',
           type: 'bar',
-          area: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 },
+
           bindings: { value: { signal: 'shields.front' } }
         },
         {
           id: 'left',
           type: 'bar',
-          area: { column: 1, row: 2, columnSpan: 1, rowSpan: 1 },
+
           bindings: { value: { signal: 'shields.left' } }
         },
         {
           id: 'right',
           type: 'bar',
-          area: { column: 2, row: 2, columnSpan: 1, rowSpan: 1 },
+
           bindings: { value: { signal: 'shields.right' } }
         },
         {
           id: 'rear',
           type: 'bar',
-          area: { column: 1, row: 3, columnSpan: 1, rowSpan: 1 },
+
           bindings: { value: { signal: 'shields.rear' } }
         },
         {
           id: 'hull',
           type: 'bar',
-          area: { column: 2, row: 3, columnSpan: 1, rowSpan: 1 },
+
           bindings: { value: { signal: 'hull' } }
         }
       ],

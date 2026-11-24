@@ -2,6 +2,8 @@ export type { GameAdapter } from './adapter.js';
 
 export * from './document.js';
 
+export * from './layout.js';
+
 export * from './protocol.js';
 
 export * from './signals.js';

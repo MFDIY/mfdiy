@@ -11,6 +11,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0003: Tech stack and styling architecture](docs/decisions/0003-tech-stack.md)
 - [0004: Reaching the bridge on the local network](docs/decisions/0004-local-network-access.md)
 - [0005: Keeping the display awake](docs/decisions/0005-keeping-the-display-awake.md)
+- [0006: Builder grid, layouts and interaction](docs/decisions/0006-builder-grid-and-layouts.md)
 
 ## Commands
 
@@ -20,7 +21,7 @@ Root (npm workspaces monorepo, Node 24):
 - `npm run build`: build all workspaces; the bridge serves `apps/app/build/client`
 - `npm start`: run the bridge, serving the built app on port 80, falling back to 8420 (`npm start -- --port 1234` to choose)
 - `npm run typecheck`, `npm run lint`, `npm run format`
-- `npm test -w @mfdiy/schema -w @mfdiy/bridge`: Vitest
+- `npm test`: Vitest across workspaces
 - `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments`: Storybook (ports 6006 / 6007)
 
 ## Layout

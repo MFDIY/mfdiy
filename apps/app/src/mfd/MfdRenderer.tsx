@@ -1,6 +1,8 @@
-import type { MfdDocument, WidgetInstance } from '@mfdiy/schema';
+import type { Area, MfdDocument, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, mfdRoot, widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
+import { selectLayout } from '@mfdiy/schema';
+import { useMatchesMediaQuery } from '@mfdiy/ui/hooks';
 
 import { useConnection, useSignalValues, useWidgetAction } from '../telemetry/TelemetryProvider.js';
 
@@ -18,10 +20,13 @@ type MfdRendererProps = {
  */
 export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps) {
   const page = document.pages.find(candidate => candidate.id === pageId) ?? document.pages[0];
+  const portrait = useMatchesMediaQuery('(orientation: portrait)');
 
   if (!page) {
     return null;
   }
+
+  const layout = selectLayout(page, portrait ? 'portrait' : 'landscape');
 
   return (
     <div className={`${mfdRoot} ${styles.screen}`} style={applyTokens(document.tokens)}>
@@ -29,13 +34,15 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
         className={styles.page}
         style={{
           ...applyTokens(page.tokens),
-          gridTemplateColumns: `repeat(${page.grid.columns}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${page.grid.rows}, minmax(0, 1fr))`
+          gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${layout.grid.rows}, minmax(0, 1fr))`
         }}
       >
-        {page.widgets.map(widget => (
-          <WidgetSlot key={widget.id} widget={widget} />
-        ))}
+        {page.widgets.map(widget => {
+          const area = layout.areas[widget.id];
+
+          return area ? <WidgetSlot area={area} key={widget.id} widget={widget} /> : null;
+        })}
       </div>
       {document.pages.length > 1 ? (
         <nav className={styles.tabs} style={applyTokens(page.tokens)}>
@@ -56,7 +63,7 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
   );
 }
 
-function WidgetSlot({ widget }: { widget: WidgetInstance }) {
+function WidgetSlot({ area, widget }: { area: Area; widget: WidgetInstance }) {
   const connection = useConnection();
   const bindings = Object.entries(widget.bindings ?? {});
   const values = useSignalValues(bindings.map(([, binding]) => binding.signal));
@@ -65,8 +72,8 @@ function WidgetSlot({ widget }: { widget: WidgetInstance }) {
 
   const style = {
     ...applyTokens(widget.tokens),
-    gridColumn: `${widget.area.column} / span ${widget.area.columnSpan}`,
-    gridRow: `${widget.area.row} / span ${widget.area.rowSpan}`,
+    gridColumn: `${area.column} / span ${area.columnSpan}`,
+    gridRow: `${area.row} / span ${area.rowSpan}`,
     minHeight: 0,
     minWidth: 0
   };
