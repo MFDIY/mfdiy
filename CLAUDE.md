@@ -17,6 +17,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0009: In-place editing on the display](docs/decisions/0009-in-place-editing.md) (Proposed)
 - [0010: How actions work on the display](docs/decisions/0010-actions-on-the-display.md)
 - [0011: Virtual input device as a second action channel](docs/decisions/0011-virtual-input-device.md) (Proposed)
+- [0012: Automatic profiles based on game context](docs/decisions/0012-automatic-profiles.md) (Proposed)
 
 ## Commands
 
