@@ -1,0 +1,22 @@
+{
+  "name": "@mfdiy/schema",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Valibot schemas for MFDIY's public formats: signals, actions, the bridge protocol, themes and documents.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "valibot": "^1.2.0"
+  },
+  "devDependencies": {
+    "@mfdiy/config": "0.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.0"
+  }
+}

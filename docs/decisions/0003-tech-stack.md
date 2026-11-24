@@ -1,6 +1,6 @@
 # 0003: Tech stack and styling architecture
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-24
 
 ## Decision
@@ -12,14 +12,14 @@
 - **Valibot** for every schema (documents, themes, signal catalogues, bridge messages). Same choice as `manage.vet`.
 - **npm workspaces monorepo**, laid out like `manage.vet`:
 
-| Workspace | Purpose |
-| --- | --- |
-| `apps/app` | Builder and display. React Router 7 in SPA mode (no SSR). |
-| `apps/bridge` | Node app on the gaming PC: game gRPC → WebSocket. Also serves the built `apps/app` on the LAN (see consequences). |
-| `packages/ui` | Builder chrome design system, forked from Bonsai. |
-| `packages/instruments` | MFD primitives, widget manifests and the MFD theme contract. |
-| `packages/schema` | Valibot schemas and version migrations for documents, themes and signals. |
-| `packages/adapter-star-citizen` | Maps the game's telemetry to MFDIY's game-agnostic signal catalogue and actions. |
+| Workspace                       | Purpose                                                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `apps/app`                      | Builder and display. React Router 7 in SPA mode (no SSR).                                                         |
+| `apps/bridge`                   | Node app on the gaming PC: game gRPC → WebSocket. Also serves the built `apps/app` on the LAN (see consequences). |
+| `packages/ui`                   | Builder chrome design system, forked from Bonsai.                                                                 |
+| `packages/instruments`          | MFD primitives, widget manifests and the MFD theme contract.                                                      |
+| `packages/schema`               | Valibot schemas and version migrations for documents, themes and signals.                                         |
+| `packages/adapter-star-citizen` | Maps the game's telemetry to MFDIY's game-agnostic signal catalogue and actions.                                  |
 
 **npm naming:** every published package lives under the **`@mfdiy` scope** (npm org owned by the maintainer), e.g. `@mfdiy/bridge`, `@mfdiy/ui`. The unscoped name `mfdiy` was rejected by npm's typo-squatting filter as too similar to `fdir`. The repository root package is `private`.
 
@@ -31,12 +31,12 @@
 
 - **Its own contract with a public, prefixed namespace** (`--mfd-*`), created with `createGlobalThemeContract` so names are stable and readable. These names are a **public API**: shared themes depend on them, so changes are versioned and migrated (`packages/schema`).
 - **Three token tiers**, so a simple theme sets only a dozen values and power users can still override everything:
-  1. *Base*: palette, font families, base size, glow, radius (`--mfd-color-primary`, `--mfd-font-display`).
-  2. *Semantic*: meaning-based states (`--mfd-state-on`, `--mfd-state-caution`, `--mfd-state-warning`, `--mfd-surface`).
-  3. *Component*: per-primitive tokens (`--mfd-light-on-bg`, `--mfd-bar-track`). Each falls back to its semantic token with `fallbackVar()`, so it only needs setting to diverge.
+  1. _Base_: palette, font families, base size, glow, radius (`--mfd-color-primary`, `--mfd-font-display`).
+  2. _Semantic_: meaning-based states (`--mfd-state-on`, `--mfd-state-caution`, `--mfd-state-warning`, `--mfd-surface`).
+  3. _Component_: per-primitive tokens (`--mfd-light-on-bg`, `--mfd-bar-track`). Each falls back to its semantic token with `fallbackVar()`, so it only needs setting to diverge.
 - **Runtime themes via inline variables.** Built-in themes ship as `createGlobalTheme` defaults scoped to the MFD root. A user's theme JSON is validated, then applied with `assignInlineVars` (`@vanilla-extract/dynamic`) on the document, page or widget element. The CSS cascade gives the global → page → widget override chain from 0002 for free.
 
-**No Sprinkles in `packages/instruments`.** Sprinkles gives *developers* a constrained style-prop API in JSX. MFD users never write JSX: their API is the **widget manifest** (bindable props, sizes, exposed tokens), and the builder generates editors from it. Primitives use plain `style()` and the token contract. Visual states are exposed as data attributes (`data-state="caution"`) so they stay targetable if custom CSS is ever allowed (0002).
+**No Sprinkles in `packages/instruments`.** Sprinkles gives _developers_ a constrained style-prop API in JSX. MFD users never write JSX: their API is the **widget manifest** (bindable props, sizes, exposed tokens), and the builder generates editors from it. Primitives use plain `style()` and the token contract. Visual states are exposed as data attributes (`data-state="caution"`) so they stay targetable if custom CSS is ever allowed (0002).
 
 ### Core abstractions (agreed)
 
@@ -65,4 +65,5 @@
 ## Open questions
 
 - **Packaging the bridge** for non-technical Windows users (a single `.exe` via Node SEA or similar, auto-update, firewall prompt).
+  - **Code signing** is optional; an unsigned `.exe` runs but shows a SmartScreen warning ("More info → Run anyway"). Current lean: ship unsigned to early testers, then apply to the **SignPath Foundation** (free signing for OSI-licensed open-source projects; the certificate names SignPath Foundation as publisher; requires a public repo, no proprietary components and automated CI builds). Microsoft Artifact Signing (~US$10/month) paused individual sign-ups in 2025; a commercial certificate (~US$200–400/year) only makes sense if MFDIY is monetised.
 - **Drag-and-drop library**: dnd-kit is the leading candidate (pointer and keyboard sensors); evaluate against 0001 before committing.

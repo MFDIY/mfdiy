@@ -1,0 +1,41 @@
+{
+  "name": "@mfdiy/instruments",
+  "version": "0.0.0",
+  "private": true,
+  "description": "MFD primitives, widget manifests and the --mfd-* theme contract.",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css.ts"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "storybook dev -p 6007",
+    "storybook:build": "storybook build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "dependencies": {
+    "@mfdiy/schema": "0.0.0",
+    "@vanilla-extract/css": "^1.18.0",
+    "@vanilla-extract/dynamic": "^2.1.5",
+    "clsx": "^2.1.1"
+  },
+  "devDependencies": {
+    "@mfdiy/config": "0.0.0",
+    "@storybook/react-vite": "^10.2.16",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vanilla-extract/vite-plugin": "^5.1.4",
+    "@vitejs/plugin-react": "^5.1.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "storybook": "^10.2.16",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}

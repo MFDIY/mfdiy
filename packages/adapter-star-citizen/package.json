@@ -1,0 +1,20 @@
+{
+  "name": "@mfdiy/adapter-star-citizen",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Maps Star Citizen's local telemetry to MFDIY's game-agnostic signals and actions.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mfdiy/schema": "0.0.0"
+  },
+  "devDependencies": {
+    "@mfdiy/config": "0.0.0",
+    "typescript": "^5.9.3"
+  }
+}

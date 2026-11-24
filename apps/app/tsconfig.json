@@ -1,0 +1,9 @@
+{
+  "extends": "@mfdiy/config/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "rootDirs": [".", "./.react-router/types"],
+    "types": ["vite/client", "node"]
+  },
+  "include": [".react-router/types/**/*", "src/**/*", "react-router.config.ts", "vite.config.ts"]
+}

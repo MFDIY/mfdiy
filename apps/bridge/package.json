@@ -1,0 +1,28 @@
+{
+  "name": "@mfdiy/bridge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runs on the gaming PC: streams game telemetry to MFDs on the local network and forwards their actions.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts --port 8420 --no-static",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mfdiy/adapter-star-citizen": "0.0.0",
+    "@mfdiy/schema": "0.0.0",
+    "sirv": "^3.0.2",
+    "tsx": "^4.21.0",
+    "valibot": "^1.2.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@mfdiy/config": "0.0.0",
+    "@types/node": "^24.10.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.0"
+  }
+}
