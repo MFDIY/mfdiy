@@ -15,6 +15,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0007: No scrolling, paging instead](docs/decisions/0007-no-scrolling.md)
 - [0008: Builder interface layout](docs/decisions/0008-builder-interface-layout.md)
 - [0009: In-place editing on the display](docs/decisions/0009-in-place-editing.md) (Proposed)
+- [0010: How actions work on the display](docs/decisions/0010-actions-on-the-display.md)
 
 ## Commands
 
