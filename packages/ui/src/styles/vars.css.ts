@@ -109,7 +109,7 @@ export const globalVars = createGlobalThemeContract({
 
 export const colorSchemeVars = createGlobalThemeContract({
   'color.border.canvas.ghost': 'color-border-canvas-ghost',
-  'color.border.canvas.ghost-invalid': 'color-border-canvas-ghost-invalid',
+  'color.border.canvas.overlap': 'color-border-canvas-overlap',
   'color.border.canvas.handle': 'color-border-canvas-handle',
   'color.border.divider': 'color-border-divider',
   'color.border.input.text': 'color-border-input-text',
@@ -187,7 +187,7 @@ export const colorSchemeVars = createGlobalThemeContract({
   'color.surface.button.transparent-hover': 'color-surface-button-transparent-hover',
   'color.surface.canvas.dot': 'color-surface-canvas-dot',
   'color.surface.canvas.ghost': 'color-surface-canvas-ghost',
-  'color.surface.canvas.ghost-invalid': 'color-surface-canvas-ghost-invalid',
+  'color.surface.canvas.overlap': 'color-surface-canvas-overlap',
   'color.surface.canvas.handle': 'color-surface-canvas-handle',
   'color.surface.elevation.base': 'color-surface-elevation-base',
   'color.surface.elevation.base-hover': 'color-surface-elevation-base-hover',

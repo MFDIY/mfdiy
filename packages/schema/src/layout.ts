@@ -1,7 +1,7 @@
 import type { Area, Grid, Layout, Page } from './document.js';
 
 /*
- * Pure layout geometry shared by the builder (snapping, collision previews) and the schema
+ * Pure layout geometry shared by the builder (snapping, overlap highlights) and the schema
  * (validating documents from elsewhere). See docs/decisions/0006.
  */
 
@@ -25,21 +25,44 @@ export function isWithinGrid(area: Area, grid: Grid): boolean {
   );
 }
 
-/** True if `area` fits in the layout without overlapping any widget other than `ignoreId`. */
-export function canPlace(layout: Layout, area: Area, ignoreId?: string): boolean {
-  return (
-    isWithinGrid(area, layout.grid) &&
-    Object.entries(layout.areas).every(([id, other]) => id === ignoreId || !areasOverlap(area, other))
+/** The cells two areas share, if any. */
+export function intersectAreas(a: Area, b: Area): Area | undefined {
+  if (!areasOverlap(a, b)) {
+    return undefined;
+  }
+
+  const column = Math.max(a.column, b.column);
+  const row = Math.max(a.row, b.row);
+
+  return {
+    column,
+    row,
+    columnSpan: Math.min(a.column + a.columnSpan, b.column + b.columnSpan) - column,
+    rowSpan: Math.min(a.row + a.rowSpan, b.row + b.rowSpan) - row
+  };
+}
+
+export type Overlap = { widgetIds: [string, string]; area: Area };
+
+/** Every pair of widgets that overlap, and where. Allowed, but the builder points them out. */
+export function findOverlaps(layout: Layout): Overlap[] {
+  const placed = Object.entries(layout.areas);
+
+  return placed.flatMap(([id, area], index) =>
+    placed.slice(index + 1).flatMap(([otherId, other]) => {
+      const shared = intersectAreas(area, other);
+
+      return shared ? [{ widgetIds: [id, otherId] satisfies [string, string], area: shared }] : [];
+    })
   );
 }
 
 export type LayoutProblem =
   | { kind: 'missing-area'; widgetId: string }
   | { kind: 'unknown-widget'; widgetId: string }
-  | { kind: 'out-of-grid'; widgetId: string }
-  | { kind: 'overlap'; widgetId: string; otherId: string };
+  | { kind: 'out-of-grid'; widgetId: string };
 
-/** Every widget has exactly one area, inside the grid, overlapping no other widget. */
+/** Every widget has exactly one area, inside the grid. */
 export function validateLayout(layout: Layout, widgets: readonly { id: string }[]): LayoutProblem[] {
   const problems: LayoutProblem[] = [];
   const widgetIds = new Set(widgets.map(widget => widget.id));
@@ -50,9 +73,7 @@ export function validateLayout(layout: Layout, widgets: readonly { id: string }[
     }
   }
 
-  const placed = Object.entries(layout.areas);
-
-  placed.forEach(([id, area], index) => {
+  for (const [id, area] of Object.entries(layout.areas)) {
     if (!widgetIds.has(id)) {
       problems.push({ kind: 'unknown-widget', widgetId: id });
     }
@@ -60,13 +81,7 @@ export function validateLayout(layout: Layout, widgets: readonly { id: string }[
     if (!isWithinGrid(area, layout.grid)) {
       problems.push({ kind: 'out-of-grid', widgetId: id });
     }
-
-    for (const [otherId, other] of placed.slice(index + 1)) {
-      if (areasOverlap(area, other)) {
-        problems.push({ kind: 'overlap', widgetId: id, otherId });
-      }
-    }
-  });
+  }
 
   return problems;
 }

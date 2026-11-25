@@ -60,7 +60,12 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
         cursor={lifted ? 'grabbing' : 'grab'}
         height='full'
         inset='none'
-        onClick={() => onSelect(widget.id)}
+        // Presses are handled as gestures; this is for assistive technology, which clicks without a pointer.
+        onClick={event => {
+          if (event.detail === 0) {
+            onSelect(widget.id);
+          }
+        }}
         onPointerDown={event => onPointerDown(event, widget.id)}
         outlineColor='focus-ring'
         outlineStyle={{ default: 'none', focusVisible: 'solid' }}

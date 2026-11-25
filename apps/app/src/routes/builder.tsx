@@ -8,12 +8,12 @@ import { useState } from 'react';
 import { MfdWidget } from '../mfd/MfdWidget.js';
 import { demoDocument } from '../mfd/demoDocument.js';
 
-/** The demo on the default grid: its own grids are completely full, leaving nowhere to drag to. */
+/** The demo on the default grid, as its own grids are coarse. */
 const initialDocument: MfdDocument = {
   ...demoDocument,
   pages: demoDocument.pages.map(page => ({
     ...page,
-    layouts: page.layouts.map(layout => scaleLayout(layout, DEFAULT_GRID) ?? layout)
+    layouts: page.layouts.map(layout => scaleLayout(layout, DEFAULT_GRID))
   }))
 };
 

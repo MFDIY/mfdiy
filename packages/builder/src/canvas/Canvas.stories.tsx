@@ -103,7 +103,7 @@ export const SmallestWidgetSelected: Story = { args: { aspectRatio: 9 / 19, init
 
 export const Empty: Story = { args: { initialLayout: { ...layout, areas: {} }, widgets: [] } };
 
-/** No free cells: every drag is refused until something is made smaller. */
+/** No free cells: widgets can still be moved, overlapping others meanwhile. */
 export const Full: Story = {
   args: {
     initialLayout: {
@@ -116,6 +116,21 @@ export const Full: Story = {
       }
     },
     widgets: widgets.filter(widget => ['speed', 'gear', 'esp'].includes(widget.id))
+  }
+};
+
+/** One widget partly covered and one completely hidden. Press again to select what's underneath. */
+export const Overlapping: Story = {
+  args: {
+    initialLayout: {
+      ...layout,
+      areas: {
+        ...layout.areas,
+        gear: { column: 3, row: 1, columnSpan: 4, rowSpan: 4 },
+        esp: { column: 12, row: 6, columnSpan: 8, rowSpan: 8 }
+      }
+    },
+    widgets: [...widgets.filter(widget => widget.id === 'doors'), ...widgets.filter(widget => widget.id !== 'doors')]
   }
 };
 

@@ -152,13 +152,13 @@ export const globalTokens = {
  */
 const canvasTokens = {
   'color.border.canvas.ghost': '#4da3ff',
-  'color.border.canvas.ghost-invalid': '#ff4d4d',
+  'color.border.canvas.overlap': '#ff4d4d',
   'color.border.canvas.handle': '#4da3ff',
   'color.shadow.canvas.halo': '0 0 0 1px #000b',
   'color.shadow.canvas.selected': '0 0 0 2px #4da3ff, 0 0 0 4px #000b',
   'color.surface.canvas.dot': '#8888',
   'color.surface.canvas.ghost': '#4da3ff40',
-  'color.surface.canvas.ghost-invalid': '#ff4d4d73',
+  'color.surface.canvas.overlap': '#ff4d4d73',
   'color.surface.canvas.handle': '#fff'
 } as const;
 

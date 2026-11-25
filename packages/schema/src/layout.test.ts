@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 
 import { PageSchema, type Layout, type Page } from './document.js';
-import { areasOverlap, canPlace, selectLayout, validateLayout } from './layout.js';
+import { areasOverlap, findOverlaps, selectLayout, validateLayout } from './layout.js';
 
 const layout: Layout = {
   orientation: 'any',
@@ -28,14 +28,25 @@ describe('areasOverlap', () => {
   });
 });
 
-describe('canPlace', () => {
-  it('rejects areas outside the grid', () => {
-    expect(canPlace(layout, { column: 4, row: 3, columnSpan: 2, rowSpan: 1 })).toBe(false);
+describe('findOverlaps', () => {
+  it('finds nothing when widgets only touch', () => {
+    expect(findOverlaps(layout)).toEqual([]);
   });
 
-  it('ignores the widget being moved', () => {
-    expect(canPlace(layout, { column: 3, row: 2, columnSpan: 2, rowSpan: 2 }, 'b')).toBe(true);
-    expect(canPlace(layout, { column: 3, row: 2, columnSpan: 2, rowSpan: 2 }, 'a')).toBe(false);
+  it('reports the shared cells of each overlapping pair', () => {
+    const a = { column: 2, row: 1, columnSpan: 3, rowSpan: 1 };
+
+    expect(findOverlaps({ ...layout, areas: { ...layout.areas, a } })).toEqual([
+      { widgetIds: ['a', 'b'], area: { column: 3, row: 1, columnSpan: 2, rowSpan: 1 } }
+    ]);
+  });
+
+  it('reports a widget completely hidden by another', () => {
+    const hidden = { column: 4, row: 2, columnSpan: 1, rowSpan: 1 };
+
+    expect(findOverlaps({ ...layout, areas: { ...layout.areas, hidden } })).toEqual([
+      { widgetIds: ['b', 'hidden'], area: hidden }
+    ]);
   });
 });
 
@@ -44,7 +55,7 @@ describe('validateLayout', () => {
     expect(validateLayout(layout, widgets)).toEqual([]);
   });
 
-  it('reports missing areas, unknown widgets and overlaps', () => {
+  it('reports missing areas and unknown widgets', () => {
     const problems = validateLayout(
       { ...layout, areas: { a: layout.areas['a']!, c: { column: 1, row: 1, columnSpan: 1, rowSpan: 1 } } },
       widgets
@@ -53,8 +64,7 @@ describe('validateLayout', () => {
     expect(problems).toEqual(
       expect.arrayContaining([
         { kind: 'missing-area', widgetId: 'b' },
-        { kind: 'unknown-widget', widgetId: 'c' },
-        { kind: 'overlap', widgetId: 'a', otherId: 'c' }
+        { kind: 'unknown-widget', widgetId: 'c' }
       ])
     );
   });
@@ -67,10 +77,16 @@ describe('PageSchema', () => {
     expect(v.safeParse(PageSchema, page).success).toBe(true);
   });
 
-  it('rejects overlapping widgets', () => {
+  it('accepts overlapping widgets', () => {
     const overlapping = { ...layout, areas: { ...layout.areas, a: { column: 2, row: 1, columnSpan: 2, rowSpan: 1 } } };
 
-    expect(v.safeParse(PageSchema, { ...page, layouts: [overlapping] }).success).toBe(false);
+    expect(v.safeParse(PageSchema, { ...page, layouts: [overlapping] }).success).toBe(true);
+  });
+
+  it('rejects widgets outside the grid', () => {
+    const outside = { ...layout, areas: { ...layout.areas, a: { column: 4, row: 3, columnSpan: 2, rowSpan: 1 } } };
+
+    expect(v.safeParse(PageSchema, { ...page, layouts: [outside] }).success).toBe(false);
   });
 
   it('rejects two layouts with the same orientation', () => {

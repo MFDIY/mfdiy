@@ -2,7 +2,7 @@ import type { Area, Layout } from './document.js';
 
 import { describe, expect, it } from 'vitest';
 
-import { validateLayout } from './layout.js';
+import { findOverlaps, validateLayout } from './layout.js';
 import { moveArea, resizeArea, scaleLayout, withArea } from './layoutEditing.js';
 
 function area(column: number, row: number, columnSpan = 1, rowSpan = 1): Area {
@@ -79,8 +79,8 @@ describe('scaleLayout', () => {
   it('scales exactly when the grid is a multiple, and back again', () => {
     const scaled = scaleLayout(layout, { columns: 12, rows: 8 });
 
-    expect(scaled?.areas).toEqual({ a: area(1, 1, 6, 4), b: area(7, 1, 6, 4), c: area(1, 5, 12, 4) });
-    expect(scaled && scaleLayout(scaled, grid)).toEqual(layout);
+    expect(scaled.areas).toEqual({ a: area(1, 1, 6, 4), b: area(7, 1, 6, 4), c: area(1, 5, 12, 4) });
+    expect(scaleLayout(scaled, grid)).toEqual(layout);
   });
 
   it('never overlaps widgets or leaves the grid, whatever the rounding', () => {
@@ -88,7 +88,7 @@ describe('scaleLayout', () => {
       for (let rows = 2; rows <= 16; rows++) {
         const scaled = scaleLayout(layout, { columns, rows });
 
-        expect(scaled && problems(scaled), `${columns} × ${rows}`).toEqual([]);
+        expect([...problems(scaled), ...findOverlaps(scaled)], `${columns} × ${rows}`).toEqual([]);
       }
     }
   });
@@ -97,14 +97,14 @@ describe('scaleLayout', () => {
     const row = layoutOf({ a: area(1, 1), b: area(2, 1), c: area(3, 1), d: area(4, 1) }, { columns: 4, rows: 2 });
     const scaled = scaleLayout(row, { columns: 2, rows: 2 });
 
-    expect(scaled && Object.keys(scaled.areas).sort()).toEqual(['a', 'b', 'c', 'd']);
-    expect(scaled && problems(scaled)).toEqual([]);
+    expect(Object.keys(scaled.areas).sort()).toEqual(['a', 'b', 'c', 'd']);
+    expect([...problems(scaled), ...findOverlaps(scaled)]).toEqual([]);
   });
 
-  it('returns undefined when the widgets cannot fit', () => {
+  it('overlaps widgets that cannot all fit, inside the grid', () => {
     const full = layoutOf({ a: area(1, 1), b: area(2, 1) }, { columns: 2, rows: 1 });
 
-    expect(scaleLayout(full, { columns: 1, rows: 1 })).toBeUndefined();
+    expect(scaleLayout(full, { columns: 1, rows: 1 }).areas).toEqual({ a: area(1, 1), b: area(1, 1) });
   });
 
   it('respects minimum sizes', () => {
@@ -114,7 +114,7 @@ describe('scaleLayout', () => {
       { a: { columns: 3, rows: 1 } }
     );
 
-    expect(scaled?.areas).toEqual({ a: area(1, 1, 3, 1) });
+    expect(scaled.areas).toEqual({ a: area(1, 1, 3, 1) });
   });
 });
 

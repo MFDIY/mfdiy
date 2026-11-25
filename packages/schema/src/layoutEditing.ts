@@ -29,7 +29,7 @@ export function areasEqual(a: Area, b: Area): boolean {
   return a.column === b.column && a.row === b.row && a.columnSpan === b.columnSpan && a.rowSpan === b.rowSpan;
 }
 
-/** Moves an area, stopping at the edges of the grid. May overlap other widgets; see `canPlace`. */
+/** Moves an area, stopping at the edges of the grid. */
 export function moveArea(area: Area, offset: CellSize, grid: Grid): Area {
   return {
     ...area,
@@ -59,7 +59,7 @@ function resizeAxis(start: number, span: number, edge: -1 | 0 | 1, offset: numbe
 
 /**
  * Resizes an area by dragging one of its edges or corners. The opposite side stays put, and the
- * result stays within the grid and at or above `minSize`. May overlap other widgets; see `canPlace`.
+ * result stays within the grid and at or above `minSize`.
  */
 export function resizeArea(
   area: Area,
@@ -104,14 +104,10 @@ function nearestFreeArea(wanted: Area, grid: Grid, placed: readonly Area[]): Are
 
 /**
  * Changes a layout's grid, scaling every widget proportionally. Widgets that rounding would make
- * too small are grown back to their minimum size and moved to the nearest free position. Returns
- * undefined if they can't all be placed in the new grid.
+ * too small are grown back to their minimum size and moved to the nearest free position, or overlap
+ * others if there is none.
  */
-export function scaleLayout(
-  layout: Layout,
-  grid: Grid,
-  minSizes: Readonly<Record<string, CellSize>> = {}
-): Layout | undefined {
+export function scaleLayout(layout: Layout, grid: Grid, minSizes: Readonly<Record<string, CellSize>> = {}): Layout {
   const areas: Record<string, Area> = {};
   const tooSmall: [id: string, wanted: Area][] = [];
 
@@ -121,8 +117,8 @@ export function scaleLayout(
     const scaled = { column: column.start, row: row.start, columnSpan: column.span, rowSpan: row.span };
     // As with resizing, a widget already below its minimum isn't forced to grow.
     const min = minSizes[id] ?? SINGLE_CELL;
-    const minColumns = Math.min(min.columns, area.columnSpan);
-    const minRows = Math.min(min.rows, area.rowSpan);
+    const minColumns = Math.min(min.columns, area.columnSpan, grid.columns);
+    const minRows = Math.min(min.rows, area.rowSpan, grid.rows);
 
     if (scaled.columnSpan >= minColumns && scaled.rowSpan >= minRows) {
       areas[id] = scaled;
@@ -142,13 +138,7 @@ export function scaleLayout(
   tooSmall.sort(([, a], [, b]) => b.columnSpan * b.rowSpan - a.columnSpan * a.rowSpan);
 
   for (const [id, wanted] of tooSmall) {
-    const area = nearestFreeArea(wanted, grid, Object.values(areas));
-
-    if (!area) {
-      return undefined;
-    }
-
-    areas[id] = area;
+    areas[id] = nearestFreeArea(wanted, grid, Object.values(areas)) ?? moveArea(wanted, { columns: 0, rows: 0 }, grid);
   }
 
   return { ...layout, grid, areas };

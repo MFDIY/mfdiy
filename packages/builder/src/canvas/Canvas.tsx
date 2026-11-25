@@ -1,7 +1,7 @@
 import type { Area, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, mfdRoot } from '@mfdiy/instruments';
-import { areasEqual, canPlace, moveArea, resizeArea, withArea } from '@mfdiy/schema';
+import { areasEqual, areasOverlap, findOverlaps, moveArea, resizeArea, withArea } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
 
@@ -69,7 +69,7 @@ export function Canvas({
 
   const minSizes = new Map(page.widgets.map(widget => [widget.id, widgetMinSize(widget, layout.grid)]));
 
-  /** Where the gesture would put the widget. May be an invalid position. */
+  /** Where the gesture would put the widget. */
   function targetArea({ widgetId, handle, startArea, cellWidth, cellHeight, x, y }: Gesture): Area {
     const offset = { columns: Math.round(x / cellWidth), rows: Math.round(y / cellHeight) };
 
@@ -126,6 +126,34 @@ export function Canvas({
     setGesture(next);
   }
 
+  /**
+   * Selects the pressed widget. Pressing the selected widget again selects the next one underneath,
+   * so widgets hidden behind others can be reached.
+   */
+  function handleTap(widgetId: string, event: PointerEvent) {
+    const dots = dotsRef.current?.getBoundingClientRect();
+
+    if (widgetId !== selectedId || !dots) {
+      onSelect(widgetId);
+      return;
+    }
+
+    const column = Math.floor(((event.clientX - dots.left) / dots.width) * layout.grid.columns) + 1;
+    const row = Math.floor(((event.clientY - dots.top) / dots.height) * layout.grid.rows) + 1;
+
+    const stack = page.widgets
+      .map(widget => widget.id)
+      .filter(id => {
+        const area = layout.areas[id];
+
+        return area && areasOverlap(area, { column, row, columnSpan: 1, rowSpan: 1 });
+      })
+      // Later widgets are on top.
+      .reverse();
+
+    onSelect(stack[(stack.indexOf(widgetId) + 1) % stack.length] ?? widgetId);
+  }
+
   function handlePointerUp(event: PointerEvent) {
     if (gesture?.pointerId !== event.pointerId) {
       return;
@@ -136,7 +164,11 @@ export function Canvas({
 
     setGesture(null);
 
-    if (final.dragging && !areasEqual(area, final.startArea) && canPlace(layout, area, final.widgetId)) {
+    if (!final.dragging) {
+      if (!final.handle) {
+        handleTap(final.widgetId, event);
+      }
+    } else if (!areasEqual(area, final.startArea)) {
       onLayoutChange(withArea(layout, final.widgetId, area));
     }
   }
@@ -147,7 +179,7 @@ export function Canvas({
   }
 
   const drag = gesture?.dragging ? { ...gesture, area: targetArea(gesture) } : null;
-  const dropAllowed = drag ? canPlace(layout, drag.area, drag.widgetId) : true;
+  const overlaps = findOverlaps(drag ? withArea(layout, drag.widgetId, drag.area) : layout);
 
   return (
     <Box
@@ -239,17 +271,14 @@ export function Canvas({
               );
             })}
             {drag ? (
-              // Striped and dashed as well as red when invalid, so it doesn't rely on colour alone.
               <Box
-                backgroundColor={dropAllowed ? 'canvas.ghost' : undefined}
-                backgroundImage={dropAllowed ? undefined : 'canvas.ghost-invalid'}
-                borderColor={dropAllowed ? 'canvas.ghost' : 'canvas.ghost-invalid'}
+                backgroundColor='canvas.ghost'
+                borderColor='canvas.ghost'
                 borderRadius='1x'
-                borderStyle={dropAllowed ? 'solid' : 'dashed'}
+                borderStyle='solid'
                 borderWidth='canvas'
                 boxShadow='canvas.halo'
                 data-canvas='ghost'
-                data-invalid={dropAllowed ? undefined : ''}
                 pointerEvents='none'
                 position='relative'
                 style={{
@@ -260,6 +289,26 @@ export function Canvas({
                 zIndex='3'
               />
             ) : null}
+            {overlaps.map(({ widgetIds, area }) => (
+              // Striped and dashed as well as red, so it doesn't rely on colour alone.
+              <Box
+                backgroundImage='canvas.overlap'
+                borderColor='canvas.overlap'
+                borderRadius='1x'
+                borderStyle='dashed'
+                borderWidth='canvas'
+                boxShadow='canvas.halo'
+                data-canvas='overlap'
+                key={widgetIds.join(' ')}
+                pointerEvents='none'
+                position='relative'
+                style={{
+                  gridColumn: `${area.column} / span ${area.columnSpan}`,
+                  gridRow: `${area.row} / span ${area.rowSpan}`
+                }}
+                zIndex='3'
+              />
+            ))}
           </Box>
         </Box>
       </Box>

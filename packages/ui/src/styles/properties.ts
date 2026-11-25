@@ -84,7 +84,7 @@ export const backgroundImage = {
         `radial-gradient(circle at ${corner}, ${colorSchemeVars['color.surface.canvas.dot']} 1.5px, transparent 2px)`
     )
     .join(', '),
-  'canvas.ghost-invalid': `repeating-linear-gradient(45deg, ${colorSchemeVars['color.surface.canvas.ghost-invalid']} 0 6px, transparent 6px 12px)`,
+  'canvas.overlap': `repeating-linear-gradient(45deg, ${colorSchemeVars['color.surface.canvas.overlap']} 0 6px, transparent 6px 12px)`,
   link: 'linear-gradient(to right, currentColor, color-mix(in srgb, currentColor 30%, transparent))'
 } as const;
 
@@ -97,7 +97,7 @@ export const backgroundSize = {
 
 export const borderColor = {
   'canvas.ghost': colorSchemeVars['color.border.canvas.ghost'],
-  'canvas.ghost-invalid': colorSchemeVars['color.border.canvas.ghost-invalid'],
+  'canvas.overlap': colorSchemeVars['color.border.canvas.overlap'],
   'canvas.handle': colorSchemeVars['color.border.canvas.handle'],
   divider: colorSchemeVars['color.border.divider'],
   'input.text': colorSchemeVars['color.border.input.text'],
