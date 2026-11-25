@@ -44,11 +44,24 @@ The game runs a local gRPC server when enabled. Commands as reported by communit
 - Weapons status and force-feedback data.
 - **Not available:** power pip allocation and IR / EM / cross-section signatures.
 
+## Schema and mapping
+
+The schema doesn't have to wait for a captured frame: the game contains its protobuf descriptors, and community tools extract them. Compared on 2026-11-25 against the `.proto` files published by magmahindenburg for PTU `5.0.202.205`:
+
+- **Every signal in `packages/adapter-star-citizen` has a counterpart**, vehicle, flight and player alike.
+- **Values that differ from our catalogue:** fuel, boost, shields and hull are 0–1, not 0–100 (ranges come from that author's comments, not the game, so **unverified**); health and oxygen are a `Gauge` (`current`, `max`); flight-assist settings are an `Availability` (`enabled`, `active`), and the game reports _coupled_ where we have _decoupled_; gear is a deployment state (retracted, deploying, deployed, retracting), not a flag; doors have an open state and a lock state; power is one flag per system.
+- **Master mode has a third value, `STEALTH`**, which our catalogue lacks.
+- **Useful signals we lack:** ten annunciators (`pwr`, `wpn`, `thr`, `shld`, `cool`, `qdrv`, `radr`, `prox`, `hit`, `misl`; nominal, off, or minor / major, flashing / on), countermeasures (decoy, noise), heading, vertical speed, radar altitude, power per system, landed, and ship name, class and manufacturer (the latter for 0012).
+- Shield faces are an unnamed list; the order isn't in the schema.
+- **Versions:** LIVE 4.10.3 is reported as display only, with fewer fields (no shields or hull); actions need 5.0. On 2026-11-25, 5.0 was on PTU with no confirmed LIVE date.
+
+**Generate the schema from the installed game**, for PTU and LIVE separately and again after each patch. [sc_make_proto](https://github.com/Purzifal/sc_make_proto) does it with one command; it reports having tested both versions. It's GPL-3.0 and magmahindenburg's repository shows no licence, so **use them as references and don't copy their code or files into the MIT core**.
+
 ## Unknowns to settle with a real frame
 
-- Exact protobuf field names, and whether vehicles come through as display names or internal codes (e.g. `AEGS_Gladius`).
-- How manufacturers are spelled.
-- Which game action names map to the actions in `packages/adapter-star-citizen`.
+- The order of the shield faces, real units and ranges, and which fields LIVE actually sends.
+- Whether names come through as display names or internal codes, and how manufacturers are spelled.
+- Which game action names, from `ListTriggerableActions`, map to the actions in `packages/adapter-star-citizen`. The list was reported as about 106 actions, later 112; weapons and targeting are excluded.
 
 ## Sources
 
@@ -56,3 +69,4 @@ The game runs a local gRPC server when enabled. Commands as reported by communit
 - [crypticsh/sctelemetry](https://github.com/crypticsh/sctelemetry): browser-based MFD with a flight recorder.
 - [Sokren/sc-telemetry-deck](https://github.com/Sokren/sc-telemetry-deck): Stream Deck plugin and web app; documents the LIVE and PTU enable steps.
 - [scpages/telemetry](https://github.com/scpages/telemetry): web app; documents the `user.cfg` lines.
+- [Purzifal/sc_make_proto](https://github.com/Purzifal/sc_make_proto): extracts the `.proto` file from the installed game (GPL-3.0).

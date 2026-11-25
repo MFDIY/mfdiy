@@ -25,6 +25,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0017: Billing with Stripe](docs/decisions/0017-billing-with-stripe.md)
 - [0018: Widget primitives](docs/decisions/0018-widget-primitives.md) (Proposed)
 - [0019: Saving profiles](docs/decisions/0019-saving-profiles.md)
+- [0020: What the first public beta contains](docs/decisions/0020-launch-mvp.md)
 
 ## Working with the maintainer
 
@@ -36,14 +37,16 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder that adds, moves, resizes and removes widgets, with undo and saving. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
 
-Next steps:
+Next: **the first public beta (0020)**. Its scope, order and gates are agreed; don't reopen them without new information.
 
-1. **Rest of the builder** (0006–0008): properties panel (next; design it with the maintainer), pages, grid size control, preview switcher, zoom. Until properties exist, a placed widget's data, action and label can't be changed, and a Light can't be given an action.
-2. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
+1. **Connect the bridge to the game** (critical path). The schema can be generated from the installed game; a real frame is still needed for units and the order of shield faces. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
+2. **Editor** (0006–0008), limited to what 0020 lists. Still to do: the properties panel (label, data, action, thresholds; design it with the maintainer), duplicating widgets, and pages. Until properties exist, a placed widget can't be changed and a Light can't be given an action.
+3. **Windows download, QR code, tap-to-engage and keep-awake.**
+4. **Starter profiles and built-in themes.** Where the choice of theme is kept is still open (0020).
 
 The repository is public in the `MFDIY` org, and the landing page is live at https://mfdiy.app (HTTPS enforced).
 
-Waiting on the maintainer: read the game developer's terms before charging for anything.
+Waiting on the maintainer: generate the schema on the gaming PC (PTU and LIVE) and put both files where a session can read them; confirm PTU access; read the game developer's terms before charging for anything, and its fan-content and posting rules before announcing the beta.
 
 Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports advisories in dev tooling only (Vitest 3, including two critical via `tinypool`, and Storybook's glob dependency; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 656 kB of builder CSS (54 kB gzipped) and can be pruned.
 
