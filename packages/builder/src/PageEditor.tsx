@@ -3,7 +3,7 @@ import type { Catalogue, NewWidget } from './palette/choices.js';
 import type { Area, GridPoint } from '@mfdiy/schema';
 
 import { widgetManifests } from '@mfdiy/instruments';
-import { addWidget, newWidgetId, placeArea } from '@mfdiy/schema';
+import { addWidget, growArea, newWidgetId, placeArea } from '@mfdiy/schema';
 import { Box, popoverBeside, type PopoverPosition } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
@@ -34,15 +34,17 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
   }
 
   function place(type: string, point: GridPoint): Area {
-    const around = smallestPlace(point);
+    const smallest = smallestPlace(point);
     const manifest = widgetManifests[type];
 
     return manifest
-      ? placeArea(layout, point, widgetDefaultSize(manifest, layout.grid), {
-          around,
-          minSize: widgetMinSize({ id: '', type }, layout.grid)
-        })
-      : around;
+      ? growArea(
+          layout,
+          smallest,
+          widgetDefaultSize(manifest, layout.grid),
+          widgetMinSize({ id: '', type }, layout.grid)
+        )
+      : smallest;
   }
 
   function handleEmptyTap(point: GridPoint, grid: DOMRect) {

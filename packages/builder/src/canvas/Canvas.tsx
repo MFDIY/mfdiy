@@ -282,6 +282,7 @@ export function Canvas({
     hovered && !gesture && !ghost && selectedId === null && onEmptyTap && isEmpty(hovered)
       ? (newWidgetArea?.(hovered) ?? null)
       : null;
+  const marked = ghost ?? invitation;
   const overlaps = findOverlaps(drag ? withArea(layout, drag.widgetId, drag.area) : layout);
 
   return (
@@ -374,8 +375,9 @@ export function Canvas({
                 </CanvasWidget>
               );
             })}
-            {drag ? <Ghost area={drag.area} /> : ghost ? <Ghost area={ghost} plus /> : null}
-            {invitation ? <Ghost area={invitation} plus quiet /> : null}
+            {drag ? <Ghost area={drag.area} /> : ghost ? <Ghost area={ghost} /> : null}
+            {invitation ? <Ghost area={invitation} quiet /> : null}
+            {marked ? <Plus area={marked} /> : null}
             {overlaps.map(({ widgetIds, area }) => (
               // Striped and dashed as well as red, so it doesn't rely on colour alone.
               <Box
@@ -397,7 +399,7 @@ export function Canvas({
               />
             ))}
           </Box>
-          {onEmptyTap && page.widgets.length === 0 && !ghost && !invitation ? (
+          {onEmptyTap && page.widgets.length === 0 && !marked ? (
             <Box
               alignItems='center'
               display='flex'
@@ -419,12 +421,11 @@ export function Canvas({
 
 type GhostProps = {
   area: Area;
-  plus?: boolean;
   /** Only an outline, for what follows the pointer around. */
   quiet?: boolean;
 };
 
-function Ghost({ area, plus = false, quiet = false }: GhostProps) {
+function Ghost({ area, quiet = false }: GhostProps) {
   return (
     <Box
       backgroundColor={quiet ? 'transparent' : 'canvas.ghost'}
@@ -433,7 +434,6 @@ function Ghost({ area, plus = false, quiet = false }: GhostProps) {
       borderStyle={quiet ? 'dashed' : 'solid'}
       borderWidth={quiet ? 'divider' : 'canvas'}
       boxShadow={quiet ? 'none' : 'canvas.halo'}
-      containerType='size'
       data-canvas='ghost'
       pointerEvents='none'
       position='relative'
@@ -443,21 +443,36 @@ function Ghost({ area, plus = false, quiet = false }: GhostProps) {
       }}
       // Above a lifted widget, which would otherwise hide it.
       zIndex='3'
+    />
+  );
+}
+
+/** In the middle of an area, shrinking with it. */
+function Plus({ area }: { area: Area }) {
+  return (
+    <Box
+      alignItems='center'
+      containerType='size'
+      display='flex'
+      justifyContent='center'
+      pointerEvents='none'
+      position='relative'
+      style={{
+        gridColumn: `${area.column} / span ${area.columnSpan}`,
+        gridRow: `${area.row} / span ${area.rowSpan}`
+      }}
+      zIndex='3'
     >
-      {plus ? (
-        <Box alignItems='center' display='flex' height='full' justifyContent='center'>
-          <Box
-            aria-hidden
-            className={styles.plus}
-            color='canvas.handle'
-            data-canvas='plus'
-            tagName='svg'
-            viewBox='0 0 24 24'
-          >
-            <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='2' tagName='path' />
-          </Box>
-        </Box>
-      ) : null}
+      <Box
+        aria-hidden
+        className={styles.plus}
+        color='canvas.handle'
+        data-canvas='plus'
+        tagName='svg'
+        viewBox='0 0 24 24'
+      >
+        <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='2' tagName='path' />
+      </Box>
     </Box>
   );
 }

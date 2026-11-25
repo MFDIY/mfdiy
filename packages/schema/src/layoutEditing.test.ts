@@ -7,6 +7,7 @@ import {
   addWidget,
   bringToFront,
   cellAt,
+  growArea,
   moveArea,
   newWidgetId,
   placeArea,
@@ -193,7 +194,7 @@ describe('placeArea', () => {
         }
 
         const small = placeArea(layout, { x, y }, { columns: 2, rows: 2 });
-        const large = placeArea(layout, { x, y }, { columns: 4, rows: 2 }, { around: small });
+        const large = growArea(layout, small, { columns: 4, rows: 2 });
 
         expect(intersectAreas(small, cell)).toEqual(cell);
         expect(intersectAreas(large, small)).toEqual(small);
@@ -204,16 +205,6 @@ describe('placeArea', () => {
         }
       }
     }
-  });
-
-  it('overlaps at its minimum size if there is no room, within the grid', () => {
-    const minSize = { columns: 2, rows: 2 };
-    const full = layoutOf({ a: area(2, 1, 1, 4) });
-
-    expect(placeArea(full, { x: 0.5, y: 2 }, wanted, { minSize })).toEqual(area(1, 2, 2, 2));
-    expect(placeArea(layoutOf({}, { columns: 1, rows: 1 }), { x: 0.5, y: 0.5 }, wanted, { minSize })).toEqual(
-      area(1, 1)
-    );
   });
 
   it('finds the best place on a fine, crowded grid', () => {
@@ -230,6 +221,46 @@ describe('placeArea', () => {
     expect(placeArea(layoutOf(crowded, size), { x: 25.5, y: 24 }, { columns: 16, rows: 12 })).toEqual(
       area(26, 19, 1, 12)
     );
+  });
+});
+
+describe('growArea', () => {
+  const wanted = { columns: 4, rows: 2 };
+
+  it('grows to the right', () => {
+    expect(growArea(layoutOf({}), area(2, 2, 2, 2), wanted)).toEqual(area(2, 2, 4, 2));
+  });
+
+  it('grows to the left only for what does not fit on the right', () => {
+    expect(growArea(layoutOf({}), area(4, 2, 2, 2), wanted)).toEqual(area(3, 2, 4, 2));
+    expect(growArea(layoutOf({}), area(5, 2, 2, 2), wanted)).toEqual(area(3, 2, 4, 2));
+    expect(growArea(layoutOf({ a: area(5, 1, 1, 4) }), area(2, 2, 2, 2), wanted)).toEqual(area(1, 2, 4, 2));
+  });
+
+  it('grows down, and up only for what does not fit below', () => {
+    const tall = { columns: 1, rows: 3 };
+
+    expect(growArea(layoutOf({}), area(1, 1), tall)).toEqual(area(1, 1, 1, 3));
+    expect(growArea(layoutOf({}), area(1, 3), tall)).toEqual(area(1, 2, 1, 3));
+  });
+
+  it('takes what is free on both sides if that is less than it wants', () => {
+    const layout = layoutOf({ a: area(1, 1, 1, 4), b: area(5, 1, 1, 4) });
+
+    expect(growArea(layout, area(3, 2, 1, 2), wanted)).toEqual(area(2, 2, 3, 2));
+  });
+
+  it('stays as it is if it is big enough or has no room', () => {
+    expect(growArea(layoutOf({}), area(2, 2, 4, 2), wanted)).toEqual(area(2, 2, 4, 2));
+    expect(growArea(layoutOf({ a: area(2, 1, 1, 4) }), area(1, 2), { columns: 4, rows: 1 })).toEqual(area(1, 2));
+  });
+
+  it('overlaps at its minimum size if there is no room, within the grid', () => {
+    const minSize = { columns: 2, rows: 2 };
+
+    expect(growArea(layoutOf({ a: area(2, 1, 1, 4) }), area(1, 2), wanted, minSize)).toEqual(area(1, 2, 2, 2));
+    expect(growArea(layoutOf({ a: area(5, 1, 1, 4) }), area(6, 4), wanted, minSize)).toEqual(area(5, 3, 2, 2));
+    expect(growArea(layoutOf({}, { columns: 1, rows: 1 }), area(1, 1), wanted, minSize)).toEqual(area(1, 1));
   });
 });
 
