@@ -1,22 +1,23 @@
 import type { Area, ResizeHandle, WidgetInstance } from '@mfdiy/schema';
-import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 
 import { applyTokens } from '@mfdiy/instruments';
+import { Box } from '@mfdiy/ui/components';
 
 import * as styles from './Canvas.css.js';
 import { widgetName } from './widgetInfo.js';
 
-const resizeHandles: readonly ResizeHandle[] = [
+const resizeHandles = [
   // Edges first, so corners are on top where they overlap.
-  { column: 0, row: -1 },
-  { column: 1, row: 0 },
-  { column: 0, row: 1 },
-  { column: -1, row: 0 },
-  { column: -1, row: -1 },
-  { column: 1, row: -1 },
-  { column: 1, row: 1 },
-  { column: -1, row: 1 }
-];
+  { column: 0, row: -1, cursor: 'ns-resize' },
+  { column: 1, row: 0, cursor: 'ew-resize' },
+  { column: 0, row: 1, cursor: 'ns-resize' },
+  { column: -1, row: 0, cursor: 'ew-resize' },
+  { column: -1, row: -1, cursor: 'nwse-resize' },
+  { column: 1, row: -1, cursor: 'nesw-resize' },
+  { column: 1, row: 1, cursor: 'nwse-resize' },
+  { column: -1, row: 1, cursor: 'nesw-resize' }
+] as const satisfies (ResizeHandle & { cursor: string })[];
 
 type CanvasWidgetProps = {
   widget: WidgetInstance;
@@ -24,72 +25,89 @@ type CanvasWidgetProps = {
   selected: boolean;
   /** Distance from its position while being dragged, in pixels. */
   lifted: { x: number; y: number } | null;
-  instructionsId: string;
   onSelect: (widgetId: string) => void;
-  onKeyDown: (event: KeyboardEvent, widgetId: string) => void;
   onPointerDown: (event: PointerEvent<HTMLElement>, widgetId: string, handle?: ResizeHandle) => void;
   children: ReactNode;
 };
 
 /** A widget on the canvas, wrapped in everything needed to select, move and resize it. */
-export function CanvasWidget({
-  widget,
-  area,
-  selected,
-  lifted,
-  instructionsId,
-  onSelect,
-  onKeyDown,
-  onPointerDown,
-  children
-}: CanvasWidgetProps) {
+export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPointerDown, children }: CanvasWidgetProps) {
   return (
-    <div
-      className={styles.slot}
-      data-lifted={lifted ? '' : undefined}
-      data-selected={selected ? '' : undefined}
+    <Box
+      minHeight='none'
+      minWidth='none'
+      position='relative'
       style={{
         gridColumn: `${area.column} / span ${area.columnSpan}`,
         gridRow: `${area.row} / span ${area.rowSpan}`,
         transform: lifted ? `translate(${lifted.x}px, ${lifted.y}px)` : undefined
       }}
+      zIndex={lifted ? '2' : selected ? '1' : 'auto'}
     >
-      {/* Inert: widgets show live data here, but can't be pressed or focused. */}
-      <div className={styles.content} inert style={applyTokens(widget.tokens)}>
+      {/* Inert: widgets show live data here, but can't be pressed. */}
+      <Box className={styles.content} height='full' inert style={applyTokens(widget.tokens)}>
         {children}
-      </div>
-      <button
-        aria-describedby={instructionsId}
-        aria-label={`${widgetName(widget)}, column ${area.column}, row ${area.row}`}
+      </Box>
+      {/* Covers the widget, so a press selects or drags it instead of triggering its action. */}
+      <Box
+        appearance='none'
+        aria-label={widgetName(widget)}
         aria-pressed={selected}
-        className={styles.hit}
+        backgroundColor='transparent'
+        borderRadius='1x'
+        borderStyle='hidden'
+        boxShadow={selected ? 'canvas.selected' : 'none'}
+        cursor={lifted ? 'grabbing' : 'grab'}
+        height='full'
+        inset='none'
         onClick={() => onSelect(widget.id)}
-        onKeyDown={event => onKeyDown(event, widget.id)}
-        onMouseDown={event => {
-          // Safari takes the focus away from a pressed button, and arrow keys need it.
-          event.preventDefault();
-          event.currentTarget.focus({ preventScroll: true });
-        }}
         onPointerDown={event => onPointerDown(event, widget.id)}
+        outlineColor='focus-ring'
+        outlineStyle={{ default: 'none', focusVisible: 'solid' }}
+        outlineWidth='focus-ring'
+        padding='none'
+        position='absolute'
+        tagName='button'
+        touchAction='none'
         type='button'
+        width='full'
       />
       {selected && !lifted ? (
-        // Pointer only: Shift + arrow keys are the keyboard equivalent.
-        <div aria-hidden className={styles.handles}>
-          {resizeHandles.map(handle => (
-            <div
-              className={styles.handle}
-              data-column={handle.column}
-              data-row={handle.row}
-              key={`${handle.column},${handle.row}`}
-              // Keep the focus on the widget, so Escape and arrow keys keep working.
-              onMouseDown={event => event.preventDefault()}
-              onPointerDown={event => onPointerDown(event, widget.id, handle)}
-              role='presentation'
-            />
+        // A size container, so handles can make room on small widgets. Lets presses through.
+        <Box aria-hidden containerType='size' inset='none' pointerEvents='none' position='absolute'>
+          {resizeHandles.map(({ column, row, cursor }) => (
+            <Box
+              className={[styles.handleColumn[column], styles.handleRow[row]]}
+              cursor={cursor}
+              data-column={column}
+              data-row={row}
+              // No room between the corners on narrow widgets: the corners alone can do everything.
+              display={column === 0 ? { default: 'none', 100: 'block' } : 'block'}
+              height='canvas.handle'
+              key={`${column},${row}`}
+              onPointerDown={event => onPointerDown(event, widget.id, { column, row })}
+              pointerEvents='auto'
+              position='absolute'
+              touchAction='none'
+              width='canvas.handle'
+            >
+              <Box
+                backgroundColor='canvas.handle'
+                borderColor='canvas.handle'
+                borderRadius='1x'
+                borderStyle='solid'
+                borderWidth='canvas'
+                boxShadow='canvas.halo'
+                className={[styles.knob, styles.knobColumn[column], styles.knobRow[row]]}
+                height='4x'
+                pointerEvents='none'
+                position='absolute'
+                width='4x'
+              />
+            </Box>
           ))}
-        </div>
+        </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }

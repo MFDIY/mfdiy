@@ -3,7 +3,7 @@ import type { Area, Layout } from './document.js';
 import { describe, expect, it } from 'vitest';
 
 import { validateLayout } from './layout.js';
-import { findFreeStep, moveArea, resizeArea, scaleLayout, withArea } from './layoutEditing.js';
+import { moveArea, resizeArea, scaleLayout, withArea } from './layoutEditing.js';
 
 function area(column: number, row: number, columnSpan = 1, rowSpan = 1): Area {
   return { column, row, columnSpan, rowSpan };
@@ -70,25 +70,6 @@ describe('resizeArea', () => {
     const min = { columns: 3, rows: 3 };
 
     expect(resizeArea(area(2, 2), { column: 1, row: 1 }, { columns: -1, rows: 0 }, grid, min)).toEqual(area(2, 2));
-  });
-});
-
-describe('findFreeStep', () => {
-  it('moves one cell when there is room', () => {
-    expect(findFreeStep(layoutOf({ a: area(1, 1) }), 'a', { columns: 1, rows: 0 })).toEqual(area(2, 1));
-  });
-
-  it('skips over widgets in the way', () => {
-    const layout = layoutOf({ a: area(1, 1, 2, 1), b: area(3, 1, 2, 1) });
-
-    expect(findFreeStep(layout, 'a', { columns: 1, rows: 0 })).toEqual(area(5, 1, 2, 1));
-  });
-
-  it('returns undefined when nothing is free in that direction', () => {
-    const layout = layoutOf({ a: area(1, 1, 2, 1), b: area(3, 1, 3, 1) });
-
-    expect(findFreeStep(layout, 'a', { columns: 1, rows: 0 })).toBeUndefined();
-    expect(findFreeStep(layout, 'a', { columns: -1, rows: 0 })).toBeUndefined();
   });
 });
 

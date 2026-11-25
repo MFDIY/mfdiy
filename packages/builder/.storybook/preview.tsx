@@ -2,6 +2,8 @@ import type { Preview } from '@storybook/react-vite';
 
 import { builtInThemes } from '@mfdiy/instruments';
 
+import '@mfdiy/ui';
+
 /** Editing controls must stay visible on any theme: switch between them from the toolbar. */
 export default {
   globalTypes: {
@@ -15,6 +17,13 @@ export default {
       }
     }
   },
+  decorators: [
+    Story => {
+      document.documentElement.setAttribute('data-color-scheme', 'dark');
+
+      return <Story />;
+    }
+  ],
   initialGlobals: {
     theme: builtInThemes[0]?.name
   },

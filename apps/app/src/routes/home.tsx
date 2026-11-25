@@ -1,5 +1,4 @@
-import { Box, Stack, Surface, Text } from '@mfdiy/ui/components';
-import { Link } from 'react-router';
+import { Box, Stack, Surface, Text, TextLink } from '@mfdiy/ui/components';
 
 import { useConnection } from '../telemetry/TelemetryProvider.js';
 
@@ -33,10 +32,10 @@ export default function Home() {
         </Surface>
         <Stack spacing='2x'>
           <Text variant='body'>
-            <Link to='/display'>Open the display</Link>
+            <TextLink to='/display'>Open the display</TextLink>
           </Text>
           <Text variant='body'>
-            <Link to='/builder'>Open the builder</Link>
+            <TextLink to='/builder'>Open the builder</TextLink>
           </Text>
         </Stack>
       </Stack>

@@ -26,7 +26,7 @@ Widgets in a layout may not overlap, and must lie within the grid. The builder s
 
 ### Own pointer code
 
-Drag, drop and resize are built in-house on **Pointer Events** with `setPointerCapture`, not with a drag-and-drop library. Grid snapping and resizing are a small amount of code, and owning it keeps touch, pen, mouse and keyboard behaviour fully under our control.
+Drag, drop and resize are built in-house on **Pointer Events** with `setPointerCapture`, not with a drag-and-drop library. Grid snapping and resizing are a small amount of code, and owning it keeps touch, pen and mouse behaviour fully under our control.
 
 ### Interaction
 
@@ -34,7 +34,7 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 - **Resize:** corner and edge handles, at least 44 px on touch screens, never below the widget manifest's `minSize`.
 - **Add:** tap an empty cell, pick a widget from a palette, and it's placed there at its default size (shrunk to fit if needed).
 - **Touch screens:** widgets can be dragged directly, since nothing scrolls (0007). Tapping a widget selects it, which opens its properties.
-- **Without dragging (0001):** arrow keys move the selected widget, Shift + arrows resize it, and the properties panel has numeric position and size fields.
+- **Without dragging (0001):** the properties panel has numeric position and size fields. There is no keyboard editing: an MFD is an input device next to the keyboard, not driven by it.
 
 ## Why
 

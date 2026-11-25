@@ -38,6 +38,8 @@ export const backdropFilter = {
 };
 
 export const backgroundColor = {
+  'canvas.ghost': colorSchemeVars['color.surface.canvas.ghost'],
+  'canvas.handle': colorSchemeVars['color.surface.canvas.handle'],
   'button.attention': colorSchemeVars['color.surface.button.attention'],
   'button.attention-active': colorSchemeVars['color.surface.button.attention-active'],
   'button.attention-disabled': colorSchemeVars['color.surface.button.attention-disabled'],
@@ -75,6 +77,14 @@ export const backgroundColor = {
 } as const;
 
 export const backgroundImage = {
+  /** A dot on every corner of the tile, so `backgroundSize` should be the size of one cell. */
+  'canvas.dots': ['0 0', '100% 0', '0 100%', '100% 100%']
+    .map(
+      corner =>
+        `radial-gradient(circle at ${corner}, ${colorSchemeVars['color.surface.canvas.dot']} 1.5px, transparent 2px)`
+    )
+    .join(', '),
+  'canvas.ghost-invalid': `repeating-linear-gradient(45deg, ${colorSchemeVars['color.surface.canvas.ghost-invalid']} 0 6px, transparent 6px 12px)`,
   link: 'linear-gradient(to right, currentColor, color-mix(in srgb, currentColor 30%, transparent))'
 } as const;
 
@@ -86,6 +96,9 @@ export const backgroundSize = {
 } as const;
 
 export const borderColor = {
+  'canvas.ghost': colorSchemeVars['color.border.canvas.ghost'],
+  'canvas.ghost-invalid': colorSchemeVars['color.border.canvas.ghost-invalid'],
+  'canvas.handle': colorSchemeVars['color.border.canvas.handle'],
   divider: colorSchemeVars['color.border.divider'],
   'input.text': colorSchemeVars['color.border.input.text'],
   panel: colorSchemeVars['color.border.panel'],
@@ -100,6 +113,7 @@ export const borderColor = {
 export const borderStyle = ['dashed', 'hidden', 'solid'] as const;
 
 export const borderWidth = {
+  canvas: globalVars['border.width.canvas'],
   divider: '1px',
   'input.text': globalVars['border.width.input.text'],
   placeholder: globalVars['border.width.placeholder'],
@@ -108,6 +122,8 @@ export const borderWidth = {
 } as const;
 
 export const boxShadow = {
+  'canvas.halo': colorSchemeVars['color.shadow.canvas.halo'],
+  'canvas.selected': colorSchemeVars['color.shadow.canvas.selected'],
   'button.attention': colorSchemeVars['color.shadow.elevation.raised'],
   'button.attention-active': colorSchemeVars['color.shadow.elevation.depressed'],
   'button.attention-disabled': colorSchemeVars['color.shadow.elevation.base-hover'],
@@ -181,8 +197,12 @@ export const cursor = [
   'col-resize',
   'default',
   'e-resize',
+  'ew-resize',
   'grab',
   'grabbing',
+  'nesw-resize',
+  'ns-resize',
+  'nwse-resize',
   'pointer',
   'not-allowed',
   'progress',
@@ -194,6 +214,7 @@ export const cursor = [
 export const display = [
   'block',
   'flex',
+  'grid',
   'inline',
   'inline-block',
   'inline-flex',
@@ -277,6 +298,7 @@ export const height = {
   'button.large': globalVars['height.button.large'],
   'button.small': globalVars['height.button.small'],
   'button.standard': globalVars['height.button.standard'],
+  'canvas.handle': globalVars['size.canvas.handle'],
   'fit-content': 'fit-content',
   full: '100%',
   'max-content': 'max-content',
@@ -353,6 +375,8 @@ export const outlineWidth = {
 
 export const overflow = ['auto', 'clip', 'hidden', 'scroll', 'visible'] as const;
 
+export const overscrollBehavior = ['auto', 'none'] as const;
+
 export const paddingInline = {
   ...spacing,
   unset: 'unset'
@@ -424,6 +448,7 @@ export const wordBreak = ['break-word', 'break-all', 'normal'] as const;
 export const width = {
   ...spacing,
   auto: 'auto',
+  'canvas.handle': globalVars['size.canvas.handle'],
   'fit-content': 'fit-content',
   full: '100%',
   half: '50%',

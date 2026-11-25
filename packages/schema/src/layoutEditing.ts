@@ -1,6 +1,6 @@
 import type { Area, Grid, Layout } from './document.js';
 
-import { areasOverlap, canPlace, isWithinGrid } from './layout.js';
+import { areasOverlap } from './layout.js';
 
 /*
  * Pure layout edits for the builder: every function returns a new value and knows nothing about
@@ -8,7 +8,7 @@ import { areasOverlap, canPlace, isWithinGrid } from './layout.js';
  */
 
 /** The grid a new page starts with. */
-export const DEFAULT_GRID: Grid = { columns: 12, rows: 8 };
+export const DEFAULT_GRID: Grid = { columns: 24, rows: 16 };
 
 /** A size, or a distance to move or resize by, in whole cells. */
 export type CellSize = { columns: number; rows: number };
@@ -72,35 +72,6 @@ export function resizeArea(
   const row = resizeAxis(area.row, area.rowSpan, handle.row, offset.rows, grid.rows, minSize.rows);
 
   return { column: column.start, row: row.start, columnSpan: column.span, rowSpan: row.span };
-}
-
-/**
- * The nearest free position for a widget in one direction, skipping over any widgets in the way.
- * Without skipping, a keyboard user could never get past a neighbour that a drag passes over.
- * Returns undefined if there is no free position in that direction.
- */
-export function findFreeStep(layout: Layout, id: string, direction: CellSize): Area | undefined {
-  const area = layout.areas[id];
-
-  if (!area || (direction.columns === 0 && direction.rows === 0)) {
-    return undefined;
-  }
-
-  let candidate = area;
-
-  do {
-    candidate = {
-      ...candidate,
-      column: candidate.column + direction.columns,
-      row: candidate.row + direction.rows
-    };
-
-    if (canPlace(layout, candidate, id)) {
-      return candidate;
-    }
-  } while (isWithinGrid(candidate, layout.grid));
-
-  return undefined;
 }
 
 /** Scales one axis by its edges, so areas that touched before still touch and never overlap. */

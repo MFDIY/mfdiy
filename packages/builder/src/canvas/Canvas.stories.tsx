@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, widgetManifests } from '@mfdiy/instruments';
 import { DEFAULT_GRID } from '@mfdiy/schema';
+import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { Canvas } from './Canvas.js';
@@ -19,11 +20,11 @@ const layout: Layout = {
   orientation: 'any',
   grid: DEFAULT_GRID,
   areas: {
-    speed: { column: 1, row: 1, columnSpan: 4, rowSpan: 2 },
-    fuel: { column: 6, row: 1, columnSpan: 5, rowSpan: 2 },
-    gear: { column: 1, row: 4, columnSpan: 2, rowSpan: 2 },
-    esp: { column: 3, row: 4, columnSpan: 2, rowSpan: 2 },
-    doors: { column: 8, row: 6, columnSpan: 1, rowSpan: 1 }
+    speed: { column: 1, row: 1, columnSpan: 8, rowSpan: 4 },
+    fuel: { column: 11, row: 1, columnSpan: 10, rowSpan: 4 },
+    gear: { column: 1, row: 7, columnSpan: 4, rowSpan: 4 },
+    esp: { column: 5, row: 7, columnSpan: 4, rowSpan: 4 },
+    doors: { column: 15, row: 11, columnSpan: 1, rowSpan: 1 }
   }
 };
 
@@ -68,7 +69,7 @@ function Demo({ aspectRatio, initialLayout, initialSelectedId, themeName, widget
   const page: Page = { id: 'demo', name: 'Demo', widgets, layouts: [current] };
 
   return (
-    <div style={{ background: '#222', boxSizing: 'border-box', height: '100vh', padding: 24 }}>
+    <Box backgroundColor='page' height='viewport' padding='5x'>
       <Canvas
         aspectRatio={aspectRatio}
         documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
@@ -79,7 +80,7 @@ function Demo({ aspectRatio, initialLayout, initialSelectedId, themeName, widget
         renderWidget={renderWidget}
         selectedId={selectedId}
       />
-    </div>
+    </Box>
   );
 }
 

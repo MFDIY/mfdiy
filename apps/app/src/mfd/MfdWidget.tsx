@@ -1,6 +1,7 @@
 import type { WidgetInstance } from '@mfdiy/schema';
 
 import { widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
+import { Box } from '@mfdiy/ui/components';
 
 import { useConnection, useSignalValues, useWidgetAction } from '../telemetry/TelemetryProvider.js';
 
@@ -15,7 +16,11 @@ export function MfdWidget({ widget }: { widget: WidgetInstance }) {
   const manifest = widgetManifests[widget.type];
 
   if (!manifest) {
-    return <div className={styles.unknownWidget}>Unknown widget: {widget.type}</div>;
+    return (
+      <Box alignItems='center' className={styles.unknownWidget} display='flex' height='full' justifyContent='center'>
+        Unknown widget: {widget.type}
+      </Box>
+    );
   }
 
   const inputs: Partial<Record<string, ResolvedInput>> = {};

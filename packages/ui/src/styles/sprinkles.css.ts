@@ -229,6 +229,7 @@ export const unconditionalProperties = defineProperties({
     objectFit: properties.objectFit,
     objectPosition: properties.origin,
     outlineOffset: properties.spacing,
+    overscrollBehavior: properties.overscrollBehavior,
     right: properties.inset,
     textOverflow: properties.textOverflow,
     top: properties.inset,
