@@ -1,6 +1,7 @@
 export { Bar, barStates, type BarProps, type BarState } from './primitives/Bar.js';
 export { Button, buttonStatuses, type ButtonProps, type ButtonStatus } from './primitives/Button.js';
 export { Light, lightStates, type LightProps, type LightState } from './primitives/Light.js';
+export { pressHandlers } from './primitives/pressHandlers.js';
 export { Readout, type ReadoutProps } from './primitives/Readout.js';
 
 export { applyTokens } from './theme/applyTokens.js';

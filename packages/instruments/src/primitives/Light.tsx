@@ -3,6 +3,7 @@ import type { ButtonStatus } from './Button.js';
 import { clsx } from 'clsx';
 
 import * as styles from './Light.css.js';
+import { pressHandlers } from './pressHandlers.js';
 import { cell, frame } from './shared.css.js';
 
 export const lightStates = ['off', 'on', 'caution', 'warning'] as const;
@@ -28,7 +29,7 @@ export function Light({ label, state, onPress, status = 'idle', disabled = false
           data-state={state}
           data-status={status}
           disabled={disabled}
-          onClick={onPress}
+          {...pressHandlers(onPress, disabled)}
           type='button'
         >
           {label}

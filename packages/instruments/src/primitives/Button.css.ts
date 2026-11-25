@@ -23,7 +23,7 @@ export const button = style({
   letterSpacing: '0.08em',
   padding: '0 4cqmin',
   textTransform: 'uppercase',
-  touchAction: 'manipulation',
+  touchAction: 'none',
   transition: transition('background-color', 'border-color', 'box-shadow', 'transform'),
   userSelect: 'none',
 

@@ -23,4 +23,4 @@
 - Widget actions use `pointerdown`, not `click`. Keyboard activation (Enter / Space) must still work for accessibility.
 - Resting a finger on the screen fires actions; layouts should give dangerous actions a guard rather than rely on careful touches.
 - The action configuration in a document needs a hold duration and a "guarded" flag.
-- The current primitives fire on `click`; they must be changed to fire on `pointerdown`.
+- Changing pages is an action too, so the page tabs also fire on `pointerdown`.

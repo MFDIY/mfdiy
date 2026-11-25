@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 
 import * as styles from './Button.css.js';
+import { pressHandlers } from './pressHandlers.js';
 import { cell, frame } from './shared.css.js';
 
 export const buttonStatuses = ['idle', 'pending', 'ok', 'failed'] as const;
@@ -23,7 +24,7 @@ export function Button({ label, status, disabled = false, onPress }: ButtonProps
         className={clsx(frame, styles.button)}
         data-status={status}
         disabled={disabled}
-        onClick={onPress}
+        {...pressHandlers(onPress, disabled)}
         type='button'
       >
         {label}

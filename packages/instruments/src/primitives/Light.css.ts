@@ -46,7 +46,7 @@ export const pressable = style({
   appearance: 'none',
   cursor: 'pointer',
   font: 'inherit',
-  touchAction: 'manipulation',
+  touchAction: 'none',
   userSelect: 'none',
 
   selectors: {
