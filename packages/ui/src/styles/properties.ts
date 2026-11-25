@@ -149,6 +149,7 @@ export const boxShadow = {
 } as const;
 
 export const color = {
+  'canvas.handle': colorSchemeVars['color.border.canvas.handle'],
   body: colorSchemeVars['color.content.body'],
   deemphasized: colorSchemeVars['color.content.deemphasized'],
   'button.attention': colorSchemeVars['color.content.button.attention'],

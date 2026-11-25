@@ -46,8 +46,13 @@ export type CanvasProps = {
   selectedId: string | null;
   onSelect: (widgetId: string | null) => void;
   onChange: (page: Page) => void;
-  /** Cells to highlight, e.g. where a widget is about to be added. */
+  /** Where a widget is being added: marked with a plus. */
   ghost?: Area | null | undefined;
+  /**
+   * The area a widget added at this cell covers at least. Shown with a plus while hovering an empty
+   * cell, whenever a click there would add one.
+   */
+  newWidgetArea?: ((cell: Cell) => Area) | undefined;
   /**
    * Fires when an empty cell is tapped while nothing is selected: with a selection, the first tap
    * only lets go of it. Comes with where the grid is on the screen.
@@ -70,6 +75,7 @@ export function Canvas({
   onSelect,
   onChange,
   ghost,
+  newWidgetArea,
   onEmptyTap,
   renderWidget
 }: CanvasProps) {
@@ -77,6 +83,8 @@ export function Canvas({
   /** Where a press on the empty grid started, if it could become a tap. */
   const emptyPressRef = useRef<{ x: number; y: number; threshold: number } | null>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
+  /** The part of the grid under the mouse or pen, if it isn't on a widget. */
+  const [hovered, setHovered] = useState<Cell | null>(null);
 
   const minSizes = new Map(page.widgets.map(widget => [widget.id, widgetMinSize(widget, layout.grid)]));
 
@@ -148,6 +156,22 @@ export function Canvas({
     };
   }
 
+  /** The gaps between widgets aren't empty cells. */
+  function isEmpty(cell: Cell): boolean {
+    return !Object.values(layout.areas).some(area => areasOverlap(area, { ...cell, columnSpan: 1, rowSpan: 1 }));
+  }
+
+  function handleHover(event: PointerEvent) {
+    const dots = dotsRef.current?.getBoundingClientRect();
+    // Fingers don't hover. Over a widget, the target is the widget.
+    const hovering = dots && event.pointerType !== 'touch' && event.target === event.currentTarget;
+    const cell = hovering ? cellAt(event, dots) : null;
+
+    if (cell?.column !== hovered?.column || cell?.row !== hovered?.row) {
+      setHovered(cell);
+    }
+  }
+
   function handleEmptyPointerDown(event: PointerEvent) {
     emptyPressRef.current = null;
 
@@ -181,12 +205,8 @@ export function Canvas({
     }
 
     const cell = cellAt(event, dots);
-    const occupied = Object.values(layout.areas).some(area =>
-      // The gaps between widgets aren't empty cells.
-      areasOverlap(area, { ...cell, columnSpan: 1, rowSpan: 1 })
-    );
 
-    if (!occupied && Math.hypot(event.clientX - press.x, event.clientY - press.y) < press.threshold) {
+    if (isEmpty(cell) && Math.hypot(event.clientX - press.x, event.clientY - press.y) < press.threshold) {
       onEmptyTap?.(cell, dots);
     }
   }
@@ -247,6 +267,12 @@ export function Canvas({
   }
 
   const drag = gesture?.dragging ? { ...gesture, area: targetArea(gesture) } : null;
+  // Only where a click would add a widget: with a selection, it only lets go of that.
+  const invitation =
+    hovered && !gesture && !ghost && selectedId === null && onEmptyTap && isEmpty(hovered)
+      ? (newWidgetArea?.(hovered) ?? null)
+      : null;
+  const adding = ghost ?? invitation;
   const overlaps = findOverlaps(drag ? withArea(layout, drag.widgetId, drag.area) : layout);
 
   return (
@@ -293,10 +319,13 @@ export function Canvas({
         >
           <Box
             className={styles.grid}
+            cursor={invitation ? 'pointer' : 'default'}
             display='grid'
             height='full'
             onClick={handleEmptyClick}
             onPointerDown={handleEmptyPointerDown}
+            onPointerLeave={() => setHovered(null)}
+            onPointerMove={handleHover}
             position='relative'
             style={{
               gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
@@ -336,7 +365,7 @@ export function Canvas({
                 </CanvasWidget>
               );
             })}
-            {drag || ghost ? <Ghost area={drag?.area ?? (ghost as Area)} /> : null}
+            {drag ? <Ghost area={drag.area} /> : adding ? <Ghost area={adding} plus /> : null}
             {overlaps.map(({ widgetIds, area }) => (
               // Striped and dashed as well as red, so it doesn't rely on colour alone.
               <Box
@@ -358,7 +387,7 @@ export function Canvas({
               />
             ))}
           </Box>
-          {onEmptyTap && page.widgets.length === 0 && !ghost ? (
+          {onEmptyTap && page.widgets.length === 0 && !adding ? (
             <Box
               alignItems='center'
               display='flex'
@@ -378,7 +407,7 @@ export function Canvas({
   );
 }
 
-function Ghost({ area }: { area: Area }) {
+function Ghost({ area, plus = false }: { area: Area; plus?: boolean }) {
   return (
     <Box
       backgroundColor='canvas.ghost'
@@ -387,6 +416,7 @@ function Ghost({ area }: { area: Area }) {
       borderStyle='solid'
       borderWidth='canvas'
       boxShadow='canvas.halo'
+      containerType='size'
       data-canvas='ghost'
       pointerEvents='none'
       position='relative'
@@ -396,6 +426,24 @@ function Ghost({ area }: { area: Area }) {
       }}
       // Above a lifted widget, which would otherwise hide it.
       zIndex='3'
-    />
+    >
+      {plus ? (
+        <Box alignItems='center' display='flex' height='full' justifyContent='center'>
+          <Box
+            aria-hidden
+            backgroundColor='canvas.handle'
+            borderRadius='2x'
+            boxShadow='canvas.halo'
+            className={styles.plus}
+            color='canvas.handle'
+            data-canvas='plus'
+            tagName='svg'
+            viewBox='0 0 24 24'
+          >
+            <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='3' tagName='path' />
+          </Box>
+        </Box>
+      ) : null}
+    </Box>
   );
 }

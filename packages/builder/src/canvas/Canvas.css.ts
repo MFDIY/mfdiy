@@ -63,3 +63,9 @@ export const knobRow = styleVariants({
   '0': { top: '50%' },
   '1': { top: insetY }
 });
+
+/** Fits inside even the smallest area. Its ancestor is the size container. */
+export const plus = style({
+  height: 'min(36px, 70cqmin)',
+  width: 'min(36px, 70cqmin)'
+});

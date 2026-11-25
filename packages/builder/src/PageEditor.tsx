@@ -3,7 +3,7 @@ import type { Catalogue, NewWidget } from './palette/choices.js';
 import type { Area, Cell } from '@mfdiy/schema';
 
 import { widgetManifests } from '@mfdiy/instruments';
-import { addWidget, newWidgetId, placeArea } from '@mfdiy/schema';
+import { addWidget, intersectAreas, newWidgetId, placeArea } from '@mfdiy/schema';
 import { Box, popoverBeside, type PopoverPosition } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
@@ -11,7 +11,7 @@ import { Canvas } from './canvas/Canvas.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { Palette } from './palette/Palette.js';
 
-export type PageEditorProps = Omit<CanvasProps, 'ghost' | 'onEmptyTap'> & {
+export type PageEditorProps = Omit<CanvasProps, 'ghost' | 'newWidgetArea' | 'onEmptyTap'> & {
   catalogue: Catalogue;
 };
 
@@ -34,6 +34,15 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
           widgetMinSize({ id: '', type: manifest.type }, layout.grid)
         )
       : { ...cell, columnSpan: 1, rowSpan: 1 };
+  }
+
+  /** What every widget covers at least, before one is picked. */
+  function smallestPlace(cell: Cell): Area {
+    const single = { ...cell, columnSpan: 1, rowSpan: 1 };
+
+    return Object.keys(widgetManifests)
+      .map(type => place(type, cell))
+      .reduce((shared, area) => intersectAreas(shared, area) ?? single);
   }
 
   function handleEmptyTap(cell: Cell, grid: DOMRect) {
@@ -71,9 +80,8 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
     <Box containerType='size' height='full' width='full'>
       <Canvas
         {...canvasProps}
-        ghost={
-          adding && (adding.type ? place(adding.type, adding.cell) : { ...adding.cell, columnSpan: 1, rowSpan: 1 })
-        }
+        ghost={adding && (adding.type ? place(adding.type, adding.cell) : smallestPlace(adding.cell))}
+        newWidgetArea={smallestPlace}
         onEmptyTap={handleEmptyTap}
       />
       {adding ? (

@@ -38,6 +38,7 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 - **Resize:** corner and edge handles, at least 44 px on touch screens, never below the widget manifest's `minSize`.
 - **Add:** tap an empty cell to open the palette. **Pick a widget** by its looks, then **what it shows or does**, from only what suits it; skipping that places it unconnected. Labels and units come from the signal.
 - **Where it goes:** the tapped cell becomes its **top left** corner. It grows right and down to its default size, **shrinking to the free space**, so adding doesn't cause overlap. Only if not even its minimum size is free does it overlap.
+- **Before adding:** hovering an empty cell with a mouse or pen outlines what any widget would **cover at least** there, with a **[+]** in the middle. It only appears when a click would add one, so not while a widget is selected. Fingers don't hover: after the tap, the same area marks the spot while the palette is open, and grows to the picked widget's size.
 - **Letting go:** with a widget selected, the first tap on an empty cell only deselects; the next one opens the palette.
 - **Remove** the selected widget, and **undo / redo**, from the toolbar. Undo reaches past a save, and shows the page it changed.
 - **Default sizes:** manifests give default sizes as a **share of the page** (e.g. 1/6 of its width), rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density.
