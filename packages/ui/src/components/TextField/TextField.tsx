@@ -9,11 +9,10 @@ export type TextFieldProps = {
   maxLength?: number | undefined;
   /** Fires with the new value. */
   onChange: (value: string) => void;
-  placeholder?: string | undefined;
   value: string;
 };
 
-export function TextField({ label, maxLength, onChange, placeholder, value }: TextFieldProps) {
+export function TextField({ label, maxLength, onChange, value }: TextFieldProps) {
   const id = useId();
 
   return (
@@ -41,7 +40,6 @@ export function TextField({ label, maxLength, onChange, placeholder, value }: Te
         outlineStyle={{ default: 'none', focusVisible: 'solid' }}
         outlineWidth='focus-ring'
         padding='3x'
-        placeholder={placeholder}
         tagName='input'
         type='text'
         value={value}

@@ -21,6 +21,10 @@ import { widgetMinSize } from './widgetInfo.js';
 /** How far a pointer travels, in pixels, before a press becomes a drag. Fingers are less steady. */
 const DRAG_THRESHOLD = { mouse: 4, touch: 8 };
 
+function dragThreshold(pointerType: string): number {
+  return pointerType === 'mouse' ? DRAG_THRESHOLD.mouse : DRAG_THRESHOLD.touch;
+}
+
 /**
  * A press on a widget or handle, from `pointerdown` until release. Everything measured is captured
  * at the start, so the result depends only on the start and the pointer's current position.
@@ -64,9 +68,9 @@ export type CanvasProps = {
   newWidgetArea?: ((point: GridPoint) => Area) | undefined;
   /**
    * Fires when an empty cell is tapped while nothing is selected: with a selection, the first tap
-   * only lets go of it. Comes with where the grid is on the screen.
+   * only lets go of it. Comes with what was used to tap.
    */
-  onEmptyTap?: ((point: GridPoint, gridOnScreen: DOMRect) => void) | undefined;
+  onEmptyTap?: ((point: GridPoint, pointerType: string) => void) | undefined;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
 };
@@ -90,7 +94,7 @@ export function Canvas({
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
   /** Where a press on the empty grid started, if it could become a tap. */
-  const emptyPressRef = useRef<{ x: number; y: number; point: GridPoint; threshold: number } | null>(null);
+  const emptyPressRef = useRef<{ x: number; y: number; point: GridPoint; pointerType: string } | null>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   /** The part of the grid under the mouse or pen, if it isn't on a widget. */
   const [hovered, setHovered] = useState<GridPoint | null>(null);
@@ -133,7 +137,7 @@ export function Canvas({
       startY: event.clientY,
       cellWidth: dots.width / layout.grid.columns,
       cellHeight: dots.height / layout.grid.rows,
-      threshold: event.pointerType === 'mouse' ? DRAG_THRESHOLD.mouse : DRAG_THRESHOLD.touch,
+      threshold: dragThreshold(event.pointerType),
       x: 0,
       y: 0,
       dragging: false
@@ -197,7 +201,7 @@ export function Canvas({
         y: event.clientY,
         // Not from the click: those are in whole pixels, so it could differ from what hovering showed.
         point: pointAt(event, dots),
-        threshold: event.pointerType === 'mouse' ? DRAG_THRESHOLD.mouse : DRAG_THRESHOLD.touch
+        pointerType: event.pointerType
       };
     }
   }
@@ -208,16 +212,18 @@ export function Canvas({
    */
   function handleEmptyClick(event: MouseEvent) {
     const press = emptyPressRef.current;
-    const dots = dotsRef.current?.getBoundingClientRect();
 
     emptyPressRef.current = null;
 
-    if (!press || !dots || event.target !== event.currentTarget) {
+    if (!press || event.target !== event.currentTarget) {
       return;
     }
 
-    if (isEmpty(press.point) && Math.hypot(event.clientX - press.x, event.clientY - press.y) < press.threshold) {
-      onEmptyTap?.(press.point, dots);
+    if (
+      isEmpty(press.point) &&
+      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType)
+    ) {
+      onEmptyTap?.(press.point, press.pointerType);
     }
   }
 

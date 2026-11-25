@@ -68,5 +68,5 @@ type Story = StoryObj<typeof meta>;
 /** Tap an empty cell to add a widget. */
 export const EmptyPage: Story = {};
 
-/** Widgets can be added before the bridge has sent anything. */
+/** Widgets can't be added before the bridge has sent what they can be connected to. */
 export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], actions: [] } } };
