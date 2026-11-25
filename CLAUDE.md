@@ -21,6 +21,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0013: Free to play, paid to profit or to host](docs/decisions/0013-free-to-play-paid-to-profit.md)
 - [0014: Creator subscription](docs/decisions/0014-creator-subscription.md)
 - [0015: Events, groups and business offerings](docs/decisions/0015-events-groups-and-business.md)
+- [0016: Co-pilot suggestions powered by Jev](docs/decisions/0016-copilot-suggestions.md)
 
 ## Commands
 
