@@ -1,5 +1,7 @@
 import type { Preview } from '@storybook/react-vite';
 
+import '@mfdiy/ui';
+
 import { builtInThemes } from '../src/theme/themes.js';
 
 /** Theme playground: switch between built-in themes from the toolbar. */

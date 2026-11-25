@@ -12,7 +12,11 @@ export function pressHandlers(onPress: () => void, disabled = false) {
         onPress();
       }
     },
-    /** Enter, Space and assistive technology click without a pointer, which have no click count. */
+    /** A pressed button must not take the focus, or a stray Space or Enter would fire it again. */
+    onMouseDown(event: MouseEvent) {
+      event.preventDefault();
+    },
+    /** Assistive technology clicks without a pointer, which has no click count. */
     onClick(event: MouseEvent) {
       if (event.detail === 0 && !disabled) {
         onPress();

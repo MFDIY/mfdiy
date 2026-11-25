@@ -7,7 +7,6 @@ import { glow, transition } from './styleHelpers.js';
 export const bar = style({
   border: `${token('size.border')} solid ${token('outline')}`,
   borderRadius: token('size.radius'),
-  display: 'grid',
   gap: '4cqmin',
   gridTemplateRows: 'auto 1fr auto',
   padding: '6cqmin'
@@ -27,18 +26,14 @@ export const value = style({
 });
 
 export const track = style({
-  alignSelf: 'end',
   backgroundColor: token('bar.track'),
   borderRadius: token('size.radius'),
-  height: 'clamp(4px, 8cqmin, 14px)',
-  overflow: 'hidden'
+  height: 'clamp(4px, 8cqmin, 14px)'
 });
 
 export const fill = style({
   backgroundColor: token('bar.fill'),
   boxShadow: glow(token('bar.fill')),
-  height: '100%',
-  transformOrigin: 'left center',
   transition: transition('transform', 'background-color'),
 
   selectors: {

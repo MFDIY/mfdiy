@@ -1,8 +1,6 @@
-import { clsx } from 'clsx';
-
 import * as styles from './Button.css.js';
+import { Frame } from './Frame.js';
 import { pressHandlers } from './pressHandlers.js';
-import { cell, frame } from './shared.css.js';
 
 export const buttonStatuses = ['idle', 'pending', 'ok', 'failed'] as const;
 
@@ -19,16 +17,22 @@ export type ButtonProps = {
 /** A touch-friendly button that triggers an action. */
 export function Button({ label, status, disabled = false, onPress }: ButtonProps) {
   return (
-    <div className={cell}>
-      <button
-        className={clsx(frame, styles.button)}
-        data-status={status}
-        disabled={disabled}
-        {...pressHandlers(onPress, disabled)}
-        type='button'
-      >
-        {label}
-      </button>
-    </div>
+    <Frame
+      {...pressHandlers(onPress, disabled)}
+      alignItems='center'
+      appearance='none'
+      className={styles.button}
+      cursor={{ default: 'pointer', disabled: 'not-allowed' }}
+      data-status={status}
+      disabled={disabled}
+      display='flex'
+      justifyContent='center'
+      tagName='button'
+      touchAction='none'
+      type='button'
+      userSelect='none'
+    >
+      {label}
+    </Frame>
   );
 }

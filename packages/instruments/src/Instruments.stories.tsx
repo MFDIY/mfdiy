@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { Box } from '@mfdiy/ui/components';
+
 import { Bar } from './primitives/Bar.js';
 import { Button } from './primitives/Button.js';
 import { Light } from './primitives/Light.js';
@@ -12,11 +14,11 @@ function Showcase({ themeName }: { themeName: string }) {
   const theme = builtInThemes.find(candidate => candidate.name === themeName) ?? builtInThemes[0];
 
   return (
-    <div
+    <Box
       className={root}
+      display='grid'
       style={{
         ...applyTokens(theme?.tokens),
-        display: 'grid',
         gap: '12px',
         gridAutoRows: '96px',
         gridTemplateColumns: 'repeat(4, 1fr)',
@@ -28,18 +30,18 @@ function Showcase({ themeName }: { themeName: string }) {
       <Light label='Decpl' state='off' />
       <Light label='QT Low' state='caution' />
       <Light label='Hull' state='warning' />
-      <div style={{ gridColumn: 'span 2' }}>
+      <Box style={{ gridColumn: 'span 2' }}>
         <Bar displayValue='92%' label='Shield front' state='normal' value={0.92} />
-      </div>
-      <div style={{ gridColumn: 'span 2' }}>
+      </Box>
+      <Box style={{ gridColumn: 'span 2' }}>
         <Bar displayValue='18%' label='Quantum fuel' state='caution' value={0.18} />
-      </div>
-      <div style={{ gridColumn: 'span 2' }}>
+      </Box>
+      <Box style={{ gridColumn: 'span 2' }}>
         <Readout label='SCM speed' unit='m/s' value='212' />
-      </div>
+      </Box>
       <Button label='Gear' onPress={() => {}} status='idle' />
       <Button label='Doors' onPress={() => {}} status='failed' />
-    </div>
+    </Box>
   );
 }
 

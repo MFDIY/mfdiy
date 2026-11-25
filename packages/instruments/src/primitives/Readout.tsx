@@ -1,7 +1,8 @@
-import { clsx } from 'clsx';
+import { Box } from '@mfdiy/ui/components';
 
+import { Frame } from './Frame.js';
+import { Label } from './Label.js';
 import * as styles from './Readout.css.js';
-import { cell, frame, label as labelStyle } from './shared.css.js';
 
 export type ReadoutProps = {
   label: string;
@@ -12,14 +13,16 @@ export type ReadoutProps = {
 /** A labelled value, e.g. speed or aUEC balance. */
 export function Readout({ label, value, unit }: ReadoutProps) {
   return (
-    <div className={cell}>
-      <div className={clsx(frame, styles.readout)}>
-        <div className={clsx(labelStyle, styles.label)}>{label}</div>
-        <div className={styles.value}>
-          {value}
-          {unit ? <span className={styles.unit}>{unit}</span> : null}
-        </div>
-      </div>
-    </div>
+    <Frame className={styles.readout} display='flex' flexDirection='column' justifyContent='center'>
+      <Label className={styles.label}>{label}</Label>
+      <Box className={styles.value} overflow='hidden' textOverflow='ellipsis' whiteSpace='nowrap'>
+        {value}
+        {unit ? (
+          <Box className={styles.unit} tagName='span'>
+            {unit}
+          </Box>
+        ) : null}
+      </Box>
+    </Frame>
   );
 }

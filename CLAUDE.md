@@ -71,10 +71,10 @@ Root (npm workspaces monorepo, Node 24):
 ## Code rules
 
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
-- In `apps/app` and `packages/builder`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). Before using `className`, check `packages/ui/src/styles/properties.ts`: if a style is missing, consider adding it there.
+- In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). Before using `className`, check `packages/ui/src/styles/properties.ts`: if a style is missing, consider adding it there. In MFD primitives, looks come from `--mfd-*` tokens through `className`.
 - Pressable MFD elements use `pressHandlers` from `@mfdiy/instruments`, so they fire on touch (0010).
 - In MFD styles, always read tokens through `token()` from `@mfdiy/instruments`, never `vars` directly; it resolves the base → semantic → component fallback chain at the point of use.
-- Container query units resolve against an element's _ancestor_ container: put `cqmin` sizing on the inner `frame`, never on the `cell` container itself.
+- Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.
 - `useEffect` is for synchronising with external systems only; derive values during render.
 
 ## Planned architecture
