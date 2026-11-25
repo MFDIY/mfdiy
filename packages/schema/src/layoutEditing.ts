@@ -157,31 +157,77 @@ export function bringToFront(page: Page, id: string): Page {
   };
 }
 
-/** A position on the grid, in cells. */
-export type Cell = { column: number; row: number };
+/** A point on the grid, in cells from its top left corner: `{ x: 0.5, y: 0.5 }` is the middle of the first cell. */
+export type GridPoint = { x: number; y: number };
+
+/** The cell a point is in. */
+export function cellAt({ x, y }: GridPoint, grid: Grid): Area {
+  return {
+    column: clamp(Math.floor(x) + 1, 1, grid.columns),
+    row: clamp(Math.floor(y) + 1, 1, grid.rows),
+    columnSpan: 1,
+    rowSpan: 1
+  };
+}
+
+/** Where one axis may start so that it covers `from` to `to` and stays within `size` cells. */
+function startRange(span: number, from: number, to: number, size: number) {
+  return { first: Math.max(to - span + 1, 1), last: Math.min(from, size - span + 1) };
+}
 
 /**
- * Where a new widget goes: from `cell` right and down to its wanted size, or as much of that as is
- * free. If not even `minSize` is free, it gets that size anyway and overlaps others.
+ * Where a new widget goes: centred on `point` at its wanted size. Beside other widgets and the edges
+ * of the grid it slides to keep that size, and only shrinks if nothing bigger fits. It always covers
+ * `around`: the cell at the point, unless given. If not even `minSize` is free, it gets that size
+ * anyway and overlaps others.
  */
-export function placeArea(layout: Layout, cell: Cell, wanted: CellSize, minSize: CellSize = SINGLE_CELL): Area {
+export function placeArea(
+  layout: Layout,
+  point: GridPoint,
+  wanted: CellSize,
+  { minSize = SINGLE_CELL, around = cellAt(point, layout.grid) }: { minSize?: CellSize; around?: Area } = {}
+): Area {
   const { grid } = layout;
+  const aroundEnd = { column: around.column + around.columnSpan - 1, row: around.row + around.rowSpan - 1 };
+
+  const smallest = {
+    columns: Math.min(Math.max(minSize.columns, around.columnSpan), grid.columns),
+    rows: Math.min(Math.max(minSize.rows, around.rowSpan), grid.rows)
+  };
+
+  const sizes: CellSize[] = [];
+
+  for (let columns = smallest.columns; columns <= Math.min(wanted.columns, grid.columns); columns++) {
+    for (let rows = smallest.rows; rows <= Math.min(wanted.rows, grid.rows); rows++) {
+      sizes.push({ columns, rows });
+    }
+  }
+
+  // Biggest first, so the first one that fits somewhere ends the search.
+  sizes.sort((a, b) => b.columns * b.rows - a.columns * a.rows);
+
   const placed = Object.values(layout.areas);
   let best: Area | undefined;
+  let bestDistance = Infinity;
 
-  // Growing one row at a time only ever makes the widest free span narrower.
-  let widest = Math.min(wanted.columns, grid.columns - cell.column + 1);
-  const tallest = Math.min(wanted.rows, grid.rows - cell.row + 1);
-
-  for (let rowSpan = 1; rowSpan <= tallest; rowSpan++) {
-    while (widest > 0 && placed.some(other => areasOverlap({ ...cell, columnSpan: widest, rowSpan }, other))) {
-      widest--;
+  for (const { columns: columnSpan, rows: rowSpan } of sizes) {
+    if (best && columnSpan * rowSpan < best.columnSpan * best.rowSpan) {
+      break;
     }
 
-    const bigEnough = widest >= Math.min(minSize.columns, grid.columns) && rowSpan >= Math.min(minSize.rows, grid.rows);
+    const columns = startRange(columnSpan, around.column, aroundEnd.column, grid.columns);
+    const rows = startRange(rowSpan, around.row, aroundEnd.row, grid.rows);
 
-    if (widest > 0 && bigEnough && widest * rowSpan > (best ? best.columnSpan * best.rowSpan : 0)) {
-      best = { ...cell, columnSpan: widest, rowSpan };
+    for (let row = rows.first; row <= rows.last; row++) {
+      for (let column = columns.first; column <= columns.last; column++) {
+        const candidate = { column, row, columnSpan, rowSpan };
+        const distance = (column - 1 + columnSpan / 2 - point.x) ** 2 + (row - 1 + rowSpan / 2 - point.y) ** 2;
+
+        if (distance < bestDistance && !placed.some(other => areasOverlap(candidate, other))) {
+          best = candidate;
+          bestDistance = distance;
+        }
+      }
     }
   }
 
@@ -189,14 +235,15 @@ export function placeArea(layout: Layout, cell: Cell, wanted: CellSize, minSize:
     return best;
   }
 
-  const smallest = {
-    ...cell,
-    columnSpan: Math.min(minSize.columns, grid.columns),
-    rowSpan: Math.min(minSize.rows, grid.rows)
-  };
+  const columns = startRange(smallest.columns, around.column, aroundEnd.column, grid.columns);
+  const rows = startRange(smallest.rows, around.row, aroundEnd.row, grid.rows);
 
-  // Moved inwards if it would reach beyond the grid.
-  return moveArea(smallest, { columns: 0, rows: 0 }, grid);
+  return {
+    column: clamp(Math.round(point.x - smallest.columns / 2) + 1, columns.first, columns.last),
+    row: clamp(Math.round(point.y - smallest.rows / 2) + 1, rows.first, rows.last),
+    columnSpan: smallest.columns,
+    rowSpan: smallest.rows
+  };
 }
 
 /** An id no widget on the page has, e.g. `bar-2`. */
