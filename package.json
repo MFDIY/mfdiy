@@ -6,10 +6,10 @@
   "homepage": "https://mfdiy.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mdingena/mfdiy.git"
+    "url": "git+https://github.com/MFDIY/mfdiy.git"
   },
   "bugs": {
-    "url": "https://github.com/mdingena/mfdiy/issues"
+    "url": "https://github.com/MFDIY/mfdiy/issues"
   },
   "license": "MIT",
   "type": "module",
