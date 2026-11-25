@@ -1,13 +1,24 @@
 import { Box } from '@mfdiy/ui/components';
-import { useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 
+import { DocumentPlaceholder } from '../documents/DocumentPlaceholder.js';
+import { useWatchedDocument } from '../documents/DocumentsProvider.js';
 import { MfdRenderer } from '../mfd/MfdRenderer.js';
-import { demoDocument } from '../mfd/demoDocument.js';
 
-/** Full-screen MFD. Pages are kept in the URL so a refresh stays on the same page. */
+/**
+ * Full-screen MFD, following every save. The profile and page are in the address, so a refresh or
+ * bookmark opens the same ones.
+ */
 export default function Display() {
+  const { id = '' } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const pageId = searchParams.get('page') ?? demoDocument.pages[0]?.id ?? '';
+  const watched = useWatchedDocument(id);
+
+  if (watched.status !== 'ready') {
+    return <DocumentPlaceholder status={watched.status} />;
+  }
+
+  const { document } = watched.stored;
 
   return (
     <Box
@@ -19,9 +30,9 @@ export default function Display() {
       width='viewport'
     >
       <MfdRenderer
-        document={demoDocument}
+        document={document}
         onPageChange={page => setSearchParams({ page }, { replace: true })}
-        pageId={pageId}
+        pageId={searchParams.get('page') ?? document.pages[0]?.id ?? ''}
       />
     </Box>
   );

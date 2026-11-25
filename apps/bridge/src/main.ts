@@ -2,18 +2,25 @@ import { starCitizen } from '@mfdiy/adapter-star-citizen';
 import { existsSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { networkInterfaces } from 'node:os';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import sirv from 'sirv';
 import { WebSocketServer } from 'ws';
 
 import { createHub } from './hub.js';
+import { defaultDataDirectory, openLibrary } from './library.js';
+import { isAllowedOrigin } from './origin.js';
 import { createSimulator } from './simulator.js';
 
 const DEFAULT_PORTS = [80, 8420];
 
+/** Room for a very large document; anything bigger closes the connection. */
+const MAX_MESSAGE_BYTES = 1024 * 1024;
+
 const { values: args } = parseArgs({
   options: {
+    data: { type: 'string' },
     port: { type: 'string' },
     'no-static': { type: 'boolean', default: false },
     static: { type: 'string', default: fileURLToPath(new URL('../../app/build/client', import.meta.url)) }
@@ -22,7 +29,9 @@ const { values: args } = parseArgs({
 
 // Only the simulator exists so far. Connecting to the game's gRPC stream is the next step.
 const source = createSimulator(starCitizen);
-const hub = createHub(source);
+const dataDirectory = args.data ? resolve(args.data) : defaultDataDirectory();
+const library = await openLibrary(dataDirectory, source.adapter.starterDocuments);
+const hub = createHub(source, library);
 
 const serveApp =
   !args['no-static'] && existsSync(args.static) ? sirv(args.static, { single: true, etag: true }) : undefined;
@@ -38,10 +47,10 @@ const server = createServer((request, response) => {
   response.end('MFDIY bridge is running. The app is not built yet: run `npm run build` in the repository root.\n');
 });
 
-const sockets = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
+const sockets = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE_BYTES });
 
 server.on('upgrade', (request, socket, head) => {
-  if (new URL(request.url ?? '/', 'http://localhost').pathname !== '/ws') {
+  if (new URL(request.url ?? '/', 'http://localhost').pathname !== '/ws' || !isAllowedOrigin(request.headers)) {
     socket.destroy();
 
     return;
@@ -53,7 +62,7 @@ server.on('upgrade', (request, socket, head) => {
 const ports = args.port ? [Number(args.port)] : DEFAULT_PORTS;
 
 function listen(server: Server, [port, ...fallbacks]: number[]): Promise<number> {
-  return new Promise((resolve, reject) => {
+  return new Promise((settle, reject) => {
     if (port === undefined) {
       reject(new Error('No port available.'));
 
@@ -62,13 +71,13 @@ function listen(server: Server, [port, ...fallbacks]: number[]): Promise<number>
 
     server.once('error', (error: NodeJS.ErrnoException) => {
       if ((error.code === 'EADDRINUSE' || error.code === 'EACCES') && fallbacks.length > 0) {
-        resolve(listen(server, fallbacks));
+        settle(listen(server, fallbacks));
       } else {
         reject(error);
       }
     });
 
-    server.listen(port, () => resolve(port));
+    server.listen(port, () => settle(port));
   });
 }
 
@@ -85,6 +94,8 @@ console.log(serveApp ? `Open the MFD on any device on your network:` : 'Telemetr
 for (const address of [`http://localhost${suffix}`, ...lanAddresses]) {
   console.log(`  ${address}`);
 }
+
+console.log(`Profiles are saved in ${dataDirectory}`);
 
 function shutdown() {
   hub.stop();

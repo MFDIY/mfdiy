@@ -4,6 +4,7 @@ import {
   type ActionStatus,
   type ClientMessage,
   type HelloMessage,
+  type ServerMessage,
   type SignalValue
 } from '@mfdiy/schema';
 import * as v from 'valibot';
@@ -34,6 +35,7 @@ export class TelemetryStore {
 
   #connection: Connection = { status: 'closed', hello: undefined };
   #connectionListeners = new Set<() => void>();
+  #messageListeners = new Set<(message: ServerMessage) => void>();
 
   #values = new Map<string, SignalValue>();
   #versions = new Map<string, number>();
@@ -68,6 +70,19 @@ export class TelemetryStore {
     this.#connectionListeners.add(listener);
 
     return () => this.#connectionListeners.delete(listener);
+  };
+
+  isOpen = (): boolean => this.#connection.status === 'open';
+
+  /** Everything the bridge sends, for stores that share this connection. */
+  subscribeMessages = (listener: (message: ServerMessage) => void): (() => void) => {
+    this.#messageListeners.add(listener);
+
+    return () => this.#messageListeners.delete(listener);
+  };
+
+  send = (message: ClientMessage) => {
+    this.#socket?.send(JSON.stringify(message));
   };
 
   /* ---------------- Signals ---------------- */
@@ -114,7 +129,7 @@ export class TelemetryStore {
   /* ---------------- Actions ---------------- */
 
   triggerAction(action: string, holdMs?: number): Promise<ActionOutcome> {
-    if (this.#connection.status !== 'open') {
+    if (!this.isOpen()) {
       return Promise.resolve('disconnected');
     }
 
@@ -133,7 +148,7 @@ export class TelemetryStore {
         resolve(outcome);
       });
 
-      this.#socket?.send(JSON.stringify(message));
+      this.send(message);
     });
   }
 
@@ -207,6 +222,10 @@ export class TelemetryStore {
       case 'action-result':
         this.#pendingActions.get(message.requestId)?.(message.status);
         break;
+    }
+
+    for (const listener of this.#messageListeners) {
+      listener(message);
     }
   }
 

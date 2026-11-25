@@ -5,7 +5,7 @@
   "description": "Runs on the gaming PC: streams game telemetry to MFDs on the local network and forwards their actions.",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts --port 8420 --no-static",
+    "dev": "tsx watch src/main.ts --port 8420 --no-static --data .data",
     "start": "tsx src/main.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

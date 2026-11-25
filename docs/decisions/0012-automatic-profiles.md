@@ -17,9 +17,9 @@ Exact field names and real values (display names or internal codes, how manufact
 
 ### Profiles and conditions
 
-- A **profile** pairs a layout (MFD document) with an optional theme, plus **conditions** that say when it activates automatically.
+- A **profile** (a saved MFD document, 0019) has **conditions** that say when it activates automatically. It never includes a theme.
 - The display switches to the best-matching profile whenever the game context changes: entering a ship, moving to a turret, getting out and walking around.
-- **Theme rules are separate from layout rules**, so a favourite layout can wear different colours per manufacturer or ship.
+- **Theme rules are separate from profile rules**: themes have conditions of their own, so one profile can be used in many ships and wear different colours and other token values per manufacturer or ship.
 
 ### Conditions are generic
 
@@ -44,7 +44,7 @@ Conditions are built from **context signals**, not hard-coded game concepts, so 
 
 ### Themes and trademarks
 
-Conditions may use manufacturer names, since they come from the game's data. **Built-in themes must not copy manufacturers' names, logos or brand styling** (see the trademark rule in CLAUDE.md); they get generic names (e.g. "Industrial amber"). Users can map themes to manufacturers themselves and share their own.
+Conditions may use manufacturer names, since they come from the game's data. **Built-in themes may use colours and other token values inspired by a manufacturer, but not its name, logo, artwork or fonts** (see the trademark rule in CLAUDE.md); they get generic names (e.g. "Industrial Amber") and are never promoted as a manufacturer's theme. Users can map themes to manufacturers themselves and share their own.
 
 ## Why
 
@@ -56,7 +56,7 @@ Conditions may use manufacturer names, since they come from the game's data. **B
 
 - The Star Citizen adapter gains context signals (vehicle name, manufacturer, type; seat, role, locomotion) once real values are known.
 - The bridge remembers context values it has seen, to offer them in the builder.
-- The document format needs a library level above documents: documents, themes, profiles and their conditions.
+- The library (0019) also needs to hold themes, and the conditions of profiles and themes.
 - Specificity ranking is part of the adapter contract.
 
 Status stays **Proposed** until real telemetry values are known and the library format is designed.

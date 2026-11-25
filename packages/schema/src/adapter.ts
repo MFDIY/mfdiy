@@ -1,3 +1,4 @@
+import type { MfdDocument } from './document.js';
 import type { ActionDefinition, GameInfo, SignalDefinition } from './signals.js';
 
 /**
@@ -11,4 +12,6 @@ export type GameAdapter = {
   game: GameInfo;
   signals: SignalDefinition[];
   actions: ActionDefinition[];
+  /** What a new library starts with, so there is something to look at and edit. */
+  starterDocuments: MfdDocument[];
 };

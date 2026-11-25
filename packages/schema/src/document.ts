@@ -91,9 +91,11 @@ export const PageSchema = v.pipe(
 
 export type Page = v.InferOutput<typeof PageSchema>;
 
+export const MAX_DOCUMENT_NAME_LENGTH = 64;
+
 export const MfdDocumentSchema = v.object({
   schema: v.literal(DOCUMENT_SCHEMA_VERSION),
-  name: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+  name: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_DOCUMENT_NAME_LENGTH)),
   /** The game whose signals and actions this document binds to. */
   game: IdSchema,
   pages: v.pipe(v.array(PageSchema), v.minLength(1)),

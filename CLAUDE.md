@@ -24,6 +24,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0016: Co-pilot suggestions powered by Jev](docs/decisions/0016-copilot-suggestions.md)
 - [0017: Billing with Stripe](docs/decisions/0017-billing-with-stripe.md)
 - [0018: Widget primitives](docs/decisions/0018-widget-primitives.md) (Proposed)
+- [0019: Saving profiles](docs/decisions/0019-saving-profiles.md)
 
 ## Working with the maintainer
 
@@ -33,13 +34,12 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 ## Current state
 
-Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a display rendering a demo document, and a builder canvas (select, move, resize) editing the demo in memory. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
+Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder canvas (select, move, resize) editing and saving one. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
 
 Next steps:
 
-1. **Saving documents.** The builder edits the demo in memory and the display renders its own hard-coded copy. Not decided yet: where documents live. Proposed: on the bridge, so an edit on one device updates every display; the alternative is a copy per browser, simpler but without sync.
-2. **Rest of the builder** (0006–0008): palette, properties, undo / redo, grid size control, preview switcher, zoom.
-3. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
+1. **Rest of the builder** (0006–0008): palette, properties, pages, undo / redo, grid size control, preview switcher, zoom. Until the palette exists, a new profile is an empty page; duplicate the demo to have something to edit.
+2. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
 
 The repository is public in the `MFDIY` org, and the landing page is live at https://mfdiy.app (HTTPS enforced).
 
@@ -53,20 +53,20 @@ Root (npm workspaces monorepo, Node 24):
 
 - `npm run dev`: bridge (simulator, port 8420) and app dev server (http://localhost:4000, proxies `/ws` to the bridge)
 - `npm run build`: build all workspaces; the bridge serves `apps/app/build/client`
-- `npm start`: run the bridge, serving the built app on port 80, falling back to 8420 (`npm start -- --port 1234` to choose)
+- `npm start`: run the bridge, serving the built app on port 80, falling back to 8420 (`npm start -- --port 1234` to choose, `--data <folder>` for where profiles are saved)
 - `npm run typecheck`, `npm run lint`, `npm run format`
 - `npm test`: Vitest across workspaces
 - `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments` / `-w @mfdiy/builder`: Storybook (ports 6006 / 6007 / 6008)
 
 ## Layout
 
-- `apps/app`: builder and display (React Router 7, SPA mode). Telemetry lives in `src/telemetry/TelemetryStore.ts`, outside React.
-- `apps/bridge`: Node bridge. `source.ts` is the telemetry source interface; only the simulator exists so far.
+- `apps/app`: builder and display (React Router 7, SPA mode). Telemetry lives in `src/telemetry/TelemetryStore.ts`, outside React; saved documents in `src/documents/DocumentStore.ts`, over the same connection.
+- `apps/bridge`: Node bridge. `source.ts` is the telemetry source interface; only the simulator exists so far. `library.ts` saves documents; during development in `apps/bridge/.data`.
 - `packages/schema`: Valibot schemas for every public format: signals, bridge protocol, theme tokens, documents.
 - `packages/instruments`: MFD primitives (pure), widgets and manifests (data-aware), the `--mfd-*` theme contract.
 - `packages/builder`: the builder's canvas, independent of the page hosting it. Develop it in Storybook first.
 - `packages/ui`: builder design system, forked from Bonsai (`manage.vet`). One-way fork; prune freely.
-- `packages/adapter-star-citizen`: Star Citizen signal and action catalogue.
+- `packages/adapter-star-citizen`: Star Citizen signal and action catalogue, and the starter documents a new library gets.
 - `packages/config`: shared TypeScript config.
 
 ## Code rules

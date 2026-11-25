@@ -1,7 +1,9 @@
 import type { MfdDocument } from '@mfdiy/schema';
 
-/** A hand-written document used until the builder can create one. */
-export const demoDocument: MfdDocument = {
+import { DEFAULT_GRID, scaleLayout } from '@mfdiy/schema';
+
+/** Hand-written on coarse grids, which are easier to read. */
+const demo: MfdDocument = {
   schema: 1,
   name: 'Demo',
   game: 'star-citizen',
@@ -152,3 +154,13 @@ export const demoDocument: MfdDocument = {
     }
   ]
 };
+
+export const starterDocuments: MfdDocument[] = [
+  {
+    ...demo,
+    pages: demo.pages.map(page => ({
+      ...page,
+      layouts: page.layouts.map(layout => scaleLayout(layout, DEFAULT_GRID))
+    }))
+  }
+];
