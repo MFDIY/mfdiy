@@ -1,7 +1,16 @@
-import type { Area, Cell, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
+import type { Area, GridPoint, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, mfdRoot } from '@mfdiy/instruments';
-import { areasEqual, areasOverlap, bringToFront, findOverlaps, moveArea, resizeArea, withArea } from '@mfdiy/schema';
+import {
+  areasEqual,
+  areasOverlap,
+  bringToFront,
+  cellAt,
+  findOverlaps,
+  moveArea,
+  resizeArea,
+  withArea
+} from '@mfdiy/schema';
 import { Box, Text } from '@mfdiy/ui/components';
 import { useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 
@@ -46,13 +55,18 @@ export type CanvasProps = {
   selectedId: string | null;
   onSelect: (widgetId: string | null) => void;
   onChange: (page: Page) => void;
-  /** Cells to highlight, e.g. where a widget is about to be added. */
+  /** Where a widget is being added: marked with a plus. */
   ghost?: Area | null | undefined;
+  /**
+   * The area a widget added at this point covers at least. Shown with a plus while hovering an empty
+   * cell, whenever a click there would add one.
+   */
+  newWidgetArea?: ((point: GridPoint) => Area) | undefined;
   /**
    * Fires when an empty cell is tapped while nothing is selected: with a selection, the first tap
    * only lets go of it. Comes with where the grid is on the screen.
    */
-  onEmptyTap?: ((cell: Cell, gridOnScreen: DOMRect) => void) | undefined;
+  onEmptyTap?: ((point: GridPoint, gridOnScreen: DOMRect) => void) | undefined;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
 };
@@ -70,13 +84,16 @@ export function Canvas({
   onSelect,
   onChange,
   ghost,
+  newWidgetArea,
   onEmptyTap,
   renderWidget
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
   /** Where a press on the empty grid started, if it could become a tap. */
-  const emptyPressRef = useRef<{ x: number; y: number; threshold: number } | null>(null);
+  const emptyPressRef = useRef<{ x: number; y: number; point: GridPoint; threshold: number } | null>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
+  /** The part of the grid under the mouse or pen, if it isn't on a widget. */
+  const [hovered, setHovered] = useState<GridPoint | null>(null);
 
   const minSizes = new Map(page.widgets.map(widget => [widget.id, widgetMinSize(widget, layout.grid)]));
 
@@ -137,21 +154,38 @@ export function Canvas({
     setGesture(next);
   }
 
-  function cellAt(event: MouseEvent, dots: DOMRect): Cell {
-    const column = Math.floor(((event.clientX - dots.left) / dots.width) * layout.grid.columns) + 1;
-    const row = Math.floor(((event.clientY - dots.top) / dots.height) * layout.grid.rows) + 1;
-
-    // The outer edges of the dots are just beyond the grid.
+  /** The nearest quarter or three quarters of a cell: where things go never depends on more than that. */
+  function pointAt(event: MouseEvent, dots: DOMRect): GridPoint {
     return {
-      column: Math.min(Math.max(column, 1), layout.grid.columns),
-      row: Math.min(Math.max(row, 1), layout.grid.rows)
+      x: snapAxis(((event.clientX - dots.left) / dots.width) * layout.grid.columns, layout.grid.columns),
+      y: snapAxis(((event.clientY - dots.top) / dots.height) * layout.grid.rows, layout.grid.rows)
     };
   }
 
+  /** The gaps between widgets aren't empty cells. */
+  function isEmpty(point: GridPoint): boolean {
+    const cell = cellAt(point, layout.grid);
+
+    return !Object.values(layout.areas).some(area => areasOverlap(area, cell));
+  }
+
+  function handleHover(event: PointerEvent) {
+    const dots = dotsRef.current?.getBoundingClientRect();
+    // Fingers don't hover. Over a widget, the target is the widget.
+    const hovering = dots && event.pointerType !== 'touch' && event.target === event.currentTarget;
+    const point = hovering ? pointAt(event, dots) : null;
+
+    if (point?.x !== hovered?.x || point?.y !== hovered?.y) {
+      setHovered(point);
+    }
+  }
+
   function handleEmptyPointerDown(event: PointerEvent) {
+    const dots = dotsRef.current?.getBoundingClientRect();
+
     emptyPressRef.current = null;
 
-    if (event.target !== event.currentTarget || gesture) {
+    if (event.target !== event.currentTarget || gesture || !dots) {
       return;
     }
 
@@ -161,6 +195,8 @@ export function Canvas({
       emptyPressRef.current = {
         x: event.clientX,
         y: event.clientY,
+        // Not from the click: those are in whole pixels, so it could differ from what hovering showed.
+        point: pointAt(event, dots),
         threshold: event.pointerType === 'mouse' ? DRAG_THRESHOLD.mouse : DRAG_THRESHOLD.touch
       };
     }
@@ -180,14 +216,8 @@ export function Canvas({
       return;
     }
 
-    const cell = cellAt(event, dots);
-    const occupied = Object.values(layout.areas).some(area =>
-      // The gaps between widgets aren't empty cells.
-      areasOverlap(area, { ...cell, columnSpan: 1, rowSpan: 1 })
-    );
-
-    if (!occupied && Math.hypot(event.clientX - press.x, event.clientY - press.y) < press.threshold) {
-      onEmptyTap?.(cell, dots);
+    if (isEmpty(press.point) && Math.hypot(event.clientX - press.x, event.clientY - press.y) < press.threshold) {
+      onEmptyTap?.(press.point, dots);
     }
   }
 
@@ -203,14 +233,14 @@ export function Canvas({
       return;
     }
 
-    const cell = cellAt(event, dots);
+    const cell = cellAt(pointAt(event, dots), layout.grid);
 
     const stack = page.widgets
       .map(widget => widget.id)
       .filter(id => {
         const area = layout.areas[id];
 
-        return area && areasOverlap(area, { ...cell, columnSpan: 1, rowSpan: 1 });
+        return area && areasOverlap(area, cell);
       })
       // Later widgets are on top.
       .reverse();
@@ -247,6 +277,12 @@ export function Canvas({
   }
 
   const drag = gesture?.dragging ? { ...gesture, area: targetArea(gesture) } : null;
+  // Only where a click would add a widget: with a selection, it only lets go of that.
+  const invitation =
+    hovered && !gesture && !ghost && selectedId === null && onEmptyTap && isEmpty(hovered)
+      ? (newWidgetArea?.(hovered) ?? null)
+      : null;
+  const marked = ghost ?? invitation;
   const overlaps = findOverlaps(drag ? withArea(layout, drag.widgetId, drag.area) : layout);
 
   return (
@@ -293,10 +329,13 @@ export function Canvas({
         >
           <Box
             className={styles.grid}
+            cursor={invitation ? 'pointer' : 'default'}
             display='grid'
             height='full'
             onClick={handleEmptyClick}
             onPointerDown={handleEmptyPointerDown}
+            onPointerLeave={() => setHovered(null)}
+            onPointerMove={handleHover}
             position='relative'
             style={{
               gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
@@ -336,7 +375,9 @@ export function Canvas({
                 </CanvasWidget>
               );
             })}
-            {drag || ghost ? <Ghost area={drag?.area ?? (ghost as Area)} /> : null}
+            {drag ? <Ghost area={drag.area} /> : ghost ? <Ghost area={ghost} /> : null}
+            {invitation ? <Ghost area={invitation} quiet /> : null}
+            {marked ? <Plus area={marked} /> : null}
             {overlaps.map(({ widgetIds, area }) => (
               // Striped and dashed as well as red, so it doesn't rely on colour alone.
               <Box
@@ -358,7 +399,7 @@ export function Canvas({
               />
             ))}
           </Box>
-          {onEmptyTap && page.widgets.length === 0 && !ghost ? (
+          {onEmptyTap && page.widgets.length === 0 && !marked ? (
             <Box
               alignItems='center'
               display='flex'
@@ -378,15 +419,21 @@ export function Canvas({
   );
 }
 
-function Ghost({ area }: { area: Area }) {
+type GhostProps = {
+  area: Area;
+  /** Only an outline, for what follows the pointer around. */
+  quiet?: boolean;
+};
+
+function Ghost({ area, quiet = false }: GhostProps) {
   return (
     <Box
-      backgroundColor='canvas.ghost'
+      backgroundColor={quiet ? 'transparent' : 'canvas.ghost'}
       borderColor='canvas.ghost'
       borderRadius='1x'
-      borderStyle='solid'
-      borderWidth='canvas'
-      boxShadow='canvas.halo'
+      borderStyle={quiet ? 'dashed' : 'solid'}
+      borderWidth={quiet ? 'divider' : 'canvas'}
+      boxShadow={quiet ? 'none' : 'canvas.halo'}
       data-canvas='ghost'
       pointerEvents='none'
       position='relative'
@@ -398,4 +445,39 @@ function Ghost({ area }: { area: Area }) {
       zIndex='3'
     />
   );
+}
+
+/** In the middle of an area, shrinking with it. */
+function Plus({ area }: { area: Area }) {
+  return (
+    <Box
+      alignItems='center'
+      containerType='size'
+      display='flex'
+      justifyContent='center'
+      pointerEvents='none'
+      position='relative'
+      style={{
+        gridColumn: `${area.column} / span ${area.columnSpan}`,
+        gridRow: `${area.row} / span ${area.rowSpan}`
+      }}
+      zIndex='3'
+    >
+      <Box
+        aria-hidden
+        className={styles.plus}
+        color='canvas.handle'
+        data-canvas='plus'
+        tagName='svg'
+        viewBox='0 0 24 24'
+      >
+        <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='2' tagName='path' />
+      </Box>
+    </Box>
+  );
+}
+
+/** The middle of the half cell a distance falls in, limited to the grid. */
+function snapAxis(distance: number, cells: number): number {
+  return Math.min(Math.max(Math.floor(distance * 2) / 2 + 0.25, 0.25), cells - 0.25);
 }

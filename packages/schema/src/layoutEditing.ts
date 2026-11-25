@@ -157,46 +157,110 @@ export function bringToFront(page: Page, id: string): Page {
   };
 }
 
-/** A position on the grid, in cells. */
-export type Cell = { column: number; row: number };
+/** A point on the grid, in cells from its top left corner: `{ x: 0.5, y: 0.5 }` is the middle of the first cell. */
+export type GridPoint = { x: number; y: number };
+
+/** The cell a point is in. */
+export function cellAt({ x, y }: GridPoint, grid: Grid): Area {
+  return {
+    column: clamp(Math.floor(x) + 1, 1, grid.columns),
+    row: clamp(Math.floor(y) + 1, 1, grid.rows),
+    columnSpan: 1,
+    rowSpan: 1
+  };
+}
+
+/** Where one axis may start so that it covers `from` to `to` and stays within `size` cells. */
+function startRange(span: number, from: number, to: number, size: number) {
+  return { first: Math.max(to - span + 1, 1), last: Math.min(from, size - span + 1) };
+}
 
 /**
- * Where a new widget goes: from `cell` right and down to its wanted size, or as much of that as is
- * free. If not even `minSize` is free, it gets that size anyway and overlaps others.
+ * The biggest free area that covers `around`, from `smallest` up to `wanted`. Of equally big ones,
+ * the one with the lowest cost. Without any, the cheapest of the smallest size, overlapping others.
  */
-export function placeArea(layout: Layout, cell: Cell, wanted: CellSize, minSize: CellSize = SINGLE_CELL): Area {
-  const { grid } = layout;
-  const placed = Object.values(layout.areas);
-  let best: Area | undefined;
+function biggestArea(
+  { grid, areas }: Layout,
+  around: Area,
+  smallest: CellSize,
+  wanted: CellSize,
+  costOf: (area: Area) => number
+): Area {
+  const placed = Object.values(areas);
+  const min = {
+    columns: Math.min(Math.max(smallest.columns, around.columnSpan), grid.columns),
+    rows: Math.min(Math.max(smallest.rows, around.rowSpan), grid.rows)
+  };
 
-  // Growing one row at a time only ever makes the widest free span narrower.
-  let widest = Math.min(wanted.columns, grid.columns - cell.column + 1);
-  const tallest = Math.min(wanted.rows, grid.rows - cell.row + 1);
+  function cheapest({ columns: columnSpan, rows: rowSpan }: CellSize, mayOverlap: boolean) {
+    const columns = startRange(columnSpan, around.column, around.column + around.columnSpan - 1, grid.columns);
+    const rows = startRange(rowSpan, around.row, around.row + around.rowSpan - 1, grid.rows);
+    let best: { area: Area; cost: number } | undefined;
 
-  for (let rowSpan = 1; rowSpan <= tallest; rowSpan++) {
-    while (widest > 0 && placed.some(other => areasOverlap({ ...cell, columnSpan: widest, rowSpan }, other))) {
-      widest--;
+    for (let row = rows.first; row <= rows.last; row++) {
+      for (let column = columns.first; column <= columns.last; column++) {
+        const area = { column, row, columnSpan, rowSpan };
+        const cost = costOf(area);
+
+        if (cost < (best?.cost ?? Infinity) && (mayOverlap || !placed.some(other => areasOverlap(area, other)))) {
+          best = { area, cost };
+        }
+      }
     }
 
-    const bigEnough = widest >= Math.min(minSize.columns, grid.columns) && rowSpan >= Math.min(minSize.rows, grid.rows);
-
-    if (widest > 0 && bigEnough && widest * rowSpan > (best ? best.columnSpan * best.rowSpan : 0)) {
-      best = { ...cell, columnSpan: widest, rowSpan };
-    }
-  }
-
-  if (best) {
     return best;
   }
 
-  const smallest = {
-    ...cell,
-    columnSpan: Math.min(minSize.columns, grid.columns),
-    rowSpan: Math.min(minSize.rows, grid.rows)
-  };
+  const sizes: CellSize[] = [];
 
-  // Moved inwards if it would reach beyond the grid.
-  return moveArea(smallest, { columns: 0, rows: 0 }, grid);
+  for (let columns = min.columns; columns <= Math.min(wanted.columns, grid.columns); columns++) {
+    for (let rows = min.rows; rows <= Math.min(wanted.rows, grid.rows); rows++) {
+      sizes.push({ columns, rows });
+    }
+  }
+
+  // Biggest first, so the first one that fits somewhere ends the search.
+  sizes.sort((a, b) => b.columns * b.rows - a.columns * a.rows);
+
+  let best: { area: Area; cost: number } | undefined;
+
+  for (const size of sizes) {
+    if (best && size.columns * size.rows < best.area.columnSpan * best.area.rowSpan) {
+      break;
+    }
+
+    const candidate = cheapest(size, false);
+
+    if (candidate && candidate.cost < (best?.cost ?? Infinity)) {
+      best = candidate;
+    }
+  }
+
+  return best?.area ?? cheapest(min, true)?.area ?? around;
+}
+
+/**
+ * Where a new widget goes: centred on `point` at its wanted size. Beside other widgets and the edges
+ * of the grid it slides to keep that size, always covering the point, and only shrinks if nothing
+ * bigger fits. If not even its cell is free, it overlaps others.
+ */
+export function placeArea(layout: Layout, point: GridPoint, wanted: CellSize): Area {
+  return biggestArea(
+    layout,
+    cellAt(point, layout.grid),
+    SINGLE_CELL,
+    wanted,
+    area => (area.column - 1 + area.columnSpan / 2 - point.x) ** 2 + (area.row - 1 + area.rowSpan / 2 - point.y) ** 2
+  );
+}
+
+/**
+ * Grows an area to its wanted size, or as much of that as is free: to the right and down, and only
+ * for what doesn't fit there to the left and up. If not even `minSize` is free, it gets that size
+ * anyway and overlaps others.
+ */
+export function growArea(layout: Layout, area: Area, wanted: CellSize, minSize: CellSize = SINGLE_CELL): Area {
+  return biggestArea(layout, area, minSize, wanted, grown => area.column - grown.column + (area.row - grown.row));
 }
 
 /** An id no widget on the page has, e.g. `bar-2`. */
