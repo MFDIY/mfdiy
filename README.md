@@ -1,6 +1,6 @@
 # MFDIY
 
-**Build your MFD. No code required.**
+**Build your MFD. No code required.** · [mfdiy.app](https://mfdiy.app)
 
 MFDIY is a no-code builder for custom multi-function displays (MFDs). Drag gauges, status lights and buttons onto a canvas, bind them to live game telemetry, and open the result in any browser: a phone, a tablet, or a Raspberry Pi with a touchscreen next to your HOTAS.
 

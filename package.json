@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "No-code builder for custom browser-based MFDs (multi-function displays) driven by live game telemetry.",
-  "homepage": "https://mdingena.github.io/mfdiy/",
+  "homepage": "https://mfdiy.app",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mdingena/mfdiy.git"

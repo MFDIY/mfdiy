@@ -60,5 +60,5 @@ Game (local gRPC, localhost) ──▶ MFDIY bridge (gaming PC) ──WebSocket/
 ## Conventions
 
 - Commit straight to `main`.
-- The landing page lives in `site/` and deploys to GitHub Pages via `.github/workflows/pages.yml`.
+- The landing page lives in `site/` and deploys to GitHub Pages via `.github/workflows/pages.yml`, served at https://mfdiy.app (custom domain set in the repository's Pages settings, not via a `CNAME` file).
 - Don't use game trademarks ("Star Citizen", "RSI", "Verse") in the product name or branding. MFDIY is an unofficial fan project and should be able to support other games later.
