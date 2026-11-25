@@ -1,10 +1,14 @@
 export type { GameAdapter } from './adapter.js';
 
+export * from './blankDocument.js';
+
 export * from './document.js';
 
 export * from './layout.js';
 
 export * from './layoutEditing.js';
+
+export * from './library.js';
 
 export * from './protocol.js';
 

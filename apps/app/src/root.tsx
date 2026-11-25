@@ -4,6 +4,7 @@ import '@mfdiy/ui';
 import plexSans from '@mfdiy/ui/fonts/IBMPlexSans.woff2?url';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
+import { DocumentsProvider } from './documents/DocumentsProvider.js';
 import { TelemetryProvider } from './telemetry/TelemetryProvider.js';
 
 const favicon = `data:image/svg+xml,${encodeURIComponent(
@@ -44,7 +45,9 @@ export function Layout({ children }: PropsWithChildren) {
 export default function App() {
   return (
     <TelemetryProvider>
-      <Outlet />
+      <DocumentsProvider>
+        <Outlet />
+      </DocumentsProvider>
     </TelemetryProvider>
   );
 }

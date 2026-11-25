@@ -1,5 +1,7 @@
 import type { ActionDefinition, GameAdapter, SignalDefinition } from '@mfdiy/schema';
 
+import { starterDocuments } from './starterDocuments.js';
+
 /*
  * First draft of the Star Citizen signal catalogue, based on what the community has documented about
  * the 5.0 telemetry stream (shields, hull, fuel, flight instruments, IFCS state, annunciators).
@@ -84,5 +86,6 @@ const actions: ActionDefinition[] = [
 export const starCitizen: GameAdapter = {
   game: { id: 'star-citizen', name: 'Star Citizen' },
   signals,
-  actions
+  actions,
+  starterDocuments
 };

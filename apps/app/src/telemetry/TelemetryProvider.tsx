@@ -31,7 +31,7 @@ export function TelemetryProvider({ children }: PropsWithChildren) {
   return <TelemetryContext.Provider value={store}>{children}</TelemetryContext.Provider>;
 }
 
-function useTelemetryStore(): TelemetryStore {
+export function useTelemetryStore(): TelemetryStore {
   const store = useContext(TelemetryContext);
 
   if (!store) {

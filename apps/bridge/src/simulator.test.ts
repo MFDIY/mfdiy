@@ -10,7 +10,8 @@ const adapter: GameAdapter = {
     { id: 'fuel', label: 'Fuel', group: 'Fuel', kind: 'number', min: 0, max: 100 },
     { id: 'vehicle.gear-down', label: 'Gear', group: 'Vehicle', kind: 'boolean' }
   ],
-  actions: [{ id: 'vehicle.gear-toggle', label: 'Gear', group: 'Vehicle', holdable: false }]
+  actions: [{ id: 'vehicle.gear-toggle', label: 'Gear', group: 'Vehicle', holdable: false }],
+  starterDocuments: []
 };
 
 describe('createSimulator', () => {
