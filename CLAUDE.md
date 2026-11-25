@@ -4,7 +4,7 @@ A no-code builder for custom browser-based MFDs (multi-function displays) driven
 
 ## Read first
 
-Decision records live in [`docs/decisions/`](docs/decisions/). Read them before designing or building anything; they record choices already made and why. Add a new numbered record when a significant decision is made, rather than editing an accepted one.
+Decision records live in [`docs/decisions/`](docs/decisions/). Read them before designing or building anything; they record choices already made and why. They are **living documents**: when a decision changes or an open question is settled, edit the existing record so it always reflects the current decision. Add a new numbered record only for a new, separate decision.
 
 - [0001: Responsive everywhere, including the builder](docs/decisions/0001-responsive-everywhere.md)
 - [0002: Deep theming and customisation from day one](docs/decisions/0002-themable-from-day-one.md)
@@ -23,7 +23,6 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0015: Events, groups and business offerings](docs/decisions/0015-events-groups-and-business.md)
 - [0016: Co-pilot suggestions powered by Jev](docs/decisions/0016-copilot-suggestions.md)
 - [0017: Billing with Stripe](docs/decisions/0017-billing-with-stripe.md)
-- [0018: Stripe Managed Payments as merchant of record](docs/decisions/0018-stripe-managed-payments.md)
 
 ## Commands
 

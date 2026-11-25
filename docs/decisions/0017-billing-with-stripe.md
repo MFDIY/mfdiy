@@ -7,15 +7,20 @@
 
 All paid offerings (the Creator subscription in 0014, business offerings in 0015, the co-pilot in 0016) are billed through **Stripe**: Stripe Checkout for purchases and Stripe Billing for subscriptions, with the Stripe customer portal for managing them.
 
+### Stripe Managed Payments as merchant of record
+
+MFDIY sells through **Stripe Managed Payments**, so **Stripe is the merchant of record**. Stripe handles indirect tax (sales tax, VAT, GST: calculation, collection, filing and remittance) in the jurisdictions it supports, as well as fraud prevention, disputes and transaction-level customer support.
+
 ## Why
 
-Chosen by the maintainer: a mature, widely documented platform that covers subscriptions, one-off payments and self-service management.
+- Stripe is a mature, widely documented platform that covers subscriptions, one-off payments and self-service management.
+- The maintainer (based in Australia) wants zero hassle with global tax compliance and payment disputes, and is happy to pay for it. Stripe's fees are a percentage of each sale, so they are absorbed into the subscription prices.
 
 ## Consequences
 
+- Purchases go through Stripe Checkout sessions or payment links with Managed Payments enabled.
+- Prices are set with Managed Payments fees in mind.
 - Entitlements are checked server-side by the MFDIY service (0016). Clients never decide on their own whether a user has paid.
 - Paid features need accounts that link a user to their Stripe customer.
-
-## Open questions
-
-- **Merchant of record.** By default the seller (the maintainer, in Australia) is the merchant of record and is responsible for sales tax, VAT and GST in every country customers buy from, as well as fraud and disputes. Stripe's **Managed Payments** makes Stripe the merchant of record for digital products and handles tax compliance in more than 80 countries, plus fraud and disputes. It became generally available in April 2026 (it grew out of Lemon Squeezy, which Stripe acquired in 2024). Lean: use Managed Payments, since global tax compliance is a lot of work for a solo maintainer. Compare its fees with standard Stripe plus Stripe Tax before deciding.
+- Sales outside the jurisdictions Managed Payments covers, and a few documented exceptions, remain the maintainer's tax responsibility; check Stripe's coverage list before launch.
+- Product support, pricing and refund policy remain MFDIY's responsibility.
