@@ -22,6 +22,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0014: Creator subscription](docs/decisions/0014-creator-subscription.md)
 - [0015: Events, groups and business offerings](docs/decisions/0015-events-groups-and-business.md)
 - [0016: Co-pilot suggestions powered by Jev](docs/decisions/0016-copilot-suggestions.md)
+- [0017: Billing with Stripe](docs/decisions/0017-billing-with-stripe.md)
 
 ## Commands
 
