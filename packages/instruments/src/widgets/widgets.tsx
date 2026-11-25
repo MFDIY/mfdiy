@@ -85,7 +85,7 @@ export const lightManifest: WidgetManifest = {
     litState: { label: 'Colour when lit (on, caution, warning)', type: 'string', default: 'on' }
   },
   actionable: true,
-  defaultSize: { columns: 1, rows: 1 },
+  defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
   tokens: ['light.on', 'light.off', 'light.text', 'state.caution', 'state.warning'],
   Component: LightWidget
@@ -102,7 +102,7 @@ export const barManifest: WidgetManifest = {
     warningBelow: { label: 'Warning below', type: 'number', default: 0.1, min: 0, max: 1 }
   },
   actionable: false,
-  defaultSize: { columns: 2, rows: 1 },
+  defaultSize: { width: 1 / 3, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
   tokens: ['bar.fill', 'bar.track', 'readout.value', 'state.caution', 'state.warning'],
   Component: BarWidget
@@ -118,7 +118,7 @@ export const readoutManifest: WidgetManifest = {
     decimals: { label: 'Decimals', type: 'number', default: 0, min: 0, max: 3 }
   },
   actionable: false,
-  defaultSize: { columns: 2, rows: 1 },
+  defaultSize: { width: 1 / 3, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
   tokens: ['readout.label', 'readout.value'],
   Component: ReadoutWidget
@@ -131,7 +131,7 @@ export const buttonManifest: WidgetManifest = {
   inputs: {},
   options: { label: labelOption },
   actionable: true,
-  defaultSize: { columns: 1, rows: 1 },
+  defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
   tokens: ['button.background', 'button.text', 'button.outline'],
   Component: ButtonWidget

@@ -9,10 +9,10 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### Wide screens (desktop, tablet landscape)
 
-- **Top toolbar** (slim): profile name, page tabs, Save and Save as new (0019), preview shape, zoom, undo / redo, preview toggle.
+- **Top toolbar** (slim): profile name, page tabs, Save and Save as new (0019), undo / redo, remove, preview shape, zoom, preview toggle.
 - **Properties panel** on the right for the selected widget: bindings, options, action, theme overrides, position and size.
 - **Canvas** fills the rest, centred and fitted to the preview shape.
-- **No permanent widget palette.** Tapping or clicking an empty cell opens the palette there (see "Add" in 0006).
+- **No permanent widget palette.** Tapping or clicking an empty cell opens the palette beside it (see "Add" in 0006), clear of where the widget will go.
 
 ### Narrow screens (phones)
 

@@ -20,6 +20,9 @@ export { Link, type LinkBaseProps } from './Link/Link.js';
 
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
+export { popoverBeside, type PopoverPosition } from './Popover/geometry.js';
+export { Popover, type PopoverProps } from './Popover/Popover.js';
+
 export { SegmentedControl, type SegmentedControlOptionProps } from './SegmentedControl/SegmentedControl.js';
 
 export { Stack, order as stackOrder, tagNames as stackTagNames, type StackProps } from './Stack/Stack.js';

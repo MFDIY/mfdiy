@@ -43,7 +43,8 @@ The bridge currently runs a **simulator** that generates plausible telemetry; co
 - [x] Display rendering a demo layout, with per-page theming and actions
 - [ ] Connect the bridge to the game's telemetry
 - [x] Saving profiles on the bridge, shared by every device
-- [ ] Builder
+- [x] Building pages: add, move, resize and remove widgets, with undo
+- [ ] Rest of the builder: widget properties, pages, grid size
 - [ ] Tap-to-engage, keep-awake, `mfdiy.local` and QR code (decisions 0004, 0005)
 - [ ] Shareable layouts and themes
 

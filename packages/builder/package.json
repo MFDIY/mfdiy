@@ -2,7 +2,7 @@
   "name": "@mfdiy/builder",
   "version": "0.0.0",
   "private": true,
-  "description": "The builder's canvas, independent of the page that hosts it (see docs/decisions/0008).",
+  "description": "The builder's canvas and palette, independent of the page that hosts them (see docs/decisions/0008).",
   "type": "module",
   "sideEffects": [
     "**/*.css.ts"
@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "storybook dev -p 6008",
     "storybook:build": "storybook build",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -36,6 +37,7 @@
     "react-dom": "^19.1.1",
     "storybook": "^10.2.16",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^3.2.0"
   }
 }
