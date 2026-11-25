@@ -17,6 +17,7 @@
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `apps/app`                      | Builder and display. React Router 7 in SPA mode (no SSR).                                                         |
 | `apps/bridge`                   | Node app on the gaming PC: game gRPC → WebSocket. Also serves the built `apps/app` on the LAN (see consequences). |
+| `packages/builder`              | The builder's canvas, and later its palette and properties. Independent of the page hosting it (0008).            |
 | `packages/ui`                   | Builder chrome design system, forked from Bonsai.                                                                 |
 | `packages/instruments`          | MFD primitives, widget manifests and the MFD theme contract.                                                      |
 | `packages/schema`               | Valibot schemas and version migrations for documents, themes and signals.                                         |
@@ -28,6 +29,8 @@
 
 **1. Builder chrome (`packages/ui`)**: a normal app design system, **forked from Bonsai** (`manage.vet/packages/bonsai`). It is a one-way copy: no syncing with Bonsai, and drift is accepted. Fork selectively, bringing over only the components the builder needs, and prune freely. Reuse the Bonsai pattern in full: `createGlobalThemeContract`, `createGlobalTheme`, Sprinkles with container, media and pseudo conditions, `Box` with style props, and Storybook. Users never theme this, and a user's MFD theme can never affect it.
 
+**`Box` covers everything.** Code in `apps/app`, `packages/builder` and `packages/instruments` uses `Box` (or a component built on it) instead of native elements, and style props instead of CSS. `Box` is polymorphic, so `tagName` keeps the HTML semantic. `className` is only for styles Bonsai doesn't support, and adding that support to Bonsai is considered case by case first. Values are always Bonsai tokens, including those for editing controls on the canvas, which have the same value in every colour scheme so they stand out from any MFD theme. MFD styling keeps reading `--mfd-*` tokens.
+
 **2. MFD layer (`packages/instruments`)**: what users build, theme and share. It uses the same vanilla-extract foundations, with three differences:
 
 - **Its own contract with a public, prefixed namespace** (`--mfd-*`), created with `createGlobalThemeContract` so names are stable and readable. These names are a **public API**: shared themes depend on them, so changes are versioned and migrated (`packages/schema`).
@@ -37,7 +40,7 @@
   3. _Component_: per-primitive tokens (`--mfd-light-on-bg`, `--mfd-bar-track`). Each falls back to its semantic token with `fallbackVar()`, so it only needs setting to diverge.
 - **Runtime themes via inline variables.** Built-in themes ship as `createGlobalTheme` defaults scoped to the MFD root. A user's theme JSON is validated, then applied with `assignInlineVars` (`@vanilla-extract/dynamic`) on the document, page or widget element. The CSS cascade gives the global → page → widget override chain from 0002 for free.
 
-**No Sprinkles in `packages/instruments`.** Sprinkles gives _developers_ a constrained style-prop API in JSX. MFD users never write JSX: their API is the **widget manifest** (bindable props, sizes, exposed tokens), and the builder generates editors from it. Primitives use plain `style()` and the token contract. Visual states are exposed as data attributes (`data-state="caution"`) so they stay targetable if custom CSS is ever allowed (0002).
+**`Box` for structure, `--mfd-*` for looks.** Primitives in `packages/instruments` use `Box` and style props for structure (layout, cursor, touch handling), and `--mfd-*` tokens through `className` for everything a theme can change. They don't use Bonsai's tokens for looks, because `--mfd-*` names are a public API, resolve through the three tiers, and keep user themes from reaching the editing controls that sit inside the MFD. They don't use Bonsai's `Button` either: MFD buttons fire on touch (0010), scale with their cell and show action status. MFD users never write JSX: their API is the **widget manifest** (bindable props, sizes, exposed tokens), and the builder generates editors from it. Visual states are exposed as data attributes (`data-state="caution"`) so they stay targetable if custom CSS is ever allowed (0002).
 
 ### Core abstractions (agreed)
 
@@ -61,7 +64,7 @@
 - **The bridge serves the app on the LAN.** A page served over HTTPS (such as GitHub Pages) can't open an unencrypted `ws://` connection to a LAN IP; browsers block it as mixed content. So the builder and display are served by the bridge over HTTP on the LAN, the same origin as the WebSocket. The public site carries marketing material and a demo running on simulated data.
 - Shared themes are **untrusted input**. Every token value is validated against its type (colour, length, number, font family, ...). Free-form values such as `url()` are rejected outside the asset mechanism, so a shared theme can't load remote content or track its users.
 - Token names and theme JSON form a versioned public format. Renaming a token requires a schema version bump and a migration.
-- Storybook is used for both `packages/ui` and `packages/instruments`. For instruments it doubles as the theme playground.
+- Storybook is used for `packages/ui`, `packages/instruments` and `packages/builder`, and components are developed there first, in isolation. For instruments it doubles as the theme playground.
 
 ## Open questions
 

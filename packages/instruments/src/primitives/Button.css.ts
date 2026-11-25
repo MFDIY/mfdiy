@@ -9,23 +9,17 @@ const pulse = keyframes({
 });
 
 export const button = style({
-  alignItems: 'center',
-  appearance: 'none',
   backgroundColor: token('button.background'),
   border: `${token('size.border')} solid ${token('button.outline')}`,
   borderRadius: token('size.radius'),
   color: token('button.text'),
-  cursor: 'pointer',
-  display: 'flex',
   font: 'inherit',
   fontSize: 'clamp(10px, 24cqmin, 22px)',
-  justifyContent: 'center',
   letterSpacing: '0.08em',
   padding: '0 4cqmin',
   textTransform: 'uppercase',
-  touchAction: 'manipulation',
   transition: transition('background-color', 'border-color', 'box-shadow', 'transform'),
-  userSelect: 'none',
+  WebkitUserSelect: 'none',
 
   selectors: {
     '&:active': {
@@ -47,7 +41,6 @@ export const button = style({
       boxShadow: glow(token('state.warning'))
     },
     '&:disabled': {
-      cursor: 'not-allowed',
       opacity: 0.4
     }
   },

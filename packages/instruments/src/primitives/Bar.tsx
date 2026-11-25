@@ -1,7 +1,8 @@
-import { clsx } from 'clsx';
+import { Box } from '@mfdiy/ui/components';
 
 import * as styles from './Bar.css.js';
-import { cell, frame, label as labelStyle } from './shared.css.js';
+import { Frame } from './Frame.js';
+import { Label } from './Label.js';
 
 export const barStates = ['normal', 'caution', 'warning'] as const;
 
@@ -21,21 +22,26 @@ export function Bar({ label, value, displayValue, state }: BarProps) {
   const level = value === null ? 0 : Math.min(1, Math.max(0, value));
 
   return (
-    <div className={cell}>
-      <div className={clsx(frame, styles.bar)} data-state={state}>
-        <div className={labelStyle}>{label}</div>
-        <div className={styles.value}>{displayValue}</div>
-        <div
-          aria-label={label}
-          aria-valuemax={100}
-          aria-valuemin={0}
-          aria-valuenow={Math.round(level * 100)}
-          className={styles.track}
-          role='meter'
-        >
-          <div className={styles.fill} style={{ transform: `scaleX(${level})` }} />
-        </div>
-      </div>
-    </div>
+    <Frame className={styles.bar} data-state={state} display='grid'>
+      <Label>{label}</Label>
+      <Box className={styles.value}>{displayValue}</Box>
+      <Box
+        alignSelf='flex-end'
+        aria-label={label}
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={Math.round(level * 100)}
+        className={styles.track}
+        overflow='hidden'
+        role='meter'
+      >
+        <Box
+          className={styles.fill}
+          height='full'
+          style={{ transform: `scaleX(${level})` }}
+          transformOrigin='left center'
+        />
+      </Box>
+    </Frame>
   );
 }

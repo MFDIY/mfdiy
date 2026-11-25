@@ -1,6 +1,7 @@
 import { createGlobalThemeContract } from '@vanilla-extract/css';
 
 export const globalVars = createGlobalThemeContract({
+  'border.width.canvas': 'border-width-canvas',
   'border.width.input.text': 'border-width-input-text',
   'border.width.placeholder': 'border-width-placeholder',
   'border.width.shortcut': 'border-width-shortcut',
@@ -80,6 +81,8 @@ export const globalVars = createGlobalThemeContract({
   'height.button.small': 'height-button-small',
   'height.button.standard': 'height-button-standard',
 
+  'size.canvas.handle': 'size-canvas-handle',
+
   'outline.error-ring.width': 'outline-error-ring-width',
   'outline.focus-ring.width': 'outline-focus-ring-width',
 
@@ -105,6 +108,9 @@ export const globalVars = createGlobalThemeContract({
 });
 
 export const colorSchemeVars = createGlobalThemeContract({
+  'color.border.canvas.ghost': 'color-border-canvas-ghost',
+  'color.border.canvas.overlap': 'color-border-canvas-overlap',
+  'color.border.canvas.handle': 'color-border-canvas-handle',
   'color.border.divider': 'color-border-divider',
   'color.border.input.text': 'color-border-input-text',
   'color.border.panel': 'color-border-panel',
@@ -155,6 +161,8 @@ export const colorSchemeVars = createGlobalThemeContract({
   'color.outline.error-ring': 'color-outline-error-ring',
   'color.outline.focus-ring': 'color-outline-focus-ring',
 
+  'color.shadow.canvas.halo': 'color-shadow-canvas-halo',
+  'color.shadow.canvas.selected': 'color-shadow-canvas-selected',
   'color.shadow.elevation.base': 'color-shadow-elevation-base',
   'color.shadow.elevation.base-hover': 'color-shadow-elevation-base-hover',
   'color.shadow.elevation.depressed': 'color-shadow-elevation-depressed',
@@ -177,6 +185,10 @@ export const colorSchemeVars = createGlobalThemeContract({
   'color.surface.button.transparent-active': 'color-surface-button-transparent-active',
   'color.surface.button.transparent-disabled': 'color-surface-button-transparent-disabled',
   'color.surface.button.transparent-hover': 'color-surface-button-transparent-hover',
+  'color.surface.canvas.dot': 'color-surface-canvas-dot',
+  'color.surface.canvas.ghost': 'color-surface-canvas-ghost',
+  'color.surface.canvas.overlap': 'color-surface-canvas-overlap',
+  'color.surface.canvas.handle': 'color-surface-canvas-handle',
   'color.surface.elevation.base': 'color-surface-elevation-base',
   'color.surface.elevation.base-hover': 'color-surface-elevation-base-hover',
   'color.surface.elevation.depressed': 'color-surface-elevation-depressed',

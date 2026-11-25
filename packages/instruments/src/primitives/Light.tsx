@@ -1,9 +1,8 @@
 import type { ButtonStatus } from './Button.js';
 
-import { clsx } from 'clsx';
-
+import { Frame } from './Frame.js';
 import * as styles from './Light.css.js';
-import { cell, frame } from './shared.css.js';
+import { pressHandlers } from './pressHandlers.js';
 
 export const lightStates = ['off', 'on', 'caution', 'warning'] as const;
 
@@ -22,26 +21,41 @@ export type LightProps = {
 export function Light({ label, state, onPress, status = 'idle', disabled = false }: LightProps) {
   if (onPress) {
     return (
-      <div className={cell}>
-        <button
-          className={clsx(frame, styles.light, styles.pressable)}
-          data-state={state}
-          data-status={status}
-          disabled={disabled}
-          onClick={onPress}
-          type='button'
-        >
-          {label}
-        </button>
-      </div>
+      <Frame
+        {...pressHandlers(onPress, disabled)}
+        alignItems='center'
+        appearance='none'
+        className={[styles.light, styles.pressable]}
+        cursor={{ default: 'pointer', disabled: 'not-allowed' }}
+        data-state={state}
+        data-status={status}
+        disabled={disabled}
+        display='flex'
+        justifyContent='center'
+        overflow='hidden'
+        tagName='button'
+        touchAction='none'
+        type='button'
+        userSelect='none'
+        whiteSpace='nowrap'
+      >
+        {label}
+      </Frame>
     );
   }
 
   return (
-    <div className={cell}>
-      <div className={clsx(frame, styles.light)} data-state={state} role='status'>
-        {label}
-      </div>
-    </div>
+    <Frame
+      alignItems='center'
+      className={styles.light}
+      data-state={state}
+      display='flex'
+      justifyContent='center'
+      overflow='hidden'
+      role='status'
+      whiteSpace='nowrap'
+    >
+      {label}
+    </Frame>
   );
 }

@@ -6,6 +6,7 @@
     { "path": "./apps/app" },
     { "path": "./apps/bridge" },
     { "path": "./packages/adapter-star-citizen" },
+    { "path": "./packages/builder" },
     { "path": "./packages/instruments" },
     { "path": "./packages/schema" },
     { "path": "./packages/ui" }

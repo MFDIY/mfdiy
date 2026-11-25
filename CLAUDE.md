@@ -33,19 +33,19 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 ## Current state
 
-Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, and a display rendering a demo document. Not built yet: the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
+Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a display rendering a demo document, and a builder canvas (select, move, resize) editing the demo in memory. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
 
 Next steps:
 
-1. **Builder canvas** (0006–0008): dot grid, select, move and resize with snapping, keyboard alternatives.
-2. **Primitives fire on `pointerdown`** (0010); they still use `click`.
+1. **Saving documents.** The builder edits the demo in memory and the display renders its own hard-coded copy. Not decided yet: where documents live. Proposed: on the bridge, so an edit on one device updates every display; the alternative is a copy per browser, simpler but without sync.
+2. **Rest of the builder** (0006–0008): palette, properties, undo / redo, grid size control, preview switcher, zoom.
 3. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
 
 The repository is public in the `MFDIY` org, and the landing page is live at https://mfdiy.app (HTTPS enforced).
 
 Waiting on the maintainer: read the game developer's terms before charging for anything.
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports advisories in dev tooling only (Vitest 3, including two critical via `tinypool`, and Storybook's glob dependency; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 600 kB of builder CSS (51 kB gzipped) and can be pruned.
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports advisories in dev tooling only (Vitest 3, including two critical via `tinypool`, and Storybook's glob dependency; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 656 kB of builder CSS (54 kB gzipped) and can be pruned.
 
 ## Commands
 
@@ -56,7 +56,7 @@ Root (npm workspaces monorepo, Node 24):
 - `npm start`: run the bridge, serving the built app on port 80, falling back to 8420 (`npm start -- --port 1234` to choose)
 - `npm run typecheck`, `npm run lint`, `npm run format`
 - `npm test`: Vitest across workspaces
-- `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments`: Storybook (ports 6006 / 6007)
+- `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments` / `-w @mfdiy/builder`: Storybook (ports 6006 / 6007 / 6008)
 
 ## Layout
 
@@ -64,6 +64,7 @@ Root (npm workspaces monorepo, Node 24):
 - `apps/bridge`: Node bridge. `source.ts` is the telemetry source interface; only the simulator exists so far.
 - `packages/schema`: Valibot schemas for every public format: signals, bridge protocol, theme tokens, documents.
 - `packages/instruments`: MFD primitives (pure), widgets and manifests (data-aware), the `--mfd-*` theme contract.
+- `packages/builder`: the builder's canvas, independent of the page hosting it. Develop it in Storybook first.
 - `packages/ui`: builder design system, forked from Bonsai (`manage.vet`). One-way fork; prune freely.
 - `packages/adapter-star-citizen`: Star Citizen signal and action catalogue.
 - `packages/config`: shared TypeScript config.
@@ -71,8 +72,10 @@ Root (npm workspaces monorepo, Node 24):
 ## Code rules
 
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
+- In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). Before using `className`, check `packages/ui/src/styles/properties.ts`: if a style is missing, consider adding it there. In MFD primitives, looks come from `--mfd-*` tokens through `className`.
+- Pressable MFD elements use `pressHandlers` from `@mfdiy/instruments`, so they fire on touch (0010).
 - In MFD styles, always read tokens through `token()` from `@mfdiy/instruments`, never `vars` directly; it resolves the base → semantic → component fallback chain at the point of use.
-- Container query units resolve against an element's _ancestor_ container: put `cqmin` sizing on the inner `frame`, never on the `cell` container itself.
+- Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.
 - `useEffect` is for synchronising with external systems only; derive values during render.
 
 ## Planned architecture

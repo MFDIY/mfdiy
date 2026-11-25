@@ -40,6 +40,7 @@ export const fonts = {
 } as const;
 
 export const globalTokens = {
+  'border.width.canvas': '2px',
   'border.width.input.text': '1px',
   'border.width.placeholder': '2px',
   'border.width.shortcut': '2px',
@@ -119,6 +120,8 @@ export const globalTokens = {
   'height.button.small': '1.65em',
   'height.button.standard': '1.85em',
 
+  'size.canvas.handle': '24px',
+
   'outline.error-ring.width': '4px',
   'outline.focus-ring.width': '4px',
 
@@ -143,7 +146,25 @@ export const globalTokens = {
   'transition-timing-function.bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
 } as const satisfies Parameters<typeof createGlobalTheme<typeof globalVars>>[2];
 
+/**
+ * Editing controls sit on top of MFDs with any theme, so they look the same in both colour schemes and
+ * carry a dark halo to stand out from any background.
+ */
+const canvasTokens = {
+  'color.border.canvas.ghost': '#4da3ff',
+  'color.border.canvas.overlap': '#ff4d4d',
+  'color.border.canvas.handle': '#4da3ff',
+  'color.shadow.canvas.halo': '0 0 0 1px #000b',
+  'color.shadow.canvas.selected': '0 0 0 2px #4da3ff, 0 0 0 4px #000b',
+  'color.surface.canvas.dot': '#8888',
+  'color.surface.canvas.ghost': '#4da3ff40',
+  'color.surface.canvas.overlap': '#ff4d4d73',
+  'color.surface.canvas.handle': '#fff'
+} as const;
+
 export const lightColorSchemeTokens = {
+  ...canvasTokens,
+
   'color.border.divider': '#0003',
   'color.border.input.text': '#0003',
   'color.border.panel': colors['sage-100'],
@@ -235,6 +256,8 @@ export const lightColorSchemeTokens = {
 } as const satisfies Parameters<typeof createGlobalTheme<typeof colorSchemeVars>>[2];
 
 export const darkColorSchemeTokens = {
+  ...canvasTokens,
+
   'color.border.divider': '#ffffff12',
   'color.border.input.text': '#fff3',
   'color.border.panel': '#ffffff12',

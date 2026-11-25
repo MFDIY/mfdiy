@@ -1,12 +1,12 @@
 import type { Area, MfdDocument, WidgetInstance } from '@mfdiy/schema';
 
-import { applyTokens, mfdRoot, widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
+import { applyTokens, mfdRoot, pressHandlers } from '@mfdiy/instruments';
 import { selectLayout } from '@mfdiy/schema';
+import { Box } from '@mfdiy/ui/components';
 import { useMatchesMediaQuery } from '@mfdiy/ui/hooks';
 
-import { useConnection, useSignalValues, useWidgetAction } from '../telemetry/TelemetryProvider.js';
-
 import * as styles from './MfdRenderer.css.js';
+import { MfdWidget } from './MfdWidget.js';
 
 type MfdRendererProps = {
   document: MfdDocument;
@@ -29,9 +29,11 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
   const layout = selectLayout(page, portrait ? 'portrait' : 'landscape');
 
   return (
-    <div className={`${mfdRoot} ${styles.screen}`} style={applyTokens(document.tokens)}>
-      <div
+    <Box className={[mfdRoot, styles.screen]} display='grid' height='full' style={applyTokens(document.tokens)}>
+      <Box
         className={styles.page}
+        display='grid'
+        minHeight='none'
         style={{
           ...applyTokens(page.tokens),
           gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
@@ -43,66 +45,45 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
 
           return area ? <WidgetSlot area={area} key={widget.id} widget={widget} /> : null;
         })}
-      </div>
+      </Box>
       {document.pages.length > 1 ? (
-        <nav className={styles.tabs} style={applyTokens(page.tokens)}>
+        <Box className={styles.tabs} display='flex' style={applyTokens(page.tokens)} tagName='nav'>
           {document.pages.map(candidate => (
-            <button
+            <Box
+              {...pressHandlers(() => onPageChange(candidate.id))}
+              appearance='none'
               aria-current={candidate.id === page.id ? 'page' : undefined}
+              backgroundColor='transparent'
               className={styles.tab}
+              cursor='pointer'
+              flexBasis='fluid'
+              flexGrow='1'
               key={candidate.id}
-              onClick={() => onPageChange(candidate.id)}
+              tagName='button'
+              touchAction='none'
               type='button'
             >
               {candidate.name}
-            </button>
+            </Box>
           ))}
-        </nav>
+        </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }
 
 function WidgetSlot({ area, widget }: { area: Area; widget: WidgetInstance }) {
-  const connection = useConnection();
-  const bindings = Object.entries(widget.bindings ?? {});
-  const values = useSignalValues(bindings.map(([, binding]) => binding.signal));
-  const action = useWidgetAction(widget.action);
-  const manifest = widgetManifests[widget.type];
-
-  const style = {
-    ...applyTokens(widget.tokens),
-    gridColumn: `${area.column} / span ${area.columnSpan}`,
-    gridRow: `${area.row} / span ${area.rowSpan}`,
-    minHeight: 0,
-    minWidth: 0
-  };
-
-  if (!manifest) {
-    return (
-      <div className={styles.unknownWidget} style={style}>
-        Unknown widget: {widget.type}
-      </div>
-    );
-  }
-
-  const inputs: Partial<Record<string, ResolvedInput>> = {};
-
-  bindings.forEach(([input, binding], index) => {
-    const signal = connection.hello?.signals.find(candidate => candidate.id === binding.signal);
-
-    if (signal) {
-      inputs[input] = { signal, value: values[index] ?? null };
-    }
-  });
-
-  const options = Object.fromEntries(
-    Object.entries(manifest.options).map(([key, spec]) => [key, widget.options?.[key] ?? spec.default])
-  );
-
   return (
-    <div style={style}>
-      <manifest.Component action={manifest.actionable ? action : undefined} inputs={inputs} options={options} />
-    </div>
+    <Box
+      minHeight='none'
+      minWidth='none'
+      style={{
+        ...applyTokens(widget.tokens),
+        gridColumn: `${area.column} / span ${area.columnSpan}`,
+        gridRow: `${area.row} / span ${area.rowSpan}`
+      }}
+    >
+      <MfdWidget widget={widget} />
+    </Box>
   );
 }

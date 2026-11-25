@@ -4,6 +4,8 @@ export * from './document.js';
 
 export * from './layout.js';
 
+export * from './layoutEditing.js';
+
 export * from './protocol.js';
 
 export * from './signals.js';

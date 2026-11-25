@@ -1,0 +1,41 @@
+{
+  "name": "@mfdiy/builder",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The builder's canvas, independent of the page that hosts it (see docs/decisions/0008).",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css.ts"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "storybook dev -p 6008",
+    "storybook:build": "storybook build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "dependencies": {
+    "@mfdiy/instruments": "0.0.0",
+    "@mfdiy/schema": "0.0.0",
+    "@mfdiy/ui": "0.0.0",
+    "@vanilla-extract/css": "^1.18.0"
+  },
+  "devDependencies": {
+    "@mfdiy/config": "0.0.0",
+    "@storybook/react-vite": "^10.2.16",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vanilla-extract/vite-plugin": "^5.1.4",
+    "@vitejs/plugin-react": "^5.1.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "storybook": "^10.2.16",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
