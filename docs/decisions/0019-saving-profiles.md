@@ -28,7 +28,7 @@
 
 ### Name
 
-"**Profile**" is the working name, used only in interface text; code and files say "document". Stream Deck, Helios and Thrustmaster TARGET call it a profile; Air Manager says panel, SimHub dashboard, MATRIC deck, GameGlass shard. "Layout" is wrong, as every page has its own.
+A saved MFD is called a "**profile**". The word is used only in interface text; code and files say "document". Stream Deck, Helios and Thrustmaster TARGET call it a profile; Air Manager says panel, SimHub dashboard, MATRIC deck, GameGlass shard. "Layout" is wrong, as every page has its own.
 
 ## Why
 
@@ -42,7 +42,3 @@
 - Ids come from the bridge and are looked up in memory, so nothing a client sends becomes part of a file path.
 - A file the bridge can't read (damaged, or from a newer version) is skipped and left alone.
 - A new library starts with the adapter's starter documents. During development the bridge uses `apps/bridge/.data`, apart from the user's own profiles.
-
-## Open questions
-
-- Is "Profile" the final name? "Program" was suggested too.

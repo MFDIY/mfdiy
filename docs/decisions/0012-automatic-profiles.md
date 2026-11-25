@@ -44,7 +44,7 @@ Conditions are built from **context signals**, not hard-coded game concepts, so 
 
 ### Themes and trademarks
 
-Conditions may use manufacturer names, since they come from the game's data. **Built-in themes must not copy manufacturers' names, logos or brand styling** (see the trademark rule in CLAUDE.md); they get generic names (e.g. "Industrial amber"). Users can map themes to manufacturers themselves and share their own.
+Conditions may use manufacturer names, since they come from the game's data. **Built-in themes may use colours and other token values inspired by a manufacturer, but not its name, logo, artwork or fonts** (see the trademark rule in CLAUDE.md); they get generic names (e.g. "Industrial Amber") and are never promoted as a manufacturer's theme. Users can map themes to manufacturers themselves and share their own.
 
 ## Why
 
