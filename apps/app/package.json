@@ -11,6 +11,7 @@
     "typecheck": "react-router typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@mfdiy/builder": "0.0.0",
     "@mfdiy/instruments": "0.0.0",
     "@mfdiy/schema": "0.0.0",
     "@mfdiy/ui": "0.0.0",

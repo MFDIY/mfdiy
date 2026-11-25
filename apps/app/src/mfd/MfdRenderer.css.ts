@@ -45,7 +45,9 @@ export const tab = style({
 export const unknownWidget = style({
   alignItems: 'center',
   border: `${token('size.border')} dashed ${token('state.warning')}`,
+  boxSizing: 'border-box',
   color: token('state.warning'),
   display: 'flex',
+  height: '100%',
   justifyContent: 'center'
 });
