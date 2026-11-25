@@ -9,6 +9,7 @@
 
 - **TypeScript, React 19, React Router 7, Vite.** The maintainer's strongest stack; matches `manage.vet`.
 - **vanilla-extract** for all styling, with **CSS custom properties as the theming mechanism**.
+- **Own Pointer Events code** for drag, drop and resize in the builder; no drag-and-drop library (see 0006).
 - **Valibot** for every schema (documents, themes, signal catalogues, bridge messages). Same choice as `manage.vet`.
 - **npm workspaces monorepo**, laid out like `manage.vet`:
 
@@ -65,5 +66,4 @@
 ## Open questions
 
 - **Packaging the bridge** for non-technical Windows users (a single `.exe` via Node SEA or similar, auto-update, firewall prompt).
-  - **Code signing** is optional; an unsigned `.exe` runs but shows a SmartScreen warning ("More info → Run anyway"). Current lean: ship unsigned to early testers, then apply to the **SignPath Foundation** (free signing for OSI-licensed open-source projects; the certificate names SignPath Foundation as publisher; requires a public repo, no proprietary components and automated CI builds). Microsoft Artifact Signing (~US$10/month) paused individual sign-ups in 2025; a commercial certificate (~US$200–400/year) only makes sense if MFDIY is monetised.
-- **Drag-and-drop library**: dnd-kit is the leading candidate (pointer and keyboard sensors); evaluate against 0001 before committing.
+  - **Code signing:** an unsigned `.exe` runs but shows a SmartScreen warning ("More info → Run anyway"). Plan (see 0013): ship unsigned to early testers, then sign the open-source core through the **SignPath Foundation** (free for OSI-licensed open-source projects; the certificate names SignPath Foundation as publisher; requires a public repository, no proprietary components and automated CI builds). Paid add-ons are separate packages and are not covered by SignPath; how to sign them is decided when the first one ships.

@@ -26,14 +26,14 @@ Widgets in a layout may not overlap, and must lie within the grid. The builder s
 
 ### Own pointer code
 
-Drag, drop and resize are built in-house on **Pointer Events** with `setPointerCapture`, not with a drag-and-drop library. Grid snapping and resizing are a small amount of code, and owning it keeps touch, pen, mouse and keyboard behaviour fully under our control. (This settles the dnd-kit open question in 0003.)
+Drag, drop and resize are built in-house on **Pointer Events** with `setPointerCapture`, not with a drag-and-drop library. Grid snapping and resizing are a small amount of code, and owning it keeps touch, pen, mouse and keyboard behaviour fully under our control.
 
 ### Interaction
 
 - **Move:** drag a widget; a snapped ghost previews the drop, red where it's invalid.
 - **Resize:** corner and edge handles, at least 44 px on touch screens, never below the widget manifest's `minSize`.
 - **Add:** tap an empty cell, pick a widget from a palette, and it's placed there at its default size (shrunk to fit if needed).
-- **Small screens:** tap to select first, then drag, so scrolling never moves a widget by accident.
+- **Touch screens:** widgets can be dragged directly, since nothing scrolls (0007). Tapping a widget selects it, which opens its properties.
 - **Without dragging (0001):** arrow keys move the selected widget, Shift + arrows resize it, and the properties panel has numeric position and size fields.
 
 ## Why
