@@ -10,15 +10,23 @@ export type Catalogue = {
 /** A widget to add: everything except its id and place. */
 export type NewWidget = Pick<WidgetInstance, 'type' | 'bindings' | 'action'>;
 
-type Choice = { id: string; label: string; group: string; widget: NewWidget };
-
-export type ChoiceGroup = { name: string; choices: Choice[] };
+/** Something a widget can show or do. */
+export type Choice = {
+  id: string;
+  label: string;
+  group: string;
+  manifest: WidgetManifest;
+  /** Undefined for an action. */
+  signal: SignalDefinition | undefined;
+  widget: NewWidget;
+};
 
 /**
  * What a new widget can show or do: signals for its first input or, without inputs, actions. The
- * rest is up to its properties. Undefined if there is nothing to choose.
+ * rest is up to its properties. Undefined for a widget that shows and does nothing of the sort.
  */
-export function listChoices({ type, inputs, actionable }: WidgetManifest, catalogue: Catalogue): Choice[] | undefined {
+export function listChoices(manifest: WidgetManifest, catalogue: Catalogue): Choice[] | undefined {
+  const { type, inputs, actionable } = manifest;
   const [input] = Object.entries(inputs);
 
   if (input) {
@@ -26,26 +34,48 @@ export function listChoices({ type, inputs, actionable }: WidgetManifest, catalo
 
     return catalogue.signals
       .filter(signal => accepts.includes(signal.kind))
-      .map(({ id, label, group }) => ({ id, label, group, widget: { type, bindings: { [name]: { signal: id } } } }));
+      .map(signal => ({
+        id: `${type} ${signal.id}`,
+        label: signal.label,
+        group: signal.group,
+        manifest,
+        signal,
+        widget: { type, bindings: { [name]: { signal: signal.id } } }
+      }));
   }
 
   return actionable
-    ? catalogue.actions.map(({ id, label, group }) => ({ id, label, group, widget: { type, action: id } }))
+    ? catalogue.actions.map(({ id, label, group }) => ({
+        id: `${type} ${id}`,
+        label,
+        group,
+        manifest,
+        signal: undefined,
+        widget: { type, action: id }
+      }))
     : undefined;
 }
 
-/** Every word must appear in the label or group. Groups and choices keep the catalogue's order. */
-export function groupChoices(choices: readonly Choice[], search: string): ChoiceGroup[] {
-  const words = search.toLowerCase().split(/\s+/).filter(Boolean);
-  const groups = new Map<string, Choice[]>();
+function wordsOf(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+}
 
-  for (const choice of choices) {
-    const text = `${choice.group} ${choice.label}`.toLowerCase();
+/** Every word searched for must start a word in the text: "light" doesn't find "Flight". */
+export function matches(text: string, search: string): boolean {
+  const words = wordsOf(text);
 
-    if (words.every(word => text.includes(word))) {
-      groups.set(choice.group, [...(groups.get(choice.group) ?? []), choice]);
-    }
-  }
+  return wordsOf(search).every(start => words.some(word => word.startsWith(start)));
+}
 
-  return [...groups].map(([name, members]) => ({ name, choices: members }));
+/** Searches labels, groups and widget names. Labels that start with the search come first. */
+export function searchChoices(choices: readonly Choice[], search: string): Choice[] {
+  const start = search.trim().toLowerCase();
+  const startsWith = (choice: Choice) => choice.label.toLowerCase().startsWith(start);
+
+  return choices
+    .filter(({ label, group, manifest }) => matches(`${label} ${group} ${manifest.label}`, search))
+    .sort((a, b) => Number(startsWith(b)) - Number(startsWith(a)));
 }

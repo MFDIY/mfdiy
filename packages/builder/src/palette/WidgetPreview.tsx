@@ -3,48 +3,64 @@ import type { SignalDefinition, TokenValues } from '@mfdiy/schema';
 import { applyTokens, mfdRoot, type ResolvedInput, type WidgetManifest } from '@mfdiy/instruments';
 import { Box } from '@mfdiy/ui/components';
 
-import * as styles from './Palette.css.js';
+import * as styles from './WidgetPreview.css.js';
 
-const base = { id: 'sample', label: 'Sample', group: 'Sample' };
+const sample: SignalDefinition = {
+  id: 'sample',
+  label: 'Sample',
+  group: 'Sample',
+  kind: 'number',
+  min: 0,
+  max: 100,
+  unit: '%'
+};
 
-/** Made-up data a widget looks good with. */
-function sampleInput(kind: SignalDefinition['kind'] | undefined): ResolvedInput {
-  switch (kind) {
+/** A made-up value that a widget looks good with. */
+function sampleValue(signal: SignalDefinition): ResolvedInput['value'] {
+  switch (signal.kind) {
     case 'boolean':
-      return { signal: { ...base, kind }, value: true };
+      return true;
     case 'enum':
-      return { signal: { ...base, kind, options: [{ value: 'on', label: 'On' }] }, value: 'on' };
+      return signal.options[0]?.value ?? null;
     case 'string':
-      return { signal: { ...base, kind }, value: 'ABC' };
-    default:
-      return { signal: { ...base, kind: 'number', min: 0, max: 100, unit: '%' }, value: 64 };
+      return 'ABC';
+    case 'number':
+      return Math.round(signal.min + (signal.max - signal.min) * 0.64);
   }
 }
 
 type WidgetPreviewProps = {
-  manifest: WidgetManifest;
   documentTokens: TokenValues | undefined;
+  /** Replaces the widget's own name. */
+  label?: string | undefined;
+  manifest: WidgetManifest;
   pageTokens: TokenValues | undefined;
+  /** What to show; made up unless given. */
+  signal?: SignalDefinition | undefined;
 };
 
 /** What a widget looks like on the page it's about to be added to. */
-export function WidgetPreview({ manifest, documentTokens, pageTokens }: WidgetPreviewProps) {
+export function WidgetPreview({ documentTokens, label, manifest, pageTokens, signal }: WidgetPreviewProps) {
+  const inputs = Object.entries(manifest.inputs).map(([name, { accepts }]): [string, ResolvedInput] => {
+    const shown: SignalDefinition = signal ?? (accepts.includes('number') ? sample : { ...sample, kind: 'boolean' });
+
+    return [name, { signal: shown, value: sampleValue(shown) }];
+  });
+
   return (
     // Page tokens on top of the document's, as on the canvas.
-    <Box className={mfdRoot} inert style={applyTokens(documentTokens)}>
-      <Box className={styles.preview} style={applyTokens(pageTokens)}>
+    <Box className={mfdRoot} height='full' style={applyTokens(documentTokens)}>
+      <Box className={styles.surface} height='full' style={applyTokens(pageTokens)}>
         <manifest.Component
           action={
-            Object.keys(manifest.inputs).length === 0
-              ? { available: true, label: manifest.label, status: 'idle', trigger: () => undefined }
+            inputs.length === 0
+              ? { available: true, label: label ?? manifest.label, status: 'idle', trigger: () => undefined }
               : undefined
           }
-          inputs={Object.fromEntries(
-            Object.entries(manifest.inputs).map(([name, { accepts }]) => [name, sampleInput(accepts[0])])
-          )}
+          inputs={Object.fromEntries(inputs)}
           options={{
             ...Object.fromEntries(Object.entries(manifest.options).map(([name, spec]) => [name, spec.default])),
-            label: manifest.label
+            label: label ?? manifest.label
           }}
         />
       </Box>

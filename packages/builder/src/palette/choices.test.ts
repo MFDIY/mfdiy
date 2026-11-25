@@ -3,7 +3,7 @@ import type { Catalogue } from './choices.js';
 import { barManifest, buttonManifest, lightManifest, readoutManifest } from '@mfdiy/instruments';
 import { describe, expect, it } from 'vitest';
 
-import { groupChoices, listChoices } from './choices.js';
+import { listChoices, matches, searchChoices } from './choices.js';
 
 const catalogue: Catalogue = {
   signals: [
@@ -14,7 +14,7 @@ const catalogue: Catalogue = {
   actions: [{ id: 'vehicle.gear-toggle', label: 'Landing gear', group: 'Vehicle', holdable: false }]
 };
 
-const ids = (choices: { id: string }[] | undefined) => choices?.map(choice => choice.id);
+const ids = (choices: { id: string }[] | undefined) => choices?.map(choice => choice.id.split(' ')[1]);
 
 describe('listChoices', () => {
   it('only offers signals the widget can show', () => {
@@ -39,19 +39,40 @@ describe('listChoices', () => {
   });
 });
 
-describe('groupChoices', () => {
-  const choices = listChoices(readoutManifest, catalogue) ?? [];
+describe('searchChoices', () => {
+  const choices = [barManifest, readoutManifest, buttonManifest].flatMap(
+    manifest => listChoices(manifest, catalogue) ?? []
+  );
 
-  it('groups in catalogue order', () => {
-    expect(groupChoices(choices, '').map(group => [group.name, ids(group.choices)])).toEqual([
-      ['Fuel', ['fuel.hydrogen', 'fuel.quantum']],
-      ['Vehicle', ['vehicle.gear-down']]
-    ]);
+  const found = (search: string) => searchChoices(choices, search).map(choice => choice.id);
+
+  it('finds every widget that can show something', () => {
+    expect(found('hyd')).toEqual(['bar fuel.hydrogen', 'readout fuel.hydrogen']);
   });
 
-  it('searches words in labels and groups, in any order', () => {
-    expect(groupChoices(choices, ' FUEL  hyd ').flatMap(group => ids(group.choices))).toEqual(['fuel.hydrogen']);
-    expect(groupChoices(choices, 'vehicle').flatMap(group => ids(group.choices))).toEqual(['vehicle.gear-down']);
-    expect(groupChoices(choices, 'nothing')).toEqual([]);
+  it('searches words in labels, groups and widget names, in any order', () => {
+    expect(found(' BAR  hyd ')).toEqual(['bar fuel.hydrogen']);
+    expect(found('vehicle button')).toEqual(['button vehicle.gear-toggle']);
+    expect(found('nothing')).toEqual([]);
   });
+
+  it('puts labels that start with the search first', () => {
+    const [hydrogen] = found('fuel');
+
+    expect(hydrogen).toBe('bar fuel.hydrogen');
+    expect(found('quantum fuel')[0]).toBe('bar fuel.quantum');
+    expect(found('l')[0]).toBe('readout vehicle.gear-down');
+  });
+});
+
+it('matches from the start of words', () => {
+  expect(matches('ESP Flight assist', 'light')).toBe(false);
+  expect(matches('ESP Flight assist', 'assi fl')).toBe(true);
+  expect(matches('G-safe', 'g-safe')).toBe(true);
+  expect(matches('G-safe', 'safe')).toBe(true);
+});
+
+it('matches anything while nothing is searched for', () => {
+  expect(matches('Bar', '')).toBe(true);
+  expect(matches('Bar', '  ')).toBe(true);
 });

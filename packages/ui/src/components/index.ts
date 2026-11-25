@@ -10,6 +10,9 @@ export { ButtonGroup } from './ButtonGroup/ButtonGroup.js';
 
 export { Columns, order as columnsOrder, tagNames as columnsTagNames, type ColumnsProps } from './Columns/Columns.js';
 
+export type { Command } from './CommandPalette/Command.js';
+export { CommandPalette, type CommandPaletteProps } from './CommandPalette/CommandPalette.js';
+
 export { Dialog, type DialogProps } from './Dialog/Dialog.js';
 
 export { Divider, type DividerProps } from './Divider/Divider.js';
@@ -20,8 +23,7 @@ export { Link, type LinkBaseProps } from './Link/Link.js';
 
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
-export { popoverBeside, type PopoverPosition } from './Popover/geometry.js';
-export { Popover, type PopoverProps } from './Popover/Popover.js';
+export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
 
 export { SegmentedControl, type SegmentedControlOptionProps } from './SegmentedControl/SegmentedControl.js';
 
@@ -35,6 +37,8 @@ export {
 } from './Surface/Surface.js';
 
 export { TextField, type TextFieldProps } from './TextField/TextField.js';
+
+export { TextInput, type TextInputProps } from './TextInput/TextInput.js';
 
 export { TextLink, type TextLinkProps } from './TextLink/TextLink.js';
 
