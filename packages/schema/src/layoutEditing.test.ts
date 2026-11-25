@@ -1,9 +1,9 @@
-import type { Area, Layout } from './document.js';
+import type { Area, Layout, Page } from './document.js';
 
 import { describe, expect, it } from 'vitest';
 
 import { findOverlaps, validateLayout } from './layout.js';
-import { moveArea, resizeArea, scaleLayout, withArea } from './layoutEditing.js';
+import { bringToFront, moveArea, resizeArea, scaleLayout, withArea } from './layoutEditing.js';
 
 function area(column: number, row: number, columnSpan = 1, rowSpan = 1): Area {
   return { column, row, columnSpan, rowSpan };
@@ -124,5 +124,23 @@ describe('withArea', () => {
 
     expect(withArea(layout, 'a', area(1, 2)).areas).toEqual({ a: area(1, 2), b: area(2, 1) });
     expect(layout.areas['a']).toEqual(area(1, 1));
+  });
+});
+
+describe('bringToFront', () => {
+  const page: Page = {
+    id: 'p',
+    name: 'Page',
+    widgets: ['a', 'b', 'c'].map(id => ({ id, type: 'light' })),
+    layouts: [layoutOf({ a: area(1, 1), b: area(2, 1), c: area(3, 1) })]
+  };
+
+  it('moves the widget last and keeps the others in order', () => {
+    expect(bringToFront(page, 'a').widgets.map(widget => widget.id)).toEqual(['b', 'c', 'a']);
+    expect(bringToFront(page, 'c').widgets.map(widget => widget.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('changes nothing for an unknown widget', () => {
+    expect(bringToFront(page, 'x')).toEqual(page);
   });
 });

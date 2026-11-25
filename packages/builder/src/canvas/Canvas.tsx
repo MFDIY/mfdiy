@@ -1,7 +1,7 @@
 import type { Area, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, mfdRoot } from '@mfdiy/instruments';
-import { areasEqual, areasOverlap, findOverlaps, moveArea, resizeArea, withArea } from '@mfdiy/schema';
+import { areasEqual, areasOverlap, bringToFront, findOverlaps, moveArea, resizeArea, withArea } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
 
@@ -37,7 +37,7 @@ type Gesture = {
 
 export type CanvasProps = {
   page: Page;
-  /** The page's layout being edited. */
+  /** The layout being edited: one of the page's own. */
   layout: Layout;
   /** Document-wide theme overrides; the page's own are applied on top. */
   documentTokens?: TokenValues | undefined;
@@ -45,7 +45,7 @@ export type CanvasProps = {
   aspectRatio?: number | undefined;
   selectedId: string | null;
   onSelect: (widgetId: string | null) => void;
-  onLayoutChange: (layout: Layout) => void;
+  onChange: (page: Page) => void;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
 };
@@ -61,7 +61,7 @@ export function Canvas({
   aspectRatio,
   selectedId,
   onSelect,
-  onLayoutChange,
+  onChange,
   renderWidget
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
@@ -169,7 +169,11 @@ export function Canvas({
         handleTap(final.widgetId, event);
       }
     } else if (!areasEqual(area, final.startArea)) {
-      onLayoutChange(withArea(layout, final.widgetId, area));
+      const placed = withArea(layout, final.widgetId, area);
+      const next = { ...page, layouts: page.layouts.map(other => (other === layout ? placed : other)) };
+
+      // A moved widget stays on top, or it could vanish behind another once deselected.
+      onChange(final.handle ? next : bringToFront(next, final.widgetId));
     }
   }
 

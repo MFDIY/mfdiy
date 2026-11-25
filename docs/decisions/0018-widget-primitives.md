@@ -29,7 +29,7 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 
 ### Later
 
-- **Group:** a titled frame around several widgets. Because widgets can't overlap (0006), it must be a nested grid that moves as a unit.
+- **Group:** a titled frame around several widgets: a nested grid that moves as a unit.
 - **List-style widgets** with built-in paging (0007).
 - **Slider, knob and XY pad:** analogue controls, reserved for the virtual input device channel (0011).
 

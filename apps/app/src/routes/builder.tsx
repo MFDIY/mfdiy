@@ -1,4 +1,4 @@
-import type { Layout, MfdDocument } from '@mfdiy/schema';
+import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { Canvas } from '@mfdiy/builder';
 import { DEFAULT_GRID, scaleLayout } from '@mfdiy/schema';
@@ -27,14 +27,10 @@ export default function Builder() {
   // Version 1 has exactly one layout per page (0006).
   const layout = page?.layouts[0];
 
-  function handleLayoutChange(next: Layout) {
+  function handleChange(next: Page) {
     setDocument(current => ({
       ...current,
-      pages: current.pages.map(candidate =>
-        candidate.id === pageId
-          ? { ...candidate, layouts: candidate.layouts.map((other, index) => (index === 0 ? next : other)) }
-          : candidate
-      )
+      pages: current.pages.map(candidate => (candidate.id === next.id ? next : candidate))
     }));
   }
 
@@ -74,7 +70,7 @@ export default function Builder() {
             documentTokens={document.tokens}
             key={page.id}
             layout={layout}
-            onLayoutChange={handleLayoutChange}
+            onChange={handleChange}
             onSelect={setSelectedId}
             page={page}
             renderWidget={widget => <MfdWidget widget={widget} />}

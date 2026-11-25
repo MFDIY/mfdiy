@@ -9,7 +9,7 @@ Later, the live display can switch into an **edit mode** for quick tweaks right 
 
 - A **deliberate, dedicated control** enters edit mode, e.g. an unobtrusive menu button in a corner of the display. Gestures never do (0010). An obvious control exits it.
 - A **"lock layout"** setting on the display, on by default, hides the edit control so it can't be opened mid-flight.
-- In edit mode, widgets can be moved and resized on the grid, with the same snapping and no-overlap rules as the builder (0006).
+- In edit mode, widgets can be moved and resized on the grid, with the same snapping and overlap highlights as the builder (0006).
 - Tapping a widget opens the same **properties sheet** as the builder on narrow screens (0008).
 - Changes are saved to the same document the builder edits.
 

@@ -64,17 +64,16 @@ type DemoProps = {
 };
 
 function Demo({ aspectRatio, initialLayout, initialSelectedId, themeName, widgets }: DemoProps) {
-  const [current, setCurrent] = useState(initialLayout);
+  const [page, setPage] = useState<Page>({ id: 'demo', name: 'Demo', widgets, layouts: [initialLayout] });
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null);
-  const page: Page = { id: 'demo', name: 'Demo', widgets, layouts: [current] };
 
   return (
     <Box backgroundColor='page' height='viewport' padding='5x'>
       <Canvas
         aspectRatio={aspectRatio}
         documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
-        layout={current}
-        onLayoutChange={setCurrent}
+        layout={page.layouts[0] ?? initialLayout}
+        onChange={setPage}
         onSelect={setSelectedId}
         page={page}
         renderWidget={renderWidget}

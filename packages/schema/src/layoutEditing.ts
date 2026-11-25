@@ -1,4 +1,4 @@
-import type { Area, Grid, Layout } from './document.js';
+import type { Area, Grid, Layout, Page } from './document.js';
 
 import { areasOverlap } from './layout.js';
 
@@ -147,4 +147,12 @@ export function scaleLayout(layout: Layout, grid: Grid, minSizes: Readonly<Recor
 /** The layout with one widget's area replaced. */
 export function withArea(layout: Layout, id: string, area: Area): Layout {
   return { ...layout, areas: { ...layout.areas, [id]: area } };
+}
+
+/** The page with one widget stacked above all others. Later widgets are on top. */
+export function bringToFront(page: Page, id: string): Page {
+  return {
+    ...page,
+    widgets: [...page.widgets.filter(widget => widget.id !== id), ...page.widgets.filter(widget => widget.id === id)]
+  };
 }

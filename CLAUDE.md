@@ -37,7 +37,7 @@ Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with 
 
 Next steps:
 
-1. **Rest of the builder** (0006–0008): palette, properties, saving documents, undo / redo, preview switcher, zoom.
+1. **Rest of the builder** (0006–0008): palette, properties, saving documents, undo / redo, grid size control, preview switcher, zoom.
 2. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
 
 The repository is public in the `MFDIY` org, and the landing page is live at https://mfdiy.app (HTTPS enforced).
