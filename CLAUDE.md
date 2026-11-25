@@ -41,9 +41,11 @@ Next steps:
 2. **Primitives fire on `pointerdown`** (0010); they still use `click`.
 3. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
 
-Waiting on the maintainer: make the repository public (required for free Pages hosting and SignPath signing, 0013), enable GitHub Pages and DNS for `mfdiy.app`, and read the game developer's terms before charging for anything.
+The repository is public in the `MFDIY` org, and the landing page is live at https://mfdiy.app (HTTPS enforced).
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); `npm audit` reports advisories in dev tooling only (Vitest 3, Storybook's glob dependency); the Sprinkles setup forked from Bonsai produces about 600 kB of builder CSS (51 kB gzipped) and can be pruned.
+Waiting on the maintainer: read the game developer's terms before charging for anything.
+
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports advisories in dev tooling only (Vitest 3, including two critical via `tinypool`, and Storybook's glob dependency; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 600 kB of builder CSS (51 kB gzipped) and can be pruned.
 
 ## Commands
 
