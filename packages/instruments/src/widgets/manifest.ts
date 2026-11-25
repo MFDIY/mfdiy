@@ -50,7 +50,9 @@ export type WidgetManifest = {
   options: Record<string, OptionSpec>;
   /** Whether the widget can trigger a game action when pressed. */
   actionable: boolean;
-  defaultSize: { columns: number; rows: number };
+  /** Size of a new widget as a share of the page, so it looks the same on any grid density (0006). */
+  defaultSize: { width: number; height: number };
+  /** In cells. */
   minSize: { columns: number; rows: number };
   /** Tokens the widget reads, offered for per-widget overrides in the builder. */
   tokens: readonly TokenName[];

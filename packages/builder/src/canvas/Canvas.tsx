@@ -1,9 +1,9 @@
-import type { Area, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
+import type { Area, Cell, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, mfdRoot } from '@mfdiy/instruments';
 import { areasEqual, areasOverlap, bringToFront, findOverlaps, moveArea, resizeArea, withArea } from '@mfdiy/schema';
-import { Box } from '@mfdiy/ui/components';
-import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { Box, Text } from '@mfdiy/ui/components';
+import { useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 
 import * as styles from './Canvas.css.js';
 import { CanvasWidget } from './CanvasWidget.js';
@@ -46,6 +46,13 @@ export type CanvasProps = {
   selectedId: string | null;
   onSelect: (widgetId: string | null) => void;
   onChange: (page: Page) => void;
+  /** Cells to highlight, e.g. where a widget is about to be added. */
+  ghost?: Area | null | undefined;
+  /**
+   * Fires when an empty cell is tapped while nothing is selected: with a selection, the first tap
+   * only lets go of it. Comes with where the grid is on the screen.
+   */
+  onEmptyTap?: ((cell: Cell, gridOnScreen: DOMRect) => void) | undefined;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
 };
@@ -62,9 +69,13 @@ export function Canvas({
   selectedId,
   onSelect,
   onChange,
+  ghost,
+  onEmptyTap,
   renderWidget
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
+  /** Where a press on the empty grid started, if it could become a tap. */
+  const emptyPressRef = useRef<{ x: number; y: number; threshold: number } | null>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
 
   const minSizes = new Map(page.widgets.map(widget => [widget.id, widgetMinSize(widget, layout.grid)]));
@@ -126,6 +137,60 @@ export function Canvas({
     setGesture(next);
   }
 
+  function cellAt(event: MouseEvent, dots: DOMRect): Cell {
+    const column = Math.floor(((event.clientX - dots.left) / dots.width) * layout.grid.columns) + 1;
+    const row = Math.floor(((event.clientY - dots.top) / dots.height) * layout.grid.rows) + 1;
+
+    // The outer edges of the dots are just beyond the grid.
+    return {
+      column: Math.min(Math.max(column, 1), layout.grid.columns),
+      row: Math.min(Math.max(row, 1), layout.grid.rows)
+    };
+  }
+
+  function handleEmptyPointerDown(event: PointerEvent) {
+    emptyPressRef.current = null;
+
+    if (event.target !== event.currentTarget || gesture) {
+      return;
+    }
+
+    if (selectedId !== null) {
+      onSelect(null);
+    } else if (event.isPrimary && event.button === 0) {
+      emptyPressRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+        threshold: event.pointerType === 'mouse' ? DRAG_THRESHOLD.mouse : DRAG_THRESHOLD.touch
+      };
+    }
+  }
+
+  /**
+   * On click rather than when the pointer is released: touch screens click after that, on whatever
+   * has appeared under the finger by then.
+   */
+  function handleEmptyClick(event: MouseEvent) {
+    const press = emptyPressRef.current;
+    const dots = dotsRef.current?.getBoundingClientRect();
+
+    emptyPressRef.current = null;
+
+    if (!press || !dots || event.target !== event.currentTarget) {
+      return;
+    }
+
+    const cell = cellAt(event, dots);
+    const occupied = Object.values(layout.areas).some(area =>
+      // The gaps between widgets aren't empty cells.
+      areasOverlap(area, { ...cell, columnSpan: 1, rowSpan: 1 })
+    );
+
+    if (!occupied && Math.hypot(event.clientX - press.x, event.clientY - press.y) < press.threshold) {
+      onEmptyTap?.(cell, dots);
+    }
+  }
+
   /**
    * Selects the pressed widget. Pressing the selected widget again selects the next one underneath,
    * so widgets hidden behind others can be reached.
@@ -138,15 +203,14 @@ export function Canvas({
       return;
     }
 
-    const column = Math.floor(((event.clientX - dots.left) / dots.width) * layout.grid.columns) + 1;
-    const row = Math.floor(((event.clientY - dots.top) / dots.height) * layout.grid.rows) + 1;
+    const cell = cellAt(event, dots);
 
     const stack = page.widgets
       .map(widget => widget.id)
       .filter(id => {
         const area = layout.areas[id];
 
-        return area && areasOverlap(area, { column, row, columnSpan: 1, rowSpan: 1 });
+        return area && areasOverlap(area, { ...cell, columnSpan: 1, rowSpan: 1 });
       })
       // Later widgets are on top.
       .reverse();
@@ -168,7 +232,7 @@ export function Canvas({
       if (!final.handle) {
         handleTap(final.widgetId, event);
       }
-    } else if (!areasEqual(area, final.startArea)) {
+    } else if (layout.areas[final.widgetId] && !areasEqual(area, final.startArea)) {
       const placed = withArea(layout, final.widgetId, area);
       const next = { ...page, layouts: page.layouts.map(other => (other === layout ? placed : other)) };
 
@@ -221,6 +285,7 @@ export function Canvas({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           overscrollBehavior='none'
+          position='relative'
           role='group'
           style={applyTokens(page.tokens)}
           touchAction='none'
@@ -230,11 +295,8 @@ export function Canvas({
             className={styles.grid}
             display='grid'
             height='full'
-            onPointerDown={event => {
-              if (event.target === event.currentTarget && !gesture) {
-                onSelect(null);
-              }
-            }}
+            onClick={handleEmptyClick}
+            onPointerDown={handleEmptyPointerDown}
             position='relative'
             style={{
               gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
@@ -274,25 +336,7 @@ export function Canvas({
                 </CanvasWidget>
               );
             })}
-            {drag ? (
-              <Box
-                backgroundColor='canvas.ghost'
-                borderColor='canvas.ghost'
-                borderRadius='1x'
-                borderStyle='solid'
-                borderWidth='canvas'
-                boxShadow='canvas.halo'
-                data-canvas='ghost'
-                pointerEvents='none'
-                position='relative'
-                style={{
-                  gridColumn: `${drag.area.column} / span ${drag.area.columnSpan}`,
-                  gridRow: `${drag.area.row} / span ${drag.area.rowSpan}`
-                }}
-                // Above the lifted widget, which would otherwise hide it.
-                zIndex='3'
-              />
-            ) : null}
+            {drag || ghost ? <Ghost area={drag?.area ?? (ghost as Area)} /> : null}
             {overlaps.map(({ widgetIds, area }) => (
               // Striped and dashed as well as red, so it doesn't rely on colour alone.
               <Box
@@ -314,8 +358,44 @@ export function Canvas({
               />
             ))}
           </Box>
+          {onEmptyTap && page.widgets.length === 0 && !ghost ? (
+            <Box
+              alignItems='center'
+              display='flex'
+              inset='none'
+              justifyContent='center'
+              pointerEvents='none'
+              position='absolute'
+            >
+              <Box backgroundColor='elevation.floating' borderRadius='2x' color='body' padding='4x'>
+                <Text variant='body'>Tap anywhere to add a widget</Text>
+              </Box>
+            </Box>
+          ) : null}
         </Box>
       </Box>
     </Box>
+  );
+}
+
+function Ghost({ area }: { area: Area }) {
+  return (
+    <Box
+      backgroundColor='canvas.ghost'
+      borderColor='canvas.ghost'
+      borderRadius='1x'
+      borderStyle='solid'
+      borderWidth='canvas'
+      boxShadow='canvas.halo'
+      data-canvas='ghost'
+      pointerEvents='none'
+      position='relative'
+      style={{
+        gridColumn: `${area.column} / span ${area.columnSpan}`,
+        gridRow: `${area.row} / span ${area.rowSpan}`
+      }}
+      // Above a lifted widget, which would otherwise hide it.
+      zIndex='3'
+    />
   );
 }

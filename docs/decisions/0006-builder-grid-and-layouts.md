@@ -36,7 +36,11 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 
 - **Move:** drag a widget; a snapped ghost previews the drop, with any overlap in red.
 - **Resize:** corner and edge handles, at least 44 px on touch screens, never below the widget manifest's `minSize`.
-- **Add:** tap an empty cell, pick a widget from a palette, and it's placed there at its default size (shrunk to fit if needed). Manifests give default sizes as a **share of the page** (e.g. 1/6 of its width), rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density.
+- **Add:** tap an empty cell to open the palette. **Pick a widget** by its looks, then **what it shows or does**, from only what suits it; skipping that places it unconnected. Labels and units come from the signal.
+- **Where it goes:** the tapped cell becomes its **top left** corner. It grows right and down to its default size, **shrinking to the free space**, so adding doesn't cause overlap. Only if not even its minimum size is free does it overlap.
+- **Letting go:** with a widget selected, the first tap on an empty cell only deselects; the next one opens the palette.
+- **Remove** the selected widget, and **undo / redo**, from the toolbar. Undo reaches past a save, and shows the page it changed.
+- **Default sizes:** manifests give default sizes as a **share of the page** (e.g. 1/6 of its width), rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density.
 - **Touch screens:** widgets can be dragged directly, since nothing scrolls (0007). Tapping a widget selects it, which opens its properties.
 - **Without dragging (0001):** the properties panel has numeric position and size fields. There is no keyboard editing: an MFD is an input device next to the keyboard, not driven by it.
 

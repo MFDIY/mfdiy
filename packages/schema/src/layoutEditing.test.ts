@@ -1,9 +1,19 @@
-import type { Area, Layout, Page } from './document.js';
-
+import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 
+import { PageSchema, type Area, type Layout, type Page } from './document.js';
 import { findOverlaps, validateLayout } from './layout.js';
-import { bringToFront, moveArea, resizeArea, scaleLayout, withArea } from './layoutEditing.js';
+import {
+  addWidget,
+  bringToFront,
+  moveArea,
+  newWidgetId,
+  placeArea,
+  removeWidget,
+  resizeArea,
+  scaleLayout,
+  withArea
+} from './layoutEditing.js';
 
 function area(column: number, row: number, columnSpan = 1, rowSpan = 1): Area {
   return { column, row, columnSpan, rowSpan };
@@ -142,5 +152,85 @@ describe('bringToFront', () => {
 
   it('changes nothing for an unknown widget', () => {
     expect(bringToFront(page, 'x')).toEqual(page);
+  });
+});
+
+describe('placeArea', () => {
+  const wanted = { columns: 3, rows: 2 };
+
+  it('puts the top left corner on the cell', () => {
+    expect(placeArea(layoutOf({}), { column: 2, row: 2 }, wanted)).toEqual(area(2, 2, 3, 2));
+  });
+
+  it('shrinks at the edges of the grid', () => {
+    expect(placeArea(layoutOf({}), { column: 5, row: 4 }, wanted)).toEqual(area(5, 4, 2, 1));
+  });
+
+  it('shrinks to the biggest free area', () => {
+    const tall = layoutOf({ a: area(2, 1, 1, 4) });
+    const wide = layoutOf({ a: area(2, 2, 5, 1) });
+
+    expect(placeArea(tall, { column: 1, row: 1 }, wanted)).toEqual(area(1, 1, 1, 2));
+    expect(placeArea(wide, { column: 1, row: 1 }, wanted)).toEqual(area(1, 1, 3, 1));
+  });
+
+  it('never overlaps while there is room for the minimum size', () => {
+    const layout = layoutOf({ a: area(1, 1, 2, 2), b: area(4, 2, 2, 2), c: area(1, 4, 6, 1) });
+
+    for (let row = 1; row <= grid.rows; row++) {
+      for (let column = 1; column <= grid.columns; column++) {
+        const occupied = findOverlaps(withArea(layout, 'cell', area(column, row))).length > 0;
+
+        if (!occupied) {
+          const placed = withArea(layout, 'new', placeArea(layout, { column, row }, wanted));
+
+          expect(findOverlaps(placed)).toEqual([]);
+          expect(problems(placed)).toEqual([]);
+        }
+      }
+    }
+  });
+
+  it('overlaps at its minimum size if there is no room, within the grid', () => {
+    const min = { columns: 2, rows: 2 };
+
+    expect(placeArea(layoutOf({ a: area(2, 1, 1, 4) }), { column: 1, row: 1 }, wanted, min)).toEqual(area(1, 1, 2, 2));
+    expect(placeArea(layoutOf({}), { column: 6, row: 4 }, wanted, min)).toEqual(area(5, 3, 2, 2));
+    expect(placeArea(layoutOf({}, { columns: 1, rows: 1 }), { column: 1, row: 1 }, wanted, min)).toEqual(area(1, 1));
+  });
+});
+
+describe('adding and removing widgets', () => {
+  const page: Page = {
+    id: 'page',
+    name: 'Page',
+    widgets: [{ id: 'bar-1', type: 'bar' }],
+    layouts: [
+      layoutOf({ 'bar-1': area(1, 1) }),
+      { ...layoutOf({ 'bar-1': area(1, 1) }, { columns: 2, rows: 8 }), orientation: 'portrait' }
+    ]
+  };
+
+  const layout = page.layouts[0] as Layout;
+
+  it('finds an unused id', () => {
+    expect(newWidgetId(page, 'bar')).toBe('bar-2');
+    expect(newWidgetId(page, 'light')).toBe('light-1');
+    expect(newWidgetId(page, 'x'.repeat(64)).length).toBeLessThanOrEqual(64);
+  });
+
+  it.each([area(3, 1, 2, 2), area(6, 4), area(1, 1)])('adds to every layout: %o', added => {
+    const next = addWidget(page, layout, { id: 'light-1', type: 'light' }, added);
+
+    expect(next.widgets.at(-1)?.id).toBe('light-1');
+    expect(next.layouts[0]?.areas['light-1']).toEqual(added);
+    expect(v.safeParse(PageSchema, next).issues).toBeUndefined();
+  });
+
+  it('removes from every layout', () => {
+    const next = removeWidget(page, 'bar-1');
+
+    expect(next.widgets).toEqual([]);
+    expect(v.safeParse(PageSchema, next).issues).toBeUndefined();
   });
 });

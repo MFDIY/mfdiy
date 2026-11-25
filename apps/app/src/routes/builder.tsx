@@ -1,8 +1,10 @@
 import type { WatchedDocument } from '../documents/DocumentStore.js';
 import type { FailedOutcome } from '../documents/documentText.js';
-import type { MfdDocument, Page, StoredDocument } from '@mfdiy/schema';
+import type { Edit } from '../documents/edit.js';
+import type { MfdDocument, Page } from '@mfdiy/schema';
 
-import { Canvas } from '@mfdiy/builder';
+import { PageEditor } from '@mfdiy/builder';
+import { removeWidget } from '@mfdiy/schema';
 import { Box, Button, Dialog, Inline, SegmentedControl, Stack, Text, TextLink } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
@@ -11,7 +13,9 @@ import { DocumentPlaceholder } from '../documents/DocumentPlaceholder.js';
 import { useDocumentRequest, useWatchedDocument } from '../documents/DocumentsProvider.js';
 import { NameDialog } from '../documents/NameDialog.js';
 import { copyName, failureText } from '../documents/documentText.js';
+import { change, changedPageId, isDirty, redo, saved, startEdit, undo } from '../documents/edit.js';
 import { MfdWidget } from '../mfd/MfdWidget.js';
+import { useConnection } from '../telemetry/TelemetryProvider.js';
 
 export default function Builder() {
   const { id = '' } = useParams();
@@ -19,59 +23,75 @@ export default function Builder() {
   return <Editor id={id} key={id} />;
 }
 
-/** Unsaved changes, and the saved version they were made to. */
-type Draft = { document: MfdDocument; base: StoredDocument };
-
 /**
  * Edits one profile. Changes stay in the builder until saved; without any, it follows what other
- * devices save. The rest of the toolbar, palette and properties come next (0008).
+ * devices save. The rest of the toolbar and the properties come next (0008).
  */
 function Editor({ id }: { id: string }) {
   const watched = useWatchedDocument(id);
   const request = useDocumentRequest();
   const navigate = useNavigate();
 
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const { hello } = useConnection();
+
+  const [lastEdit, setEdit] = useState<Edit | null>(null);
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<FailedOutcome['status'] | null>(null);
   const [dialog, setDialog] = useState<'conflict' | 'save-as-new' | null>(null);
   const [pageId, setPageId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Set when leaving on purpose, as the draft is only cleared by the next render.
+  // Without unsaved changes there's nothing to keep once another device saves.
+  const outdated =
+    lastEdit !== null &&
+    !isDirty(lastEdit) &&
+    watched.status === 'ready' &&
+    watched.stored.revision !== lastEdit.base.revision;
+  const edit = outdated ? null : lastEdit;
+  const dirty = edit !== null && isDirty(edit);
+
+  // Set when leaving on purpose, as the changes are still there until the next render.
   const leavingRef = useRef(false);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      draft !== null && !leavingRef.current && currentLocation.pathname !== nextLocation.pathname
+      dirty && !leavingRef.current && currentLocation.pathname !== nextLocation.pathname
   );
 
   useBeforeUnload(event => {
-    if (draft) {
+    if (dirty) {
       event.preventDefault();
     }
   });
 
-  // With a draft, editing continues even if the saved version disappears.
-  const stored = watched.status === 'ready' ? watched.stored : draft?.base;
+  // With unsaved changes, editing continues even if the saved version disappears.
+  const stored = watched.status === 'ready' ? watched.stored : dirty ? edit.base : undefined;
 
   if (!stored) {
     return <DocumentPlaceholder status={watched.status === 'missing' ? 'missing' : 'loading'} />;
   }
 
-  const document = draft?.document ?? stored.document;
+  const current = edit ?? startEdit(stored);
+  const { document } = current;
   const page = document.pages.find(candidate => candidate.id === pageId) ?? document.pages[0];
   // Version 1 has exactly one layout per page (0006).
   const layout = page?.layouts[0];
-  const conflict = saving ? null : findConflict(draft, watched);
+  const conflict = saving || !dirty ? null : findConflict(edit, watched);
+  const selected = page?.widgets.some(widget => widget.id === selectedId) ? selectedId : null;
 
   function handleChange(next: Page) {
-    setFailure(null);
-    setDraft(current => {
-      const before = current?.document ?? document;
-      const pages = before.pages.map(candidate => (candidate.id === next.id ? next : candidate));
+    const pages = document.pages.map(candidate => (candidate.id === next.id ? next : candidate));
 
-      return { document: { ...before, pages }, base: current?.base ?? (stored as StoredDocument) };
-    });
+    setFailure(null);
+    setEdit(change(current, { ...document, pages }));
+  }
+
+  /** Undoes or redoes, showing the page it changed. */
+  function handleTimeTravel(travel: (edit: Edit) => Edit) {
+    const next = travel(current);
+
+    setFailure(null);
+    setEdit(next);
+    setPageId(changedPageId(document, next.document) ?? pageId);
   }
 
   function handlePageChange(next: string) {
@@ -81,9 +101,11 @@ function Editor({ id }: { id: string }) {
 
   /** Whether everything is saved. */
   async function save(): Promise<boolean> {
-    if (!draft) {
+    if (!dirty) {
       return true;
     }
+
+    const sent: MfdDocument = edit.document;
 
     setSaving(true);
     setFailure(null);
@@ -91,17 +113,14 @@ function Editor({ id }: { id: string }) {
     const outcome = await request({
       type: 'document-save',
       id,
-      revision: draft.base.revision,
-      document: draft.document
+      revision: edit.base.revision,
+      document: sent
     });
 
     setSaving(false);
 
     if (outcome.status === 'ok') {
-      const base = { ...draft.base, revision: outcome.revision, document: draft.document };
-
-      // Changes made while saving are still unsaved.
-      setDraft(current => (current && current.document !== draft.document ? { ...current, base } : null));
+      setEdit(latest => latest && saved(latest, sent, outcome.revision));
     } else if (outcome.status === 'stale' || outcome.status === 'not-found') {
       setDialog('conflict');
     } else {
@@ -146,6 +165,38 @@ function Editor({ id }: { id: string }) {
             ) : null}
           </Inline>
           <Inline alignItems='center' spacing='3x'>
+            <Button
+              aria-label='Undo'
+              disabled={current.past.length === 0}
+              onClick={() => handleTimeTravel(undo)}
+              size='large'
+              title='Undo'
+            >
+              ↶
+            </Button>
+            <Button
+              aria-label='Redo'
+              disabled={current.future.length === 0}
+              onClick={() => handleTimeTravel(redo)}
+              size='large'
+              title='Redo'
+            >
+              ↷
+            </Button>
+            <Button
+              disabled={!page || selected === null}
+              onClick={() => {
+                if (page && selected !== null) {
+                  handleChange(removeWidget(page, selected));
+                  setSelectedId(null);
+                }
+              }}
+              size='large'
+            >
+              Remove
+            </Button>
+          </Inline>
+          <Inline alignItems='center' spacing='3x'>
             <Text role='status' variant={failure || conflict ? 'field.error' : 'deemphasized'}>
               {saving
                 ? 'Saving…'
@@ -153,7 +204,7 @@ function Editor({ id }: { id: string }) {
                   ? `Not saved. ${failureText[failure]}`
                   : conflict
                     ? conflictText[conflict]
-                    : draft
+                    : dirty
                       ? 'Unsaved changes'
                       : 'Saved'}
             </Text>
@@ -161,7 +212,7 @@ function Editor({ id }: { id: string }) {
               Save as new
             </Button>
             <Button
-              disabled={!draft || saving}
+              disabled={!dirty || saving}
               onClick={() => (conflict ? setDialog('conflict') : void save())}
               size='large'
               variant='attention'
@@ -174,7 +225,8 @@ function Editor({ id }: { id: string }) {
       {/* Padded, so resize handles at the edges of the canvas stay on screen. */}
       <Box flexBasis='fluid' flexGrow='1' minHeight='none' padding='4x'>
         {page && layout ? (
-          <Canvas
+          <PageEditor
+            catalogue={hello ?? emptyCatalogue}
             documentTokens={document.tokens}
             key={page.id}
             layout={layout}
@@ -182,7 +234,7 @@ function Editor({ id }: { id: string }) {
             onSelect={setSelectedId}
             page={page}
             renderWidget={widget => <MfdWidget widget={widget} />}
-            selectedId={selectedId}
+            selectedId={selected}
           />
         ) : null}
       </Box>
@@ -221,7 +273,7 @@ function Editor({ id }: { id: string }) {
               {watched.status === 'ready' ? (
                 <Button
                   onClick={() => {
-                    setDraft(null);
+                    setEdit(null);
                     setFailure(null);
                     setDialog(null);
                   }}
@@ -256,14 +308,17 @@ function Editor({ id }: { id: string }) {
   );
 }
 
+/** Until the bridge has announced its own. */
+const emptyCatalogue = { signals: [], actions: [] };
+
 const conflictText = {
   changed: 'Changed on another device',
   deleted: 'Deleted on another device'
 } as const;
 
-/** What happened to the saved version since the draft was started, if anything. */
-function findConflict(draft: Draft | null, watched: WatchedDocument): keyof typeof conflictText | null {
-  if (!draft || watched.status === 'loading') {
+/** What happened to the saved version since these changes were started, if anything. */
+function findConflict({ base }: Edit, watched: WatchedDocument): keyof typeof conflictText | null {
+  if (watched.status === 'loading') {
     return null;
   }
 
@@ -271,5 +326,5 @@ function findConflict(draft: Draft | null, watched: WatchedDocument): keyof type
     return 'deleted';
   }
 
-  return watched.stored.revision > draft.base.revision ? 'changed' : null;
+  return watched.stored.revision > base.revision ? 'changed' : null;
 }

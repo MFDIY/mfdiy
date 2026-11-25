@@ -1,4 +1,4 @@
-import type { Area, Grid, Layout, Page } from './document.js';
+import type { Area, Grid, Layout, Page, WidgetInstance } from './document.js';
 
 import { areasOverlap } from './layout.js';
 
@@ -154,5 +154,100 @@ export function bringToFront(page: Page, id: string): Page {
   return {
     ...page,
     widgets: [...page.widgets.filter(widget => widget.id !== id), ...page.widgets.filter(widget => widget.id === id)]
+  };
+}
+
+/** A position on the grid, in cells. */
+export type Cell = { column: number; row: number };
+
+/**
+ * Where a new widget goes: from `cell` right and down to its wanted size, or as much of that as is
+ * free. If not even `minSize` is free, it gets that size anyway and overlaps others.
+ */
+export function placeArea(layout: Layout, cell: Cell, wanted: CellSize, minSize: CellSize = SINGLE_CELL): Area {
+  const { grid } = layout;
+  const placed = Object.values(layout.areas);
+  let best: Area | undefined;
+
+  // Growing one row at a time only ever makes the widest free span narrower.
+  let widest = Math.min(wanted.columns, grid.columns - cell.column + 1);
+  const tallest = Math.min(wanted.rows, grid.rows - cell.row + 1);
+
+  for (let rowSpan = 1; rowSpan <= tallest; rowSpan++) {
+    while (widest > 0 && placed.some(other => areasOverlap({ ...cell, columnSpan: widest, rowSpan }, other))) {
+      widest--;
+    }
+
+    const bigEnough = widest >= Math.min(minSize.columns, grid.columns) && rowSpan >= Math.min(minSize.rows, grid.rows);
+
+    if (widest > 0 && bigEnough && widest * rowSpan > (best ? best.columnSpan * best.rowSpan : 0)) {
+      best = { ...cell, columnSpan: widest, rowSpan };
+    }
+  }
+
+  if (best) {
+    return best;
+  }
+
+  const smallest = {
+    ...cell,
+    columnSpan: Math.min(minSize.columns, grid.columns),
+    rowSpan: Math.min(minSize.rows, grid.rows)
+  };
+
+  // Moved inwards if it would reach beyond the grid.
+  return moveArea(smallest, { columns: 0, rows: 0 }, grid);
+}
+
+/** An id no widget on the page has, e.g. `bar-2`. */
+export function newWidgetId(page: Page, type: string): string {
+  const ids = new Set(page.widgets.map(widget => widget.id));
+  // Ids are limited to 64 characters, and so are types.
+  const prefix = type.slice(0, 48);
+  let number = 1;
+
+  while (ids.has(`${prefix}-${number}`)) {
+    number++;
+  }
+
+  return `${prefix}-${number}`;
+}
+
+/** The page with a widget added on top, at `area` in `layout` and the same share of any others. */
+export function addWidget(page: Page, layout: Layout, widget: WidgetInstance, area: Area): Page {
+  return {
+    ...page,
+    widgets: [...page.widgets, widget],
+    layouts: page.layouts.map(other =>
+      other === layout
+        ? withArea(other, widget.id, area)
+        : withArea(other, widget.id, shareOf(area, layout.grid, other.grid))
+    )
+  };
+}
+
+function shareOf(area: Area, from: Grid, to: Grid): Area {
+  const column = scaleAxis(area.column, area.columnSpan, from.columns, to.columns);
+  const row = scaleAxis(area.row, area.rowSpan, from.rows, to.rows);
+  const scaled = {
+    column: column.start,
+    row: row.start,
+    columnSpan: Math.max(column.span, 1),
+    rowSpan: Math.max(row.span, 1)
+  };
+
+  // Rounding can leave a widget with no cells, just beyond the last one.
+  return moveArea(scaled, { columns: 0, rows: 0 }, to);
+}
+
+/** The page without one of its widgets. */
+export function removeWidget(page: Page, id: string): Page {
+  return {
+    ...page,
+    widgets: page.widgets.filter(widget => widget.id !== id),
+    layouts: page.layouts.map(layout => ({
+      ...layout,
+      areas: Object.fromEntries(Object.entries(layout.areas).filter(([other]) => other !== id))
+    }))
   };
 }

@@ -35,12 +35,12 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 ## Current state
 
-Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder canvas (select, move, resize) editing and saving one. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
+Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder that adds, moves, resizes and removes widgets, with undo and saving. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
 
 Next: **the first public beta (0020)**. Its scope, order and gates are agreed; don't reopen them without new information.
 
 1. **Connect the bridge to the game** (critical path). The schema can be generated from the installed game; a real frame is still needed for units and the order of shield faces. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
-2. **Editor** (0006–0008), limited to what 0020 lists. Until the palette exists, a new profile is an empty page; duplicate the demo to have something to edit.
+2. **Editor** (0006–0008), limited to what 0020 lists. Still to do: the properties panel (label, data, action, thresholds; design it with the maintainer), duplicating widgets, and pages. Until properties exist, a placed widget can't be changed and a Light can't be given an action.
 3. **Windows download, QR code, tap-to-engage and keep-awake.**
 4. **Starter profiles and built-in themes.** Where the choice of theme is kept is still open (0020).
 
@@ -67,7 +67,7 @@ Root (npm workspaces monorepo, Node 24):
 - `apps/bridge`: Node bridge. `source.ts` is the telemetry source interface; only the simulator exists so far. `library.ts` saves documents; during development in `apps/bridge/.data`.
 - `packages/schema`: Valibot schemas for every public format: signals, bridge protocol, theme tokens, documents.
 - `packages/instruments`: MFD primitives (pure), widgets and manifests (data-aware), the `--mfd-*` theme contract.
-- `packages/builder`: the builder's canvas, independent of the page hosting it. Develop it in Storybook first.
+- `packages/builder`: the builder's canvas and palette (`PageEditor`), independent of the page hosting them. Develop it in Storybook first.
 - `packages/ui`: builder design system, forked from Bonsai (`manage.vet`). One-way fork; prune freely.
 - `packages/adapter-star-citizen`: Star Citizen signal and action catalogue, and the starter documents a new library gets.
 - `packages/config`: shared TypeScript config.

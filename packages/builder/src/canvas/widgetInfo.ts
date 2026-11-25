@@ -1,6 +1,6 @@
 import type { CellSize, Grid, WidgetInstance } from '@mfdiy/schema';
 
-import { widgetManifests } from '@mfdiy/instruments';
+import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
 
 /** A name for screen readers, e.g. "Light Gear". */
 export function widgetName(widget: WidgetInstance): string {
@@ -15,4 +15,12 @@ export function widgetMinSize(widget: WidgetInstance, grid: Grid): CellSize {
   const { columns, rows } = widgetManifests[widget.type]?.minSize ?? { columns: 1, rows: 1 };
 
   return { columns: Math.min(columns, grid.columns), rows: Math.min(rows, grid.rows) };
+}
+
+/** The manifest's default size in cells, never below its minimum. */
+export function widgetDefaultSize({ defaultSize, minSize }: WidgetManifest, grid: Grid): CellSize {
+  return {
+    columns: Math.min(Math.max(Math.round(defaultSize.width * grid.columns), minSize.columns), grid.columns),
+    rows: Math.min(Math.max(Math.round(defaultSize.height * grid.rows), minSize.rows), grid.rows)
+  };
 }
