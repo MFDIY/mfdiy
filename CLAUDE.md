@@ -18,6 +18,9 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0010: How actions work on the display](docs/decisions/0010-actions-on-the-display.md)
 - [0011: Virtual input device as a second action channel](docs/decisions/0011-virtual-input-device.md) (Proposed)
 - [0012: Automatic profiles based on game context](docs/decisions/0012-automatic-profiles.md) (Proposed)
+- [0013: Free to play, paid to profit or to host](docs/decisions/0013-free-to-play-paid-to-profit.md)
+- [0014: Creator subscription](docs/decisions/0014-creator-subscription.md)
+- [0015: Events, groups and business offerings](docs/decisions/0015-events-groups-and-business.md)
 
 ## Commands
 
@@ -60,5 +63,6 @@ Game (local gRPC, localhost) ──▶ MFDIY bridge (gaming PC) ──WebSocket/
 ## Conventions
 
 - Commit straight to `main`.
+- The core is MIT. Paid add-ons (0013) live outside the core in separately licensed packages; never put paywalled code in MIT packages.
 - The landing page lives in `site/` and deploys to GitHub Pages via `.github/workflows/pages.yml`, served at https://mfdiy.app (custom domain set in the repository's Pages settings, not via a `CNAME` file).
 - Don't use game trademarks ("Star Citizen", "RSI", "Verse") in the product name or branding. MFDIY is an unofficial fan project and should be able to support other games later.
