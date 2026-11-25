@@ -23,6 +23,27 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0015: Events, groups and business offerings](docs/decisions/0015-events-groups-and-business.md)
 - [0016: Co-pilot suggestions powered by Jev](docs/decisions/0016-copilot-suggestions.md)
 - [0017: Billing with Stripe](docs/decisions/0017-billing-with-stripe.md)
+- [0018: Widget primitives](docs/decisions/0018-widget-primitives.md) (Proposed)
+
+## Working with the maintainer
+
+- Discuss and align before recording a decision; the maintainer wants to agree on decisions, not receive them. Record each agreed decision in `docs/decisions/`, split into several records when they're separate decisions.
+- Don't relitigate accepted decisions; build on them. Raise a concern only with new information, and then update the record.
+- The builder is the part the maintainer most looks forward to; design it together rather than presenting finished interaction designs.
+
+## Current state
+
+Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, and a display rendering a demo document. Not built yet: the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
+
+Next steps:
+
+1. **Builder canvas** (0006–0008): dot grid, select, move and resize with snapping, keyboard alternatives.
+2. **Primitives fire on `pointerdown`** (0010); they still use `click`.
+3. **Connect the bridge to the game**: needs one real frame from the maintainer's PC to map field names. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
+
+Waiting on the maintainer: make the repository public (required for free Pages hosting and SignPath signing, 0013), enable GitHub Pages and DNS for `mfdiy.app`, and read the game developer's terms before charging for anything.
+
+Known tech debt: React Router 8 is available (we're on 7, per 0003); `npm audit` reports advisories in dev tooling only (Vitest 3, Storybook's glob dependency); the Sprinkles setup forked from Bonsai produces about 600 kB of builder CSS (51 kB gzipped) and can be pruned.
 
 ## Commands
 
@@ -59,6 +80,7 @@ Game (local gRPC, localhost) ──▶ MFDIY bridge (gaming PC) ──WebSocket/
 ```
 
 - Browsers can't call native gRPC, so a bridge on the gaming PC is required. It holds the gRPC stream and fans frames out over WebSocket. It also forwards button presses as game actions.
+- Everything known about the game's telemetry is in [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
 - Star Citizen service: `sc.game.telemetry.v1.GameTelemetryService` with `TelemetryStream` (server-streaming, about 20 Hz), `TriggerGameAction` and `ListTriggerableActions`. The schema is unofficial and reverse-engineered; expect it to change between patches.
 - The game's telemetry server has **no authentication**. Keep it bound to localhost; the bridge decides what reaches the LAN and allowlists which actions can be triggered.
 

@@ -27,7 +27,7 @@
 
 ## Revisit when
 
-Secure-context features become essential. The upgrade path is the Plex approach: give each bridge its own subdomain of an MFDIY domain (e.g. `<id>.local.mfdiy.gg`) pointing at its private IP, with a real certificate issued via a DNS challenge. Known costs:
+Secure-context features become essential. This would be a free feature, not a paid one (0013). The upgrade path is the Plex approach: give each bridge its own subdomain of an MFDIY domain (e.g. `<id>.local.mfdiy.app`) pointing at its private IP, with a real certificate issued via a DNS challenge. Known costs:
 
 - An online service that issues DNS records and certificates.
 - Let's Encrypt rate limits per registered domain, probably needing a Public Suffix List entry.

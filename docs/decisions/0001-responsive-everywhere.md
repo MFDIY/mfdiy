@@ -20,7 +20,7 @@ People will build on whatever device is nearest: often the same tablet or phone 
 - Every drag or resize needs a **non-drag alternative** (keyboard, or numeric inputs in a properties panel) for accessibility and for precise placement on small screens.
 - Editing on a small screen will probably need a different interaction mode from desktop, for example "select, then adjust" rather than freeform dragging. Design the builder interaction model with small screens first, then scale up.
 
-## Open questions
+## Resolved questions
 
-- **One layout that adapts, or several per target?** A sim-pit panel is a fixed, known screen; a phone rotates. Options: (a) one layout that reflows, (b) a layout per breakpoint or aspect ratio, (c) a layout locked to a target aspect ratio, letterboxed elsewhere. Likely all three are useful; decide which is the default.
-- Should the builder preview the layout at other screen sizes (device frames, aspect-ratio presets) while editing?
+- **One layout that adapts, or several per target?** One stretching grid per page, with optional orientation variants later. See 0006.
+- **Previewing other screen sizes while editing:** the builder has a preview switcher. See 0006 and 0008.
