@@ -50,8 +50,8 @@ export type CommandPaletteProps = {
 
 /**
  * A modal search interface, centred on the screen. Forked from Bonsai, where it's app-wide and opened
- * by a shortcut; here the parent opens it, and what's behind it isn't blurred. Type to search, use
- * arrow keys to navigate, Enter to select, Escape or a press outside to close.
+ * by a shortcut; here the parent opens it. Type to search, use arrow keys to navigate, Enter to
+ * select, Escape or a press outside to close.
  */
 export function CommandPalette({
   activeIndex,
@@ -146,7 +146,8 @@ export function CommandPalette({
     styles.transitionDuration,
     designSystem({
       alignItems: 'center',
-      backgroundColor: status === 'open' ? 'overlay' : 'transparent',
+      backdropFilter: status === 'open' ? 'blur' : 'none',
+      backgroundColor: status === 'open' ? 'page-transparent' : 'transparent',
       containerType: 'size',
       display: 'flex',
       justifyContent: 'center',

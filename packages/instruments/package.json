@@ -13,7 +13,9 @@
   "scripts": {
     "dev": "storybook dev -p 6007",
     "storybook:build": "storybook build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --project unit --passWithNoTests",
+    "test:stories": "vitest run --project storybook"
   },
   "peerDependencies": {
     "react": "^19.1.1",
@@ -27,15 +29,19 @@
   },
   "devDependencies": {
     "@mfdiy/config": "0.0.0",
-    "@storybook/react-vite": "^10.2.16",
+    "@storybook/addon-vitest": "^10.6.9",
+    "@storybook/react-vite": "^10.6.9",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/browser-playwright": "^5.1.2",
+    "playwright": "^1.65.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "storybook": "^10.2.16",
+    "storybook": "^10.6.9",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^5.1.2"
   }
 }

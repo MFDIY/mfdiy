@@ -8,3 +8,6 @@ storybook-static/
 *.log
 .DS_Store
 .env
+.vitest/
+.claude/worktrees/
+.claude/settings.local.json

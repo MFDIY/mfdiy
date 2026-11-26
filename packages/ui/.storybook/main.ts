@@ -1,5 +1,8 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 export default {
   // this is required due to Vite not setting process.env but storybook expecting it
   // https://github.com/storybookjs/storybook/issues/18920
@@ -10,14 +13,24 @@ export default {
     });
   },
   stories: ['../src/**/*.stories.@(ts|tsx)'],
-  addons: ['@storybook/addon-links', '@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-themes'],
+  addons: [
+    getAbsolutePath('@storybook/addon-links'),
+    getAbsolutePath('@storybook/addon-docs'),
+    getAbsolutePath('@storybook/addon-a11y'),
+    getAbsolutePath('@storybook/addon-themes'),
+    getAbsolutePath('@storybook/addon-vitest')
+  ],
   docs: {
     defaultName: 'Documentation'
   },
   framework: {
-    name: '@storybook/react-vite',
+    name: getAbsolutePath('@storybook/react-vite'),
     options: {
       strictMode: true
     }
   }
 } satisfies StorybookConfig;
+
+function getAbsolutePath(value: string): string {
+  return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+}

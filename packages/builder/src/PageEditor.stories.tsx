@@ -6,6 +6,7 @@ import { builtInThemes, widgetManifests } from '@mfdiy/instruments';
 import { createBlankDocument } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
+import { expect, screen, within } from 'storybook/test';
 
 import { PageEditor } from './PageEditor.js';
 
@@ -70,3 +71,29 @@ export const EmptyPage: Story = {};
 
 /** Widgets can't be added before the bridge has sent what they can be connected to. */
 export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], actions: [] } } };
+
+/**
+ * Every widget starts at the same size (0006), so the spot marked for the new widget doesn't grow
+ * under the palette while one is highlighted.
+ */
+export const PaletteWithBarHighlighted: Story = {
+  tags: ['!dev'],
+  play: async ({ canvasElement, userEvent }) => {
+    const grid = within(canvasElement).getByRole('group', { name: /^Canvas/ }).firstElementChild;
+
+    if (!(grid instanceof HTMLElement)) {
+      throw new Error('No grid to press');
+    }
+
+    const { left, top, width, height } = grid.getBoundingClientRect();
+
+    await userEvent.pointer({
+      keys: '[MouseLeft]',
+      target: grid,
+      coords: { clientX: left + width * 0.3, clientY: top + height * 0.4 }
+    });
+    await userEvent.keyboard('{ArrowDown}');
+
+    await expect(await screen.findByRole('option', { name: /^Bar/ })).toHaveAttribute('aria-selected', 'true');
+  }
+};
