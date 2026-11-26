@@ -80,8 +80,7 @@ const listClass = designSystem({
   flexGrow: '1',
   flexShrink: '1',
   minHeight: 'none',
-  overflowY: 'auto',
-  overscrollBehavior: 'none'
+  overflowY: 'auto'
 });
 
 const itemClass = (highlighted: boolean, draggable: boolean) =>

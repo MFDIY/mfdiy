@@ -287,7 +287,17 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
   return (
     <Box display='flex' gap='4x' height='full' width='full'>
       {sidebar ? (
-        <Box flexShrink='0' height='full' minHeight='none' tagName='aside' width='panel'>
+        <Box
+          borderRightColor='line'
+          borderRightStyle='solid'
+          borderRightWidth='hairline'
+          flexShrink='0'
+          height='full'
+          minHeight='none'
+          paddingRight='4x'
+          tagName='aside'
+          width='panel'
+        >
           {libraryList}
         </Box>
       ) : null}

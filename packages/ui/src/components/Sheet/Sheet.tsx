@@ -40,8 +40,10 @@ const popupClass = [
   styles.popup
 ].join(' ');
 
-/** Scrolls on its own; the page never does (0007). */
+/** Scrolls on its own; the page never does (0007). Children can fill it, to scroll a part of their own. */
 const contentClass = designSystem({
+  display: 'flex',
+  flexDirection: 'column',
   flexBasis: 'auto',
   flexGrow: '1',
   flexShrink: '1',
@@ -130,7 +132,9 @@ export function Sheet({ children, defaultStop = 'half', onClose, open, title }: 
               </Box>
             </Box>
             <Drawer.Content className={contentClass}>
-              <Box padding='5x'>{children}</Box>
+              <Box flexGrow='1' minHeight='none' padding='5x'>
+                {children}
+              </Box>
             </Drawer.Content>
           </Drawer.Popup>
         </Drawer.Viewport>
