@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react';
 
 import '@mfdiy/ui';
 import './root.css.js';
+import { ToastProvider } from '@mfdiy/ui/components';
 import martianMono from '@mfdiy/ui/fonts/MartianMono.woff2?url';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
@@ -39,7 +40,9 @@ export default function App() {
   return (
     <TelemetryProvider>
       <DocumentsProvider>
-        <Outlet />
+        <ToastProvider>
+          <Outlet />
+        </ToastProvider>
       </DocumentsProvider>
     </TelemetryProvider>
   );
