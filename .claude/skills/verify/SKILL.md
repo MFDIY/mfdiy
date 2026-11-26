@@ -6,7 +6,8 @@ description: How to check a change in MFDIY before committing — which checks t
 # Verify a change
 
 Run only what the change can break, scoped to the workspaces it touches. Don't write throwaway
-scripts or install tools: everything needed is in the repository. If something is missing, say
+scripts or install tools: everything needed is in the repository. The one exception is checking
+hover and press with a real mouse (below). If something is missing, say
 so instead of working around it. Background: decision 0021.
 
 ## 0. Fresh worktree
@@ -50,21 +51,41 @@ or write a story for it, never a script that clicks through the app.
   `actual` image. The maintainer checks the look in Storybook (`npm run dev -w <workspace>`), so
   name the story to open.
 
+### What stories can't check, and pitfalls
+
+- **Hover and press.** Storybook's `userEvent.hover` and `click` dispatch events; they never
+  trigger CSS `:hover` or `:active`, so a story can't show or assert those states. To check one,
+  run the package's Storybook and drive it with a real mouse in a short Playwright script (the
+  `playwright` package is installed), reading `getComputedStyle` at rest, hovered and with the
+  button held. Keep the script out of the repository, and say in the commit what you checked.
+- **Hit areas.** `userEvent.click(element)` fires at that element, skipping the browser's hit
+  testing. To test what a press at a point reaches (a label stretched over a row), click
+  `document.elementFromPoint(x, y)`. See Switch's Toggling story.
+- **Keyboard in lists.** Base UI highlights items a moment after opening; wait for
+  `data-highlighted` on the expected item before the next key, or the test flakes under load.
+- **Motion.** Story tests run with reduced motion, so components must honour
+  `prefers-reduced-motion` for their screenshots to be stable.
+- **Updating several folders.** `--update` with more than one path has been seen to run only some
+  of them. Update one folder at a time, and check `git status` for the baselines you expected.
+- **Stale styles.** Vitest's on-disk module cache is off in the shared projects
+  (`packages/config/vitest.ts`), because a `.css.ts` is evaluated with what it imports. Leave it
+  off; if styles ever look stale in Node tests, delete `node_modules/.vitest-cache`.
+
 ## Choosing what runs
 
 The full suites keep growing, so run the smallest set that covers the change. These work for
 `npm test` (unit) and `npm run test:stories` alike, per workspace; arguments after `--` go to
 Vitest.
 
-| Run | Command |
-| --- | --- |
-| Stories affected by uncommitted changes, all packages | `npm run test:stories:changed` |
-| Stories affected by everything on this branch | `npm run test:stories --workspaces --if-present -- --changed origin/main` |
-| One package | `npm run test:stories -w @mfdiy/builder` |
-| Files or folders | `npm run test:stories -w @mfdiy/ui -- src/components/Button src/components/Text` |
-| Stories by name | `npm run test:stories -w @mfdiy/builder -- -t "Palette With Bar"` |
-| List the names to filter on | `npx vitest list --project storybook` (in the package folder) |
-| Unit tests, same way | `npm test -w @mfdiy/schema -- --changed`, `-- src/layoutEditing.test.ts`, `-- -t "grows"` |
+| Run                                                   | Command                                                                                   |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Stories affected by uncommitted changes, all packages | `npm run test:stories:changed`                                                            |
+| Stories affected by everything on this branch         | `npm run test:stories --workspaces --if-present -- --changed origin/main`                 |
+| One package                                           | `npm run test:stories -w @mfdiy/builder`                                                  |
+| Files or folders                                      | `npm run test:stories -w @mfdiy/ui -- src/components/Button src/components/Text`          |
+| Stories by name                                       | `npm run test:stories -w @mfdiy/builder -- -t "Palette With Bar"`                         |
+| List the names to filter on                           | `npx vitest list --project storybook` (in the package folder)                             |
+| Unit tests, same way                                  | `npm test -w @mfdiy/schema -- --changed`, `-- src/layoutEditing.test.ts`, `-- -t "grows"` |
 
 - `--changed` follows imports across packages: a change in `ui` runs the builder stories that
   use it too. Changes to `package.json`, the lockfile or a Vitest config make it run everything.
