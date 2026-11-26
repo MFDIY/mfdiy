@@ -6,6 +6,7 @@ import '@mfdiy/ui';
 
 /** Editing controls must stay visible on any theme: switch between them from the toolbar. */
 export default {
+  tags: ['visual'],
   globalTypes: {
     theme: {
       description: 'MFD theme',

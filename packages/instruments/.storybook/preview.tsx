@@ -6,6 +6,7 @@ import { builtInThemes } from '../src/theme/themes.js';
 
 /** Theme playground: switch between built-in themes from the toolbar. */
 export default {
+  tags: ['visual'],
   globalTypes: {
     theme: {
       description: 'MFD theme',

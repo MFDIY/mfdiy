@@ -1,0 +1,51 @@
+import type { TestProjectInlineConfiguration } from 'vitest/config';
+
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+import { playwright } from '@vitest/browser-playwright';
+import { join } from 'node:path';
+
+/**
+ * Vitest projects for a package with a Storybook (0021):
+ *
+ * - `unit`: `*.test.ts(x)` files, in Node.
+ * - `storybook`: every story as a test in Chromium. It renders, runs its `play` function and a11y
+ *   checks, and is compared with its screenshot (see `storybook.setup.ts`).
+ *
+ * Use as `test: { projects: storybookPackageProjects(import.meta.dirname) }` in `vite.config.ts`.
+ */
+export function storybookPackageProjects(packageDir: string): TestProjectInlineConfiguration[] {
+  return [
+    {
+      extends: true,
+      test: {
+        name: 'unit',
+        include: ['src/**/*.test.{ts,tsx}']
+      }
+    },
+    {
+      extends: true,
+      plugins: [storybookTest({ configDir: join(packageDir, '.storybook') })],
+      // Found late otherwise, so Vite reloads the page mid-run on a cold cache and tests fail.
+      optimizeDeps: {
+        include: ['@vanilla-extract/sprinkles/createRuntimeSprinkles', '@vanilla-extract/sprinkles/createUtils']
+      },
+      test: {
+        name: 'storybook',
+        setupFiles: [join(import.meta.dirname, 'storybook.setup.ts')],
+        browser: {
+          enabled: true,
+          headless: true,
+          provider: playwright(),
+          instances: [{ browser: 'chromium' }],
+          expect: {
+            toMatchScreenshot: {
+              comparatorName: 'pixelmatch',
+              // Baselines are made on the same machine, so every pixel must match exactly.
+              comparatorOptions: { threshold: 0 }
+            }
+          }
+        }
+      }
+    }
+  ];
+}

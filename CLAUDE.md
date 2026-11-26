@@ -26,6 +26,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0018: Widget primitives](docs/decisions/0018-widget-primitives.md) (Proposed)
 - [0019: Saving profiles](docs/decisions/0019-saving-profiles.md)
 - [0020: What the first public beta contains](docs/decisions/0020-launch-mvp.md)
+- [0021: Testing and visual regression](docs/decisions/0021-testing.md)
 
 ## Working with the maintainer
 
@@ -48,7 +49,7 @@ The repository is public in the `MFDIY` org, and the landing page is live at htt
 
 Waiting on the maintainer: generate the schema on the gaming PC (PTU and LIVE) and put both files where a session can read them; confirm PTU access; read the game developer's terms before charging for anything, and its fan-content and posting rules before announcing the beta.
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports advisories in dev tooling only (Vitest 3, including two critical via `tinypool`, and Storybook's glob dependency; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 656 kB of builder CSS (54 kB gzipped) and can be pruned.
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 656 kB of builder CSS (54 kB gzipped), makes every package that imports `@mfdiy/ui` spend ~22 s re-checking its types (0021), and can be pruned.
 
 ## Commands
 
@@ -57,9 +58,14 @@ Root (npm workspaces monorepo, Node 24):
 - `npm run dev`: bridge (simulator, port 8420) and app dev server (http://localhost:4000, proxies `/ws` to the bridge)
 - `npm run build`: build all workspaces; the bridge serves `apps/app/build/client`
 - `npm start`: run the bridge, serving the built app on port 80, falling back to 8420 (`npm start -- --port 1234` to choose, `--data <folder>` for where profiles are saved)
-- `npm run typecheck`, `npm run lint`, `npm run format`
-- `npm test`: Vitest across workspaces
+- `npm run lint`, `npm run format`
+- `npm run typecheck`, incremental: seconds when warm, ~90 s cold or after changing `packages/ui`. Prefer `-w <workspace>` for what a change touches.
+- `npm test`: unit tests across workspaces (seconds)
+- `npm run test:stories`: every story of ui, instruments and builder in Chromium, compared with its baseline screenshot (0021); `-w <workspace> -- --update` accepts intended changes
 - `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments` / `-w @mfdiy/builder`: Storybook (ports 6006 / 6007 / 6008)
+- Update Storybook and add its addons only with its own commands, never by editing versions: `npx storybook@<version> upgrade --yes -c packages/ui/.storybook packages/instruments/.storybook packages/builder/.storybook`, and `npx storybook@<version> add <addon> --yes -c <config dir>`. Review what they change (0021).
+
+Before committing, follow the `verify` skill (`.claude/skills/verify`).
 
 ## Layout
 
@@ -80,6 +86,7 @@ Root (npm workspaces monorepo, Node 24):
 - In MFD styles, always read tokens through `token()` from `@mfdiy/instruments`, never `vars` directly; it resolves the base → semantic → component fallback chain at the point of use.
 - Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.
 - `useEffect` is for synchronising with external systems only; derive values during render.
+- Keep components driven by props, so every state worth checking can be a story; stories are the UI tests (0021).
 
 ## Planned architecture
 

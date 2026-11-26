@@ -48,7 +48,7 @@ const DEFAULT_THEME = 'App' as const satisfies keyof typeof THEMES;
 initializeThemeState(Object.keys(THEMES), DEFAULT_THEME);
 
 export default {
-  tags: ['autodocs'],
+  tags: ['autodocs', 'visual'],
   globalTypes: {
     colorScheme: {
       description: 'Color scheme',
@@ -72,7 +72,9 @@ export default {
         order: ['Docs', 'Layout', 'Components']
       }
     },
+
     layout: 'fullscreen',
+
     docs: {
       canvas: {
         layout: 'fullscreen',
@@ -96,9 +98,11 @@ export default {
         </>
       )
     },
+
     controls: {
       expanded: true
     },
+
     viewport: {
       /**
        * Support every container size while accounting for the padding added to each story via
@@ -116,6 +120,13 @@ export default {
         '900px': { name: 'Container Width 900px', styles: { width: '932px', height: '1080px' } },
         '1000px': { name: 'Container Width 1000px', styles: { width: '1032px', height: '1080px' } }
       }
+    },
+
+    a11y: {
+      // 'todo' - show a11y violations in the test UI only
+      // 'error' - fail CI on a11y violations
+      // 'off' - skip a11y checks entirely
+      test: 'todo'
     }
   },
   decorators: [
@@ -142,6 +153,10 @@ export default {
     (Story, context) => {
       const selectedTheme = pluckThemeFromContext(context) as keyof typeof THEMES;
       const activeTheme = selectedTheme || DEFAULT_THEME;
+
+      // Also on the root, for what's portalled out of the story, like the command palette.
+      document.documentElement.classList.remove(...Object.values(THEMES).map(theme => theme.themeSelector));
+      document.documentElement.classList.add(THEMES[activeTheme].themeSelector);
 
       return (
         <Box

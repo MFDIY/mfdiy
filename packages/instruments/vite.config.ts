@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+import { storybookPackageProjects } from '@mfdiy/config/vitest';
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import reactPlugin from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
@@ -8,5 +10,8 @@ export default defineConfig({
     vanillaExtractPlugin({
       identifiers: 'debug'
     })
-  ]
+  ],
+  test: {
+    projects: storybookPackageProjects(import.meta.dirname)
+  }
 });
