@@ -166,6 +166,8 @@ function TokenSheets({ themeName }: { themeName: string }) {
 
 export default {
   title: 'Instruments/Tokens',
+  // A page of examples, not a component, so no docs page.
+  tags: ['!autodocs'],
   render: (_args, context) => <TokenSheets themeName={String(context.globals['theme'] ?? '')} />
 } satisfies Meta;
 

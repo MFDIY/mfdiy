@@ -25,8 +25,10 @@ const meta = {
     title: { control: { type: 'text' } }
   },
   args: {
+    actions: undefined,
+    children: undefined,
     dismissible: false,
-    title: 'Save changes to “Fighter”?',
+    title: 'Dialog',
     onClose: () => undefined
   },
   decorators: [
@@ -42,9 +44,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Every prop at its default: a title, and nothing else. */
+export const Default = {} satisfies Story;
+
 /** A decision that has to be made: no close button, and Escape or a press outside does nothing. */
 export const Confirm = {
   args: {
+    title: 'Save changes to “Fighter”?',
     children: <Text variant='body'>Displays keep showing the saved version.</Text>,
     actions: (
       <>
@@ -104,6 +110,7 @@ export const Form = {
 /** Three ways out, as when leaving with unsaved changes. They wrap on a narrow screen. */
 export const ThreeActions = {
   args: {
+    title: 'Save changes to “Fighter”?',
     actions: (
       <>
         <Button variant='primary'>Save</Button>

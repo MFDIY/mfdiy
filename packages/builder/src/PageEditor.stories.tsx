@@ -67,7 +67,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** Tap an empty cell to add a widget. */
-export const EmptyPage: Story = {};
+/** An empty page: tap a cell to add a widget. */
+export const Default: Story = {};
 
 /** Widgets can't be added before the bridge has sent what they can be connected to. */
 export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], actions: [] } } };

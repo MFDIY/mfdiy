@@ -47,6 +47,8 @@ function Showcase({ themeName }: { themeName: string }) {
 
 export default {
   title: 'Instruments/Showcase',
+  // A page of examples, not a component, so no docs page.
+  tags: ['!autodocs'],
   render: (_args, context) => <Showcase themeName={String(context.globals['theme'] ?? '')} />
 } satisfies Meta;
 
