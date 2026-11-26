@@ -32,10 +32,11 @@ or write a story for it, never a script that clicks through the app.
   widget at its smallest). Tag them `!dev`: hidden in Storybook's sidebar, still tested. Reach the
   state through args where possible; use a `play` function only for what props can't express
   (focus, hover, an open popover, typing).
-- **Run them**: `npm run test:stories -w <workspace>` (or root `npm run test:stories`, ~10 s for
-  everything). Every story renders, runs its `play` function and a11y checks, and is compared
-  **exactly** with its baseline in `__screenshots__/` next to the story file. Pass a path to run
-  fewer: `npm run test:stories -w @mfdiy/builder -- src/canvas`.
+- **What they do**: every story renders, runs its `play` function and a11y checks, and is
+  compared **exactly** with its baseline in `__screenshots__/` next to the story file.
+- **Run only what's needed** (see "Choosing what runs" below). By default, while working:
+  `npm run test:stories:changed`. Before committing a change to a shared package (`ui`,
+  `instruments`, `schema`), run everything: `npm run test:stories`.
 - **Opt out** of the screenshot, per story or per file (`meta`), with the `!visual` tag, for
   anything that can't render the same twice. Still tested otherwise.
 - **A failing comparison** reports how many pixels differ and writes the new screenshot and a diff
@@ -48,6 +49,28 @@ or write a story for it, never a script that clicks through the app.
 - **Looking at something yourself**: write or pick the story, run it, and read its baseline or
   `actual` image. The maintainer checks the look in Storybook (`npm run dev -w <workspace>`), so
   name the story to open.
+
+## Choosing what runs
+
+The full suites keep growing, so run the smallest set that covers the change. These work for
+`npm test` (unit) and `npm run test:stories` alike, per workspace; arguments after `--` go to
+Vitest.
+
+| Run | Command |
+| --- | --- |
+| Stories affected by uncommitted changes, all packages | `npm run test:stories:changed` |
+| Stories affected by everything on this branch | `npm run test:stories --workspaces --if-present -- --changed origin/main` |
+| One package | `npm run test:stories -w @mfdiy/builder` |
+| Files or folders | `npm run test:stories -w @mfdiy/ui -- src/components/Button src/components/Text` |
+| Stories by name | `npm run test:stories -w @mfdiy/builder -- -t "Palette With Bar"` |
+| List the names to filter on | `npx vitest list --project storybook` (in the package folder) |
+| Unit tests, same way | `npm test -w @mfdiy/schema -- --changed`, `-- src/layoutEditing.test.ts`, `-- -t "grows"` |
+
+- `--changed` follows imports across packages: a change in `ui` runs the builder stories that
+  use it too. Changes to `package.json`, the lockfile or a Vitest config make it run everything.
+- `-t` matches the full test name, `<file> > <story name>`, so a story name (spaced words, as
+  `vitest list` shows it) matches on its own.
+- `--update` can be combined with any of these, to accept only the baselines you meant to change.
 
 ## 3. Storybook dependencies
 
