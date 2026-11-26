@@ -7,6 +7,7 @@ import {
   addWidget,
   bringToFront,
   cellAt,
+  firstFreeArea,
   growArea,
   moveArea,
   newWidgetId,
@@ -296,5 +297,29 @@ describe('adding and removing widgets', () => {
 
     expect(next.widgets).toEqual([]);
     expect(v.safeParse(PageSchema, next).issues).toBeUndefined();
+  });
+});
+
+describe('firstFreeArea', () => {
+  const wanted = { columns: 3, rows: 2 };
+
+  it('takes the top left of an empty grid', () => {
+    expect(firstFreeArea(layoutOf({}), wanted)).toEqual(area(1, 1, 3, 2));
+  });
+
+  it('reads the grid row by row for the first spot that fits', () => {
+    expect(firstFreeArea(layoutOf({ a: area(1, 1, 4, 2) }), wanted)).toEqual(area(1, 3, 3, 2));
+    expect(firstFreeArea(layoutOf({ a: area(1, 1, 3, 4) }), wanted)).toEqual(area(4, 1, 3, 2));
+  });
+
+  it('shrinks only when the wanted size fits nowhere, never below the minimum', () => {
+    const crowded = layoutOf({ a: area(1, 1, 6, 3), b: area(3, 4, 4, 1) });
+
+    expect(firstFreeArea(crowded, wanted)).toEqual(area(1, 4, 2, 1));
+    expect(firstFreeArea(crowded, wanted, { columns: 3, rows: 1 })).toBeUndefined();
+  });
+
+  it('is undefined on a full grid', () => {
+    expect(firstFreeArea(layoutOf({ a: area(1, 1, 6, 4) }), wanted)).toBeUndefined();
   });
 });

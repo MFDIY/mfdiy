@@ -255,6 +255,43 @@ export function placeArea(layout: Layout, point: GridPoint, wanted: CellSize): A
 }
 
 /**
+ * Where a new widget goes when there's no point to place it at: the first free area, reading the
+ * grid row by row from the top left, at its wanted size or, if that fits nowhere, as close to it as
+ * fits, never below `minSize`. Undefined if not even that fits anywhere.
+ */
+export function firstFreeArea(
+  { grid, areas }: Layout,
+  wanted: CellSize,
+  minSize: CellSize = SINGLE_CELL
+): Area | undefined {
+  const placed = Object.values(areas);
+  const sizes: CellSize[] = [];
+
+  for (let columns = Math.min(wanted.columns, grid.columns); columns >= minSize.columns; columns--) {
+    for (let rows = Math.min(wanted.rows, grid.rows); rows >= minSize.rows; rows--) {
+      sizes.push({ columns, rows });
+    }
+  }
+
+  // Biggest first; of equal size, the one closest to the wanted shape.
+  sizes.sort((a, b) => b.columns * b.rows - a.columns * a.rows);
+
+  for (const { columns: columnSpan, rows: rowSpan } of sizes) {
+    for (let row = 1; row <= grid.rows - rowSpan + 1; row++) {
+      for (let column = 1; column <= grid.columns - columnSpan + 1; column++) {
+        const area = { column, row, columnSpan, rowSpan };
+
+        if (!placed.some(other => areasOverlap(area, other))) {
+          return area;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Grows an area to its wanted size, or as much of that as is free: to the right and down, and only
  * for what doesn't fit there to the left and up. If not even `minSize` is free, it gets that size
  * anyway and overlaps others.
