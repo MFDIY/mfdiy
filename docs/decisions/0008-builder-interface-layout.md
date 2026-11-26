@@ -27,7 +27,9 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### In between
 
-As the screen narrows, panels move into sheets one at a time, until on a phone everything but the canvas and a thin toolbar lives in sheets. Which panel moves first, and at what width, is decided when the layout is built, by container width, not device detection.
+Both panels switch between sidebar and sheet together, in one place (`PanelLayout` in `packages/ui`): they're sidebars with a mouse or pen and room for them, sheets otherwise, so on a phone everything but the canvas and a thin toolbar lives in sheets, one at a time. The properties sidebar stays in place when nothing is selected, so the canvas doesn't change size with the selection; what it shows then is decided with the properties panel. Sidebars have a fixed width; resizing or collapsing them can come later.
+
+A side task inside a panel, like choosing a widget's data, replaces the panel's contents and offers Back, in both forms. Base UI's Drawer can stack sheets like Vaul, which would suit such side tasks on a phone, but a sidebar can't stack, so one pattern is used for now; stacked sheets can be added later without changing the panels.
 
 ### Preview mode
 
