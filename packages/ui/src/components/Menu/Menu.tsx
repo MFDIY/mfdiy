@@ -2,6 +2,7 @@ import type { IconName } from '../Icon/Icon.js';
 import type { ReactElement, ReactNode } from 'react';
 
 import { Menu as BaseMenu } from '@base-ui/react/menu';
+import { useState } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Icon } from '../Icon/Icon.js';
@@ -42,20 +43,33 @@ const separatorClass = designSystem({
 const OFFSET = 5;
 
 export type MenuProps = {
-  /** Opens the menu, e.g. an `IconButton`. It has to take a `ref` and pass on the props it's given. */
-  trigger: ReactElement;
   /** `MenuItem`s, with `MenuSeparator`s between groups. */
   children: ReactNode;
+  /** Fires when the menu opens or closes, for anything else on the page that reacts to it. */
+  onOpenChange?: ((open: boolean) => void) | undefined;
+  /**
+   * Opens the menu, e.g. an `IconButton`. It has to take a `ref` and pass on the props it's given.
+   * A function gets whether the menu is open, so the trigger can look different while it is.
+   */
+  trigger: ReactElement | ((open: boolean) => ReactElement);
 };
 
 /**
  * A list of actions that opens from a control, built on Base UI's Menu (0003): arrow keys move,
  * Enter chooses, typing jumps to an item, Escape closes.
  */
-export function Menu({ children, trigger }: MenuProps) {
+export function Menu({ children, onOpenChange, trigger }: MenuProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <BaseMenu.Root>
-      <BaseMenu.Trigger render={trigger} />
+    <BaseMenu.Root
+      onOpenChange={next => {
+        setOpen(next);
+        onOpenChange?.(next);
+      }}
+      open={open}
+    >
+      <BaseMenu.Trigger render={typeof trigger === 'function' ? trigger(open) : trigger} />
       <BaseMenu.Portal>
         <BaseMenu.Positioner align='start' sideOffset={OFFSET}>
           <BaseMenu.Popup className={popupClass}>{children}</BaseMenu.Popup>
@@ -68,12 +82,12 @@ export function Menu({ children, trigger }: MenuProps) {
 export type MenuItemProps = {
   /** What the item does. */
   children: string;
-  onClick: () => void;
-  /** An icon before the text. */
-  icon?: IconName | undefined;
   /** Marks a destructive action, like Remove. */
   danger?: boolean | undefined;
   disabled?: boolean | undefined;
+  /** An icon before the text. */
+  icon?: IconName | undefined;
+  onClick: () => void;
 };
 
 export function MenuItem({ children, danger = false, disabled = false, icon, onClick }: MenuItemProps) {

@@ -14,15 +14,15 @@ const toastClass = designSystem({ width: 'full' });
 const DEFAULT_DURATION = 5000;
 
 export type ToastOptions = {
-  /** A second, dimmed line. */
-  description?: string | undefined;
-  /** Shows a close button, and lets the toast be swiped away. */
-  dismissible?: boolean | undefined;
   /**
    * Hides the toast by itself: after 5 seconds when `true` (the default), or after this many
    * milliseconds. `false` keeps it until it's dismissed, so only use that with `dismissible`.
    */
   autoDismiss?: boolean | number | undefined;
+  /** A second, dimmed line. */
+  description?: string | undefined;
+  /** Shows a close button, and lets the toast be swiped away. */
+  dismissible?: boolean | undefined;
   /** Identifies the toast; showing one with the same id updates it. Defaults to the title. */
   id?: string | undefined;
 };

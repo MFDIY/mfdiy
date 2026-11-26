@@ -21,10 +21,10 @@ const popupClass = designSystem({
 const OFFSET = 5;
 
 export type TooltipProps = {
-  /** What the tooltip says: the name of the control it's for. */
-  label: string;
   /** The control. It has to take a `ref` and pass on the props it's given, like `Button`. */
   children: ReactElement;
+  /** What the tooltip says: the name of the control it's for. */
+  label: string;
 };
 
 /**

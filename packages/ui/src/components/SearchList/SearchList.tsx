@@ -9,44 +9,44 @@ import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 
 export type SearchListItem = {
-  id: string;
-  label: string;
   /** A second, dimmed line: what the item does, or what it belongs to. */
   description?: string | undefined;
-  /** A small picture before the label. */
-  preview?: ReactNode | undefined;
+  id: string;
+  label: string;
   /** Choosing it opens more choices rather than finishing. */
   opens?: boolean | undefined;
+  /** A small picture before the label. */
+  preview?: ReactNode | undefined;
 };
 
 export type SearchListGroup = {
+  items: readonly SearchListItem[];
   /** Shown above the group's items; leave out for a single, unnamed group. */
   label?: string | undefined;
-  items: readonly SearchListItem[];
 };
 
 export type SearchListProps = {
+  /** A way back, e.g. after choosing an item that opened more. */
+  back?: { label: string; onBack: () => void } | undefined;
+  /** Shows that rows can be dragged out of the list (the `grab` cursor). */
+  draggable?: boolean | undefined;
+  /** Shown when there's nothing to list. */
+  emptyText: string;
+  /** Focuses the search field when the list appears. */
+  focusSearch?: boolean | undefined;
+  /** What to list: already searched, as the list never filters on its own. */
+  groups: readonly SearchListGroup[];
   /** Names the search field and the list for assistive technology. */
   label: string;
+  /** The item under the pointer or picked with the arrow keys, or null. */
+  onHighlight?: ((id: string | null) => void) | undefined;
+  /** Lets a row be dragged out of the list, e.g. onto the canvas. */
+  onItemPointerDown?: ((id: string, event: PointerEvent<HTMLElement>) => void) | undefined;
+  onQueryChange: (query: string) => void;
+  onSelect: (id: string) => void;
   /** Says what can be searched for. */
   placeholder: string;
   query: string;
-  onQueryChange: (query: string) => void;
-  /** What to list: already searched, as the list never filters on its own. */
-  groups: readonly SearchListGroup[];
-  onSelect: (id: string) => void;
-  /** The item under the pointer or picked with the arrow keys, or null. */
-  onHighlight?: ((id: string | null) => void) | undefined;
-  /** Shown when there's nothing to list. */
-  emptyText: string;
-  /** A way back, e.g. after choosing an item that opened more. */
-  back?: { label: string; onBack: () => void } | undefined;
-  /** Focuses the search field when the list appears. */
-  focusSearch?: boolean | undefined;
-  /** Shows that rows can be dragged out of the list (the `grab` cursor). */
-  draggable?: boolean | undefined;
-  /** Lets a row be dragged out of the list, e.g. onto the canvas. */
-  onItemPointerDown?: ((id: string, event: PointerEvent<HTMLElement>) => void) | undefined;
 };
 
 type Group = { value: string; items: SearchListItem[] };

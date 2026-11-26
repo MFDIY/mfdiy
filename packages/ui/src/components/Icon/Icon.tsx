@@ -7,9 +7,9 @@ export type IconName = keyof typeof paths;
 export const iconNames = Object.keys(paths) as IconName[];
 
 export type IconProps = {
-  name: IconName;
   /** Names the icon for assistive technology. Leave out when the text or control around it says it already. */
   label?: string | undefined;
+  name: IconName;
 };
 
 /**
