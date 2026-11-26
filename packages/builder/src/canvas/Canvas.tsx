@@ -12,7 +12,15 @@ import {
   withArea
 } from '@mfdiy/schema';
 import { Box, Text } from '@mfdiy/ui/components';
-import { useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
+import {
+  useImperativeHandle,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+  type Ref
+} from 'react';
 
 import * as styles from './Canvas.css.js';
 import { CanvasWidget } from './CanvasWidget.js';
@@ -48,6 +56,12 @@ type Gesture = {
   dragging: boolean;
 };
 
+/** Lets the page around the canvas ask where things are on it, e.g. for a drag from outside. */
+export type CanvasPointer = {
+  /** The grid point under a pointer, or null if it isn't over the grid. */
+  gridPointAt: (clientX: number, clientY: number) => GridPoint | null;
+};
+
 export type CanvasProps = {
   page: Page;
   /** The layout being edited: one of the page's own. */
@@ -73,6 +87,8 @@ export type CanvasProps = {
   onEmptyTap?: ((point: GridPoint, pointerType: string) => void) | undefined;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
+  /** Receives a `CanvasPointer`. */
+  pointerRef?: Ref<CanvasPointer> | undefined;
 };
 
 /**
@@ -90,9 +106,22 @@ export function Canvas({
   ghost,
   newWidgetArea,
   onEmptyTap,
-  renderWidget
+  renderWidget,
+  pointerRef
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(pointerRef, () => ({
+    gridPointAt(clientX, clientY) {
+      const dots = dotsRef.current?.getBoundingClientRect();
+
+      if (!dots || clientX < dots.left || clientX > dots.right || clientY < dots.top || clientY > dots.bottom) {
+        return null;
+      }
+
+      return pointAt({ clientX, clientY }, dots);
+    }
+  }));
   /** Where a press on the empty grid started, if it could become a tap. */
   const emptyPressRef = useRef<{ x: number; y: number; point: GridPoint; pointerType: string } | null>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
@@ -159,7 +188,7 @@ export function Canvas({
   }
 
   /** The nearest quarter or three quarters of a cell: where things go never depends on more than that. */
-  function pointAt(event: MouseEvent, dots: DOMRect): GridPoint {
+  function pointAt(event: { clientX: number; clientY: number }, dots: DOMRect): GridPoint {
     return {
       x: snapAxis(((event.clientX - dots.left) / dots.width) * layout.grid.columns, layout.grid.columns),
       y: snapAxis(((event.clientY - dots.top) / dots.height) * layout.grid.rows, layout.grid.rows)

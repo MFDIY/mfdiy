@@ -86,6 +86,8 @@ export const chromeTokens = {
   /** The one height every control shares (buttons, fields, …), so they always line up (0022). */
   'size.control': '32px',
   'size.canvas.handle': '24px',
+  /** A side panel beside the canvas, such as the widget library (0008). */
+  'size.panel': '280px',
   'border.hairline': mfdiy['border.width'],
   'border.edit': '2px',
   'focus.width': '1px',

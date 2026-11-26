@@ -44,6 +44,8 @@ export type SearchListProps = {
   back?: { label: string; onBack: () => void } | undefined;
   /** Focuses the search field when the list appears. */
   focusSearch?: boolean | undefined;
+  /** Shows that rows can be dragged out of the list (the `grab` cursor). */
+  draggable?: boolean | undefined;
   /** Lets a row be dragged out of the list, e.g. onto the canvas. */
   onItemPointerDown?: ((id: string, event: PointerEvent<HTMLElement>) => void) | undefined;
 };
@@ -82,11 +84,11 @@ const listClass = designSystem({
   overscrollBehavior: 'none'
 });
 
-const itemClass = (highlighted: boolean) =>
+const itemClass = (highlighted: boolean, draggable: boolean) =>
   designSystem({
     alignItems: 'center',
     backgroundColor: highlighted ? 'hover' : 'transparent',
-    cursor: 'default',
+    cursor: draggable ? 'grab' : 'default',
     display: 'flex',
     gap: '3x',
     minHeight: 'control',
@@ -106,6 +108,7 @@ const QUERY_REASONS = new Set(['input-change', 'input-clear', 'clear-press', 'es
  */
 export function SearchList({
   back,
+  draggable = false,
   emptyText,
   focusSearch = false,
   groups,
@@ -190,7 +193,7 @@ export function SearchList({
               <Autocomplete.Collection>
                 {(item: SearchListItem) => (
                   <Autocomplete.Item
-                    className={state => itemClass(state.highlighted)}
+                    className={state => itemClass(state.highlighted, draggable)}
                     key={item.id}
                     onClick={() => onSelect(item.id)}
                     onPointerDown={event => onItemPointerDown?.(item.id, event)}
@@ -214,9 +217,12 @@ export function SearchList({
                         <Text truncate variant='body'>
                           {item.label}
                           {item.detail ? (
-                            <Text color='text.dim' tagName='span'>
-                              {` · ${item.detail}`}
-                            </Text>
+                            <>
+                              {' · '}
+                              <Text color='text.dim' tagName='span'>
+                                {item.detail}
+                              </Text>
+                            </>
                           ) : null}
                         </Text>
                         {item.description ? (

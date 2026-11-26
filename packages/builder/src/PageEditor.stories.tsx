@@ -66,35 +66,109 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Tap an empty cell to add a widget. */
-/** An empty page: tap a cell to add a widget. */
+/** An empty page: tap a cell, or drag a widget from the library onto it. */
 export const Default: Story = {};
 
 /** Widgets can't be added before the bridge has sent what they can be connected to. */
 export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], actions: [] } } };
 
+/** The canvas's grid, to press or drop on. */
+function gridOf(canvasElement: HTMLElement) {
+  const grid = within(canvasElement).getByRole('group', { name: /^Canvas/ }).firstElementChild;
+
+  if (!(grid instanceof HTMLElement)) {
+    throw new Error('No grid to press');
+  }
+
+  const { left, top, width, height } = grid.getBoundingClientRect();
+
+  return { grid, at: (x: number, y: number) => ({ clientX: left + width * x, clientY: top + height * y }) };
+}
+
 /**
  * Every widget starts at the same size (0006), so the spot marked for the new widget doesn't grow
- * under the palette while one is highlighted.
+ * while one is highlighted in the library.
  */
-export const PaletteWithBarHighlighted: Story = {
+export const MarkedCellWithBarHighlighted: Story = {
   tags: ['!dev'],
   play: async ({ canvasElement, userEvent }) => {
-    const grid = within(canvasElement).getByRole('group', { name: /^Canvas/ }).firstElementChild;
+    const { grid, at } = gridOf(canvasElement);
 
-    if (!(grid instanceof HTMLElement)) {
-      throw new Error('No grid to press');
-    }
+    await userEvent.pointer({ keys: '[MouseLeft]', target: grid, coords: at(0.3, 0.4) });
+    await userEvent.hover(await screen.findByRole('option', { name: /^Bar/ }));
 
-    const { left, top, width, height } = grid.getBoundingClientRect();
+    await expect(screen.getByRole('option', { name: /^Bar/ })).toHaveAttribute('data-highlighted');
+  }
+};
 
-    await userEvent.pointer({
-      keys: '[MouseLeft]',
-      target: grid,
-      coords: { clientX: left + width * 0.3, clientY: top + height * 0.4 }
-    });
-    await userEvent.keyboard('{ArrowDown}');
+/** Mark a cell, then pick a widget and what it shows: it's added there. */
+export const AddByMarkingACell: Story = {
+  tags: ['!dev', '!visual'],
+  play: async ({ canvasElement, userEvent }) => {
+    const { grid, at } = gridOf(canvasElement);
 
-    await expect(await screen.findByRole('option', { name: /^Bar/ })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.pointer({ keys: '[MouseLeft]', target: grid, coords: at(0.3, 0.4) });
+    await userEvent.click(screen.getByRole('option', { name: /^Light/ }));
+    await userEvent.click(await screen.findByRole('option', { name: /^Gear/ }));
+
+    await expect(within(canvasElement).getByRole('button', { name: /gear/i })).toBeInTheDocument();
+  }
+};
+
+/** Drag a finished choice from the library onto the canvas: it's added where it's dropped. */
+export const AddByDragging: Story = {
+  tags: ['!dev', '!visual'],
+  play: async ({ canvasElement, userEvent }) => {
+    const { grid, at } = gridOf(canvasElement);
+
+    await userEvent.type(screen.getByRole('combobox'), 'fuel');
+
+    const fuel = await screen.findByRole('option', { name: /Fuel · Bar/ });
+
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: fuel },
+      { target: grid, coords: at(0.5, 0.5) },
+      { target: grid, coords: at(0.6, 0.6) },
+      { keys: '[/MouseLeft]', target: grid, coords: at(0.6, 0.6) }
+    ]);
+
+    await expect(within(canvasElement).getByRole('button', { name: /fuel/i })).toBeInTheDocument();
+  }
+};
+
+/** Dropping a widget that still needs data marks the spot and moves on to its data (0006). */
+export const DropMarksTheSpot: Story = {
+  tags: ['!dev', '!visual'],
+  play: async ({ canvasElement, userEvent }) => {
+    const { grid, at } = gridOf(canvasElement);
+    const light = screen.getByRole('option', { name: /^Light/ });
+
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: light },
+      { target: grid, coords: at(0.5, 0.5) },
+      { target: grid, coords: at(0.6, 0.6) },
+      { keys: '[/MouseLeft]', target: grid, coords: at(0.6, 0.6) }
+    ]);
+
+    await expect(await screen.findByRole('button', { name: 'Back' })).toBeInTheDocument();
+    await expect(within(canvasElement).queryByRole('button', { name: /gear/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('option', { name: /^Gear/ }));
+    await expect(within(canvasElement).getByRole('button', { name: /gear/i })).toBeInTheDocument();
+  }
+};
+
+/** With no cell marked, clicking can't add anything; after a couple of tries, a toast says how. */
+export const HintAfterIdleClicks: Story = {
+  tags: ['!dev', '!visual'],
+  play: async ({ userEvent }) => {
+    await userEvent.type(screen.getByRole('combobox'), 'fuel');
+
+    const fuel = await screen.findByRole('option', { name: /Fuel · Bar/ });
+
+    await userEvent.click(fuel);
+    await userEvent.click(fuel);
+
+    await expect(await screen.findByText('Tap a cell, or drag a widget onto the page.')).toBeInTheDocument();
   }
 };

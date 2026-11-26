@@ -6,9 +6,6 @@ export { ButtonLink, type ButtonLinkProps } from './ButtonLink/ButtonLink.js';
 
 export { Columns, order as columnsOrder, tagNames as columnsTagNames, type ColumnsProps } from './Columns/Columns.js';
 
-export type { Command } from './CommandPalette/Command.js';
-export { CommandPalette, type CommandPaletteProps } from './CommandPalette/CommandPalette.js';
-
 export { Dialog, type DialogProps } from './Dialog/Dialog.js';
 
 export { Divider, type DividerProps } from './Divider/Divider.js';
