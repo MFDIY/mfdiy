@@ -18,6 +18,8 @@ export { Inline, order as inlineOrder, tagNames as inlineTagNames, type InlinePr
 
 export { Link, type LinkBaseProps } from './Link/Link.js';
 
+export { Menu, MenuItem, MenuSeparator, type MenuItemProps, type MenuProps } from './Menu/Menu.js';
+
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
