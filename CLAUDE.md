@@ -62,6 +62,7 @@ Root (npm workspaces monorepo, Node 24):
 - `npm run typecheck`, incremental: seconds when warm, ~90 s cold or after changing `packages/ui`. Prefer `-w <workspace>` for what a change touches.
 - `npm test`: unit tests across workspaces (seconds)
 - `npm run test:stories`: every story of ui, instruments and builder in Chromium, compared with its baseline screenshot (0021); `-w <workspace> -- --update` accepts intended changes
+- `npm run test:stories:changed`: only the stories affected by uncommitted changes; the `verify` skill lists the other ways to run fewer tests
 - `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments` / `-w @mfdiy/builder`: Storybook (ports 6006 / 6007 / 6008)
 - Update Storybook and add its addons only with its own commands, never by editing versions: `npx storybook@<version> upgrade --yes -c packages/ui/.storybook packages/instruments/.storybook packages/builder/.storybook`, and `npx storybook@<version> add <addon> --yes -c <config dir>`. Review what they change (0021).
 
