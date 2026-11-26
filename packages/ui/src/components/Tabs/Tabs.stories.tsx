@@ -67,14 +67,33 @@ export const WithAdd = {
   args: { after: <IconButton icon='add' label='Add page' /> }
 } satisfies Story;
 
-/** More tabs than fit: they scroll sideways, and the button stays in view. */
+const manyPages = ['Flight', 'Combat', 'Power', 'Shields', 'Quantum', 'Mining', 'Salvage', 'Cargo'].map(label => ({
+  label,
+  value: label.toLowerCase()
+}));
+
+/** More tabs than fit: the rest go into a menu that says how many there are. */
 export const ManyTabs = {
-  args: {
-    after: <IconButton icon='add' label='Add page' />,
-    items: ['Flight', 'Combat', 'Power', 'Shields', 'Quantum', 'Mining', 'Salvage', 'Cargo'].map(label => ({
-      label,
-      value: label.toLowerCase()
-    }))
+  args: { after: <IconButton icon='add' label='Add page' />, items: manyPages }
+} satisfies Story;
+
+/** The active tab is always shown, even when it's one of the last. */
+export const ActiveTabStaysShown = {
+  args: { after: <IconButton icon='add' label='Add page' />, items: manyPages, value: 'cargo' },
+  play: async () => {
+    await expect(screen.getByRole('tab', { name: 'Cargo' })).toHaveAttribute('aria-selected', 'true');
+  }
+} satisfies Story;
+
+/** Choosing a page from the menu makes it the active tab, shown in the row. */
+export const MenuPicksATab = {
+  tags: ['!dev', '!visual'],
+  args: { items: manyPages },
+  play: async () => {
+    await userEvent.click(await screen.findByRole('button', { name: /more$/ }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Cargo' }));
+
+    await expect(await screen.findByRole('tab', { name: 'Cargo' })).toHaveAttribute('aria-selected', 'true');
   }
 } satisfies Story;
 

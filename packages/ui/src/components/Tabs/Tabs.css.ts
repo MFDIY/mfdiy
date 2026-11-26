@@ -2,10 +2,7 @@ import { style } from '@vanilla-extract/css';
 
 import { uiVars } from '../../styles/vars.css.js';
 
-/*
- * Only what the design system's classes can't express: Base UI places the indicator under the
- * active tab through CSS variables, and the list scrolls sideways without showing a scrollbar.
- */
+/** Only what the design system's classes can't express: Base UI places the indicator through CSS variables. */
 export const indicator = style({
   backgroundColor: uiVars['accent'],
   bottom: 0,
@@ -20,8 +17,4 @@ export const indicator = style({
       transition: 'none'
     }
   }
-});
-
-export const list = style({
-  scrollbarWidth: 'none'
 });
