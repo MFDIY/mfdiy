@@ -51,7 +51,7 @@ The sheet's content scrolls, so everything is reachable while it's half-open; ha
 
 ## Open questions
 
-- **Hold for _n_ ms** (0010) is under review: whether the beta needs it depends on what MFDs do and on which allowlisted actions turn out to need a hold. Until settled, the panel doesn't show it.
+- **Hold for _n_ ms** (0010) is **left out of the beta**. On the display it would still be a single tap (the bridge holds the game's key), so it doesn't make a button do double duty, and real MFDs never ask the pilot to hold. Revisit once the bridge is connected to the game: if an allowlisted action needs a hold, add the field; if none does, drop it from 0010.
 
 ## Why
 
