@@ -35,7 +35,7 @@ export const track = style({
 
   selectors: {
     [enabledHover]: {
-      borderColor: uiVars['line.hover']
+      borderColor: uiVars['line.bright']
     },
     '&[data-checked]:not([data-disabled])': {
       backgroundColor: uiVars['pressed']
@@ -60,7 +60,7 @@ export const thumb = style({
 
   selectors: {
     [enabledHover]: {
-      backgroundColor: uiVars['line.hover']
+      backgroundColor: uiVars['line.bright']
     },
     '&[data-checked]': {
       backgroundColor: uiVars['accent.pressed'],
