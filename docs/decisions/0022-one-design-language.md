@@ -22,8 +22,16 @@ Everything in `packages/ui` that decides how things look (its token contract, it
 3. **Component**: one part of one MFD primitive (`button.face.pressed`). Each falls back to a semantic token, so it only needs setting to diverge.
 
 - A theme may set values at **every tier**. The set of tokens is the contract's and is fixed: users can't add tokens.
-- **Primitives are named by role, not by hue**: short lightness scales such as `neutral.1–9` and `primary.1–9`, never `green.500`. A theme recolours a scale without its name becoming wrong, e.g. Amber CRT is an amber `neutral` scale. Steps count contrast away from the background, so a light theme reverses a scale instead of renaming it.
+- **Primitives are named by role, not by hue**: scales such as `neutral` and `primary`, never `green`. A theme recolours a scale without its name becoming wrong, e.g. Amber CRT is an amber `neutral` scale. Steps count contrast away from the background, so a light theme reverses a scale instead of renaming it.
+- **Five colour scales, each `100`–`900` in steps of 100**: `neutral`, `primary`, `secondary`, `caution` (amber: needs attention soon) and a red one (act now). Themes, ours included, will use far fewer steps; all nine are exposed so customisation stays consistent and flexible.
 - **Colours are hex only**: `#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`. Theme files hold literal values; there are no references between tokens.
+- **Letter case is themable**: a theme can turn uppercase labels off (`label.case`), for accessibility. This adds a keyword token type that accepts only a fixed list of values.
+
+### Interaction states belong to the chrome
+
+- MFD widgets have **no hover or pressed state**. Actions fire on touch (0010), so there is nothing to show between press and release. Instead, a tap gets **tap feedback**: a ripple from the touch point and a soft, quick shockwave around the outside of the widget, so players know it registered. Its colours and timing are public tokens.
+- The builder chrome still needs hover, pressed, focus, disabled, selected and destructive states, the editing overlay, spacing and control sizes. These are **private to `packages/ui`**, derived from the brand theme's primitives, and not part of the public contract.
+- The brand theme is **dark only** and is called **`mfdiy`**, so it's clearly the project's own theme and not one of the MFD themes it ships. There are no light and dark colour schemes.
 
 ### Brand direction: Panel white
 
@@ -43,12 +51,13 @@ The builder chrome follows the **Phosphor console** direction in its **Panel whi
 
 ## Consequences
 
-- `packages/ui`'s light and dark colour schemes and its component tokens go away, replaced by the shared semantic tokens.
+- `packages/ui`'s light and dark colour schemes and its component tokens go away, replaced by the shared semantic tokens and the single `mfdiy` theme.
 - The landing page moves from phosphor green to Panel white.
 - The theme format gets a new schema version. Documents already store token overrides (document, page and widget), so the bump comes with a migration from the current names.
 - **Later, in the theme editor:** a user gives a colour spread of four or five swatches and MFDIY generates each scale, which they can then hand-edit step by step. When a swatch sits close to an edge (e.g. `#f1f1f1`, whose lighter steps would all clip to `#fff`), the editor flags it. Out of scope for now, but role-named scales are chosen with it in mind.
 
 ## Open questions
 
-- **The token list**: the scales, their number of steps, and the semantic and component tokens. Being drafted with the maintainer.
+- **The token list**: the semantic and component tokens. Being drafted with the maintainer.
+- **The name of the red scale and status.** "Caution" and "warning" read as near-synonyms; proposed `caution` (amber) and `critical` (red). "Danger" was considered for amber but reads as red too.
 - Design exploration: <https://claude.ai/artifact/UqUb5mJXkwssEwP9WpBNbQ> (private to the maintainer).
