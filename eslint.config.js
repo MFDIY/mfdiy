@@ -81,8 +81,9 @@ export default [
           patterns: [
             { group: ['**/index.js'] },
             {
-              group: ['@base-ui/*'],
-              message: 'Only packages/ui uses Base UI, wrapped in its own components. Use those from @mfdiy/ui (0003).'
+              group: ['@base-ui/*', 'sonner'],
+              message:
+                'Only packages/ui uses Base UI and sonner, wrapped in its own components. Use those from @mfdiy/ui (0003).'
             }
           ]
         }

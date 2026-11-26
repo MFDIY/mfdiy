@@ -1,76 +1,127 @@
-import type { PropsWithChildren } from 'react';
+import { useEffect, type PropsWithChildren } from 'react';
+import { toast as sonnerToast, Toaster } from 'sonner';
 
-import { Toast as BaseToast } from '@base-ui/react/toast';
-
-import { designSystem } from '../../styles/design-system.js';
+import { Box } from '../Box/Box.js';
+import { Button } from '../Button/Button.js';
+import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 
-import * as styles from './Toast.css.js';
+/** How long a toast stays when `autoDismiss` is `true`, in milliseconds. */
+const DEFAULT_DURATION = 5000;
 
-/** How long a toast stays, in milliseconds. */
-const TIMEOUT = 5000;
+export type ToastOptions = {
+  /** A second, dimmed line. */
+  description?: string | undefined;
+  /** Shows a close button. */
+  dismissible?: boolean | undefined;
+  /**
+   * Hides the toast by itself: after 5 seconds when `true` (the default), or after this many
+   * milliseconds. `false` keeps it until it's dismissed, so only use that with `dismissible`.
+   */
+  autoDismiss?: boolean | number | undefined;
+  /** Identifies the toast; showing one with the same id updates it. Defaults to the title. */
+  id?: string | undefined;
+};
 
-/** Bottom centre, above everything, and never in the way of what's under it. */
-const viewportClass = designSystem({
-  alignItems: 'center',
-  bottom: '5x',
-  display: 'flex',
-  flexDirection: 'column-reverse',
-  gap: '2x',
-  insetX: 'none',
-  pointerEvents: 'none',
-  position: 'fixed',
-  zIndex: '3'
-});
+type ToastViewProps = Pick<ToastOptions, 'description' | 'dismissible'> & {
+  id: string | number;
+  title: string;
+};
 
-/** A floating layer, so on the raised surface (0022). */
-const toastClass = [
-  designSystem({
-    backgroundColor: 'surface.raised',
-    borderColor: 'line.strong',
-    borderStyle: 'solid',
-    borderWidth: 'hairline',
-    color: 'text',
-    maxWidth: 'full',
-    paddingBlock: '3x',
-    paddingInline: '4x',
-    pointerEvents: 'auto'
-  }),
-  styles.toast
-].join(' ');
-
-function Toasts() {
-  const { toasts } = BaseToast.useToastManager();
-
-  return toasts.map(toast => (
-    <BaseToast.Root className={toastClass} key={toast.id} toast={toast}>
-      <BaseToast.Title render={<Text variant='body' />} />
-    </BaseToast.Root>
-  ));
-}
-
-/** Shows toasts; put it once around the app. Built on Base UI's Toast (0003). */
-export function ToastProvider({ children }: PropsWithChildren) {
+/** A floating layer, so on the raised surface (0022). Rendered by sonner, which stacks and moves it. */
+function ToastView({ description, dismissible = false, id, title }: ToastViewProps) {
   return (
-    <BaseToast.Provider timeout={TIMEOUT}>
-      {children}
-      <BaseToast.Portal>
-        <BaseToast.Viewport className={viewportClass}>
-          <Toasts />
-        </BaseToast.Viewport>
-      </BaseToast.Portal>
-    </BaseToast.Provider>
+    <Box
+      alignItems='flex-start'
+      backgroundColor='surface.raised'
+      borderColor='line.strong'
+      borderStyle='solid'
+      borderWidth='hairline'
+      color='text'
+      display='flex'
+      // Sonner sets a font of its own on the list it renders toasts in.
+      fontFamily='regular'
+      gap='3x'
+      paddingBlock='3x'
+      paddingInline='4x'
+      width='full'
+    >
+      <Box flexGrow='1' minWidth='none' paddingBlock='2x'>
+        <Stack spacing='2x'>
+          <Text variant='body'>{title}</Text>
+          {description ? (
+            <Text color='text.dim' variant='body'>
+              {description}
+            </Text>
+          ) : null}
+        </Stack>
+      </Box>
+      {dismissible ? (
+        <Button aria-label='Dismiss' onClick={() => sonnerToast.dismiss(id)} variant='quiet'>
+          <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
+            <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
+          </Box>
+        </Button>
+      ) : null}
+    </Box>
   );
 }
 
-/** Briefly tells the user something. The same message shown again replaces itself rather than stacking. */
-export function useToast() {
-  const manager = BaseToast.useToastManager();
+/**
+ * Shows toasts, stacked at the bottom of the screen; put it once around the app. Built on sonner
+ * (0003), which only stacks, moves and times them: the toast itself is ours, as in Bonsai.
+ */
+export function ToastProvider({ children }: PropsWithChildren) {
+  // Sonner keeps toasts in one store for the whole page; a provider starts without any.
+  useEffect(() => {
+    sonnerToast.dismiss();
+    showing.clear();
+  }, []);
 
+  return (
+    <>
+      {children}
+      <Toaster
+        position='bottom-center'
+        // Unstyled, sonner leaves each toast as wide as its text; ours all take the list's width,
+        // which sonner sets for wide screens and phones alike.
+        toastOptions={{ style: { width: '100%' }, unstyled: true }}
+        visibleToasts={3}
+      />
+    </>
+  );
+}
+
+/**
+ * Sonner's id for each toast on screen, by our id. Showing a toast that's on screen updates it; one
+ * that has gone, even if it's still sliding away, gets a fresh sonner id, or the new toast would leave
+ * with the old one.
+ */
+const showing = new Map<string, string>();
+let created = 0;
+
+/** Briefly tells the user something. */
+export function useToast() {
   return {
-    // The message is the id: adding it again updates the toast that's already there.
-    show: (message: string) => {
-      manager.add({ id: message, title: message });
+    show: (title: string, { autoDismiss = true, description, dismissible = false, id = title }: ToastOptions = {}) => {
+      const sonnerId = showing.get(id) ?? `${id} ${++created}`;
+      const forget = () => {
+        if (showing.get(id) === sonnerId) {
+          showing.delete(id);
+        }
+      };
+
+      showing.set(id, sonnerId);
+      sonnerToast.custom(
+        toastId => <ToastView description={description} dismissible={dismissible} id={toastId} title={title} />,
+        {
+          dismissible,
+          duration: autoDismiss === true ? DEFAULT_DURATION : autoDismiss === false ? Infinity : autoDismiss,
+          id: sonnerId,
+          onAutoClose: forget,
+          onDismiss: forget
+        }
+      );
     }
   };
 }

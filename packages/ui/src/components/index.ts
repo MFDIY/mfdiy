@@ -47,4 +47,4 @@ export {
   type SearchListProps
 } from './SearchList/SearchList.js';
 
-export { ToastProvider, useToast } from './Toast/Toast.js';
+export { ToastProvider, useToast, type ToastOptions } from './Toast/Toast.js';
