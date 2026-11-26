@@ -14,8 +14,7 @@ const popupClass = designSystem({
   borderStyle: 'solid',
   borderWidth: 'hairline',
   color: 'text',
-  outlineStyle: 'none',
-  paddingBlock: '1x'
+  outlineStyle: 'none'
 });
 
 const itemClass = ({ danger, disabled, highlighted }: { danger: boolean; disabled: boolean; highlighted: boolean }) =>
@@ -36,8 +35,7 @@ const itemClass = ({ danger, disabled, highlighted }: { danger: boolean; disable
 const separatorClass = designSystem({
   borderTopColor: 'line',
   borderTopStyle: 'solid',
-  borderTopWidth: 'hairline',
-  marginBlock: '1x'
+  borderTopWidth: 'hairline'
 });
 
 /** The gap between the trigger and the menu, in pixels, as Base UI takes it. */
