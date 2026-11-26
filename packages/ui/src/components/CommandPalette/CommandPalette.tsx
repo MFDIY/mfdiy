@@ -192,7 +192,7 @@ export function CommandPalette({
           >
             <Box alignItems='stretch' columnGap='1x' display='flex' flexDirection='row' flexWrap='nowrap' padding='3x'>
               {onBack ? (
-                <Button aria-label='Back' onClick={handleBack} size='large' variant='quiet'>
+                <Button aria-label='Back' onClick={handleBack} variant='quiet'>
                   ‹
                 </Button>
               ) : null}
@@ -214,7 +214,7 @@ export function CommandPalette({
                 />
               </Box>
               <Box className={styles.closeButton} flexShrink='0'>
-                <Button aria-label='Close' onClick={handleClose} size='large' variant='quiet'>
+                <Button aria-label='Close' onClick={handleClose} variant='quiet'>
                   ✕
                 </Button>
               </Box>

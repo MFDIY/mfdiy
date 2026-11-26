@@ -44,7 +44,7 @@ export default function Home() {
           <Text tagName='h2' variant='heading'>
             Profiles
           </Text>
-          <Button disabled={status !== 'open'} onClick={() => setCreating(true)} size='large' variant='primary'>
+          <Button disabled={status !== 'open'} onClick={() => setCreating(true)} variant='primary'>
             New
           </Button>
         </Inline>
@@ -85,7 +85,7 @@ function ProfileCard({ onMore, profile }: { onMore: () => void; profile: Documen
         <Inline spacing='3x'>
           <ButtonLink to={`/display/${profile.id}`}>Show</ButtonLink>
           <ButtonLink to={`/builder/${profile.id}`}>Edit</ButtonLink>
-          <Button aria-label={`More for ${profile.name}`} onClick={onMore} size='large' variant='quiet'>
+          <Button aria-label={`More for ${profile.name}`} onClick={onMore} variant='quiet'>
             …
           </Button>
         </Inline>

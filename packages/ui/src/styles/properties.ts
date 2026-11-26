@@ -230,9 +230,7 @@ export const flexWrap = ['nowrap', 'wrap'] as const;
 export const height = {
   ...spacing,
   auto: 'auto',
-  'control.small': v['size.control.small'],
   control: v['size.control'],
-  'control.large': v['size.control.large'],
   'canvas.handle': v['size.canvas.handle'],
   'fit-content': 'fit-content',
   full: '100%',

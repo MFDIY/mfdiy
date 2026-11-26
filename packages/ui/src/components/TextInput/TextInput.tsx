@@ -112,7 +112,7 @@ export function TextInput({
           placeholder: 'text.faint'
         }}
         fontFamily='regular'
-        height='control.large'
+        height='control'
         id={id}
         onChange={handleChange}
         outlineStyle='none'
@@ -130,7 +130,6 @@ export function TextInput({
             aria-label='Clear'
             onClick={handleClear}
             onMouseDown={event => event.preventDefault()}
-            size='small'
             tabIndex={-1}
             variant='quiet'
             width='full'

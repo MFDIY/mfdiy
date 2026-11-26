@@ -1,4 +1,3 @@
-import type { Size } from './props/Size.js';
 import type { Width } from './props/Width.js';
 
 import { useState, type FocusEvent, type KeyboardEvent, type PointerEvent, type PropsWithChildren } from 'react';
@@ -14,7 +13,6 @@ import { Text } from '../Text/Text.js';
 
 import * as styles from './ButtonBase.css.js';
 import * as justifyContentMaps from './justifyContentMaps.js';
-import * as sizeMaps from './sizeMaps.js';
 
 export { widths } from './props/Width.js';
 
@@ -40,13 +38,14 @@ export type ButtonBaseProps = BoxIntrinsicProps<'button'> &
      * nested components.
      */
     cssVariables?: CssVariablesProp | undefined;
-    /** Sets the button size. */
-    size?: Size | undefined;
     /** Sets the button width. */
     width?: ContainerSizeConditionalValue<Width> | undefined;
   }>;
 
-/** A square, flat button with a hairline border; `Button` gives it a variant's colours. */
+/**
+ * A flat button with a hairline border and square corners; `Button` gives it a variant's colours.
+ * One size: the shared control height, so buttons line up with fields (0022).
+ */
 export function ButtonBase({
   backgroundColor = 'transparent',
   borderColor = 'transparent',
@@ -65,7 +64,6 @@ export function ButtonBase({
   onLostPointerCapture,
   onPointerDown,
   ref,
-  size = 'standard',
   type,
   width,
   ...restProps
@@ -132,7 +130,7 @@ export function ButtonBase({
       flexBasis={flexBasis}
       flexGrow={flexGrow}
       flexShrink={flexShrink}
-      height={sizeMaps.height[size]}
+      height='control'
       justifyContent='center'
       lineHeight='0'
       onBlur={handleBlur}
@@ -165,7 +163,7 @@ export function ButtonBase({
         height='full'
         justifyContent='center'
         lineHeight='0'
-        paddingInline={children ? sizeMaps.paddingInline[size] : undefined}
+        paddingInline={children ? '3x' : undefined}
         tagName='span'
         transitionDuration='click'
         transitionProperty='button-content'

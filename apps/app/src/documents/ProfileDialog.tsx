@@ -66,14 +66,11 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
               onClick={() =>
                 void run(request({ type: 'document-delete', id: profile.id, revision: step.deleteRevision }))
               }
-              size='large'
               variant='danger'
             >
               Delete
             </Button>
-            <Button onClick={onClose} size='large'>
-              Keep
-            </Button>
+            <Button onClick={onClose}>Keep</Button>
           </Inline>
         </Stack>
       </Dialog>
@@ -84,7 +81,7 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
     <Dialog onClose={onClose} title={profile.name}>
       <Stack spacing='3x'>
         {failure}
-        <Button onClick={() => setStep('rename')} size='large' width='full'>
+        <Button onClick={() => setStep('rename')} width='full'>
           Rename
         </Button>
         <Button
@@ -92,7 +89,6 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
           onClick={() =>
             void run(request({ type: 'document-duplicate', id: profile.id, name: copyName(profile.name) }))
           }
-          size='large'
           width='full'
         >
           Duplicate
@@ -102,13 +98,12 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
             setError(null);
             setStep({ deleteRevision: profile.revision });
           }}
-          size='large'
           variant='danger'
           width='full'
         >
           Delete
         </Button>
-        <Button onClick={onClose} size='large' variant='quiet' width='full'>
+        <Button onClick={onClose} variant='quiet' width='full'>
           Cancel
         </Button>
       </Stack>

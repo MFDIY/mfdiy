@@ -23,7 +23,6 @@ export function SegmentedControl<T extends string>({ onChange, options, value }:
           aria-pressed={option.value === value}
           key={option.value}
           onClick={() => onChange(option.value)}
-          size='large'
           variant={option.value === value ? 'primary' : 'default'}
         >
           {option.label}

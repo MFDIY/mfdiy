@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
 import { containerSizeConditionalProperties } from '../../styles/sprinkles.css.js';
 
-import { Button, sizes, variants, widths } from './Button.js';
+import { Button, variants, widths } from './Button.js';
 
 const meta = {
   title: 'Components / Button',
@@ -19,7 +19,6 @@ const meta = {
       control: { type: 'boolean' },
       table: { type: { summary: 'boolean' } }
     },
-    size: createArgTypeFromConditionalStyleProp(sizes, undefined, 'standard'),
     variant: createArgTypeFromConditionalStyleProp(variants, undefined, 'default'),
     width: createArgTypeFromConditionalStyleProp(widths, containerSizeConditionalProperties.conditions, 'fit-content')
   },

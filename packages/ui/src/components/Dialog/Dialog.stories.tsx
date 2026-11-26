@@ -17,10 +17,8 @@ const meta = {
       <Stack spacing='5x'>
         <Text variant='body'>Displays keep showing the saved version.</Text>
         <Inline spacing='3x'>
-          <Button size='large' variant='primary'>
-            Save
-          </Button>
-          <Button size='large'>Keep editing</Button>
+          <Button variant='primary'>Save</Button>
+          <Button>Keep editing</Button>
         </Inline>
       </Stack>
     )

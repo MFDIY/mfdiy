@@ -169,7 +169,6 @@ function Editor({ id }: { id: string }) {
               aria-label='Undo'
               disabled={current.past.length === 0}
               onClick={() => handleTimeTravel(undo)}
-              size='large'
               title='Undo'
             >
               ↶
@@ -178,7 +177,6 @@ function Editor({ id }: { id: string }) {
               aria-label='Redo'
               disabled={current.future.length === 0}
               onClick={() => handleTimeTravel(redo)}
-              size='large'
               title='Redo'
             >
               ↷
@@ -191,7 +189,6 @@ function Editor({ id }: { id: string }) {
                   setSelectedId(null);
                 }
               }}
-              size='large'
             >
               Remove
             </Button>
@@ -208,13 +205,10 @@ function Editor({ id }: { id: string }) {
                       ? 'Unsaved changes'
                       : 'Saved'}
             </Text>
-            <Button onClick={() => setDialog('save-as-new')} size='large'>
-              Save as new
-            </Button>
+            <Button onClick={() => setDialog('save-as-new')}>Save as new</Button>
             <Button
               disabled={!dirty || saving}
               onClick={() => (conflict ? setDialog('conflict') : void save())}
-              size='large'
               variant='primary'
             >
               Save
@@ -242,15 +236,13 @@ function Editor({ id }: { id: string }) {
       {blocker.state === 'blocked' ? (
         <Dialog onClose={() => blocker.reset()} title={`Save changes to “${document.name}”?`}>
           <Inline spacing='3x'>
-            <Button disabled={saving} onClick={() => void saveAndLeave()} size='large' variant='primary'>
+            <Button disabled={saving} onClick={() => void saveAndLeave()} variant='primary'>
               Save
             </Button>
-            <Button onClick={() => blocker.proceed()} size='large' variant='danger'>
+            <Button onClick={() => blocker.proceed()} variant='danger'>
               Discard
             </Button>
-            <Button onClick={() => blocker.reset()} size='large'>
-              Keep editing
-            </Button>
+            <Button onClick={() => blocker.reset()}>Keep editing</Button>
           </Inline>
         </Dialog>
       ) : null}
@@ -267,7 +259,7 @@ function Editor({ id }: { id: string }) {
           <Stack spacing='5x'>
             <Text variant='body'>Your changes aren’t saved, but they’re still here.</Text>
             <Inline spacing='3x'>
-              <Button onClick={() => setDialog('save-as-new')} size='large' variant='primary'>
+              <Button onClick={() => setDialog('save-as-new')} variant='primary'>
                 Save as new
               </Button>
               {watched.status === 'ready' ? (
@@ -277,15 +269,12 @@ function Editor({ id }: { id: string }) {
                     setFailure(null);
                     setDialog(null);
                   }}
-                  size='large'
                   variant='danger'
                 >
                   Discard mine
                 </Button>
               ) : null}
-              <Button onClick={() => setDialog(null)} size='large'>
-                Keep editing
-              </Button>
+              <Button onClick={() => setDialog(null)}>Keep editing</Button>
             </Inline>
           </Stack>
         </Dialog>

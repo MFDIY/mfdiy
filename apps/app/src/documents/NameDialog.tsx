@@ -57,12 +57,10 @@ export function NameDialog({ initialName = '', onClose, onDone, onSubmit, submit
             </Text>
           ) : null}
           <Inline spacing='3x'>
-            <Button disabled={busy || trimmed === ''} size='large' type='submit' variant='primary'>
+            <Button disabled={busy || trimmed === ''} type='submit' variant='primary'>
               {submitLabel}
             </Button>
-            <Button onClick={onClose} size='large'>
-              Cancel
-            </Button>
+            <Button onClick={onClose}>Cancel</Button>
           </Inline>
         </Stack>
       </Box>

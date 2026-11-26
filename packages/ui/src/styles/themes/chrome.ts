@@ -84,9 +84,8 @@ export const chromeTokens = {
   'spacing.7x': '55px',
   'spacing.8x': '89px',
   'spacing.none': '0px',
-  'size.control.small': '24px',
+  /** The one height every control shares (buttons, fields, …), so they always line up (0022). */
   'size.control': '32px',
-  'size.control.large': '40px',
   'size.canvas.handle': '24px',
   'border.hairline': mfdiy['border.width'],
   'border.edit': '2px',
@@ -103,8 +102,6 @@ export type ChromeTokenName = keyof typeof chromeTokens;
 
 /** On touch screens every control is at least a fingertip in size (0001). */
 export const coarsePointerTokens = {
-  'size.control.small': '44px',
   'size.control': '44px',
-  'size.control.large': '44px',
   'size.canvas.handle': '44px'
 } as const satisfies Partial<Record<ChromeTokenName, string>>;
