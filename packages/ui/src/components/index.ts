@@ -22,6 +22,8 @@ export { Link, type LinkBaseProps } from './Link/Link.js';
 
 export { Menu, MenuItem, MenuSeparator, type MenuItemProps, type MenuProps } from './Menu/Menu.js';
 
+export { NumberField, type NumberFieldProps } from './NumberField/NumberField.js';
+
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';

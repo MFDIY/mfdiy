@@ -18,6 +18,7 @@ const names = [
   'keyboard_arrow_up',
   'more_horiz',
   'redo',
+  'remove',
   'undo',
   'unfold_more'
 ] as const;
