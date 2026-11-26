@@ -22,7 +22,7 @@ const tabClass = (active: boolean) =>
     appearance: 'none',
     backgroundColor: { default: 'transparent', hover: 'hover', active: 'pressed' },
     borderStyle: 'hidden',
-    color: active ? 'text' : { default: 'text.dim', hover: 'text' },
+    color: active ? 'text' : { default: 'text.dim', hover: 'text', active: 'text' },
     cursor: 'default',
     display: 'flex',
     flexShrink: '0',

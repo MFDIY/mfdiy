@@ -6,7 +6,7 @@ export function TextLink({ children, ...restProps }: TextLinkProps) {
   return (
     <Link
       {...restProps}
-      color={{ default: 'text', hover: 'accent' }}
+      color={{ default: 'text', hover: 'accent', active: 'accent' }}
       outlineColor='focus'
       outlineOffset='focus'
       outlineStyle={{ default: 'none', focusVisible: 'solid' }}

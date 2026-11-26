@@ -35,7 +35,7 @@ const segmentClass = ({ checked, first }: { checked: boolean; first: boolean }) 
     borderLeftWidth: 'hairline',
     borderRightStyle: 'hidden',
     borderTopStyle: 'hidden',
-    color: checked ? 'text' : { default: 'text.dim', hover: 'text', disabled: 'text.faint' },
+    color: checked ? 'text' : { default: 'text.dim', hover: 'text', active: 'text', disabled: 'text.faint' },
     cursor: { default: 'default', disabled: 'not-allowed' },
     display: 'flex',
     flexBasis: 'fluid',
