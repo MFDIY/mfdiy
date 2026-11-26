@@ -4,7 +4,7 @@ import * as styles from './Bar.css.js';
 import { Frame } from './Frame.js';
 import { Label } from './Label.js';
 
-export const barStates = ['normal', 'caution', 'warning'] as const;
+export const barStates = ['normal', 'warning', 'critical'] as const;
 
 export type BarState = (typeof barStates)[number];
 

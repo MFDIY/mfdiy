@@ -16,23 +16,23 @@ export const tabs = style({
 });
 
 export const tab = style({
-  border: `${token('size.border')} solid ${token('outline')}`,
-  borderRadius: token('size.radius'),
+  border: `${token('border.width')} solid ${token('line')}`,
+  borderRadius: token('radius'),
   color: token('text.dim'),
   font: 'inherit',
-  letterSpacing: '0.12em',
+  letterSpacing: token('label.tracking'),
   padding: 'clamp(6px, 1.5vmin, 12px)',
-  textTransform: 'uppercase',
+  textTransform: token('label.case') as 'uppercase',
 
   selectors: {
     '&[aria-current="page"]': {
-      borderColor: token('state.on'),
-      color: token('state.on')
+      borderColor: token('status.on'),
+      color: token('status.on')
     }
   }
 });
 
 export const unknownWidget = style({
-  border: `${token('size.border')} dashed ${token('state.warning')}`,
-  color: token('state.warning')
+  border: `${token('border.width')} dashed ${token('status.critical')}`,
+  color: token('status.critical')
 });

@@ -1,10 +1,10 @@
 import type { MfdDocument } from '@mfdiy/schema';
 
-import { DEFAULT_GRID, scaleLayout } from '@mfdiy/schema';
+import { DEFAULT_GRID, DOCUMENT_SCHEMA_VERSION, scaleLayout } from '@mfdiy/schema';
 
 /** Hand-written on coarse grids, which are easier to read. */
 const demo: MfdDocument = {
-  schema: 1,
+  schema: DOCUMENT_SCHEMA_VERSION,
   name: 'Demo',
   game: 'star-citizen',
   pages: [
@@ -66,7 +66,7 @@ const demo: MfdDocument = {
           id: 'decoupled',
           type: 'light',
 
-          options: { label: 'Decpl', litState: 'caution' },
+          options: { label: 'Decpl', litState: 'warning' },
           bindings: { value: { signal: 'ifcs.decoupled' } },
           action: 'ifcs.decouple-toggle'
         },
@@ -150,7 +150,7 @@ const demo: MfdDocument = {
           bindings: { value: { signal: 'hull' } }
         }
       ],
-      tokens: { 'color.primary': '#5ad8ff', 'color.dim': '#1f5a73', 'color.off': '#0a1c24' }
+      tokens: { 'primary.8': '#5ad8ff', 'neutral.7': '#1f5a73', line: '#1f5a73', 'primary.2': '#0a1c24' }
     }
   ]
 };

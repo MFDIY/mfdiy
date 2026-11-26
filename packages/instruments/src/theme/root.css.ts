@@ -11,7 +11,7 @@ export const root = style({
   ),
   backgroundColor: token('surface'),
   color: token('text'),
-  fontFamily: token('font.family'),
+  fontFamily: token('font.text'),
   // Isolate the MFD from the host page's typography (the builder UI uses `line-height: 1cap`).
   lineHeight: 1.2
 });

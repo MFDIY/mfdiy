@@ -23,7 +23,9 @@ Everything in `packages/ui` that decides how things look (its token contract, it
 
 - A theme may set values at **every tier**. The set of tokens is the contract's and is fixed: users can't add tokens.
 - **Primitives are named by role, not by hue**: scales such as `neutral` and `primary`, never `green`. A theme recolours a scale without its name becoming wrong, e.g. Amber CRT is an amber `neutral` scale. Steps count contrast away from the background, so a light theme reverses a scale instead of renaming it.
-- **Five colour scales, each `100`–`900` in steps of 100**: `neutral`, `primary`, `secondary`, `caution` (amber: needs attention soon) and a red one (act now). Themes, ours included, will use far fewer steps; all nine are exposed so customisation stays consistent and flexible.
+- **Five colour scales of nine steps, `.1`–`.9`**: `neutral`, `primary`, `secondary`, `warning` (amber: needs attention soon) and `critical` (red: act now). Themes, ours included, will use far fewer steps; all nine are exposed so customisation stays consistent and flexible. Users rarely see token names, so `.1`–`.9` is preferred over `100`–`900`; nine steps are granular enough that inserting steps in between won't be needed.
+- **Every step stays clearly distinct** from its neighbours. A scale of near-identical shades is pointless to choose from. Shipped themes keep visible gaps, and the theme editor's generator should too.
+- **The contract only holds tokens something reads.** Adding a token later is not a breaking change, so tokens for features that don't exist yet (tap feedback, the guarded-button cover) arrive with those features, without a migration.
 - **Colours are hex only**: `#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`. Theme files hold literal values; there are no references between tokens.
 - **Letter case is themable**: a theme can turn uppercase labels off (`label.case`), for accessibility. This adds a keyword token type that accepts only a fixed list of values.
 
@@ -54,10 +56,10 @@ The builder chrome follows the **Phosphor console** direction in its **Panel whi
 - `packages/ui`'s light and dark colour schemes and its component tokens go away, replaced by the shared semantic tokens and the single `mfdiy` theme.
 - The landing page moves from phosphor green to Panel white.
 - The theme format gets a new schema version. Documents already store token overrides (document, page and widget), so the bump comes with a migration from the current names.
+- **Status names change meaning.** In theme version 1, `warning` was red and `caution` amber. Now amber is `warning` and red is `critical`, chosen because "caution" and "warning" read as near-synonyms. The migration maps v1 `caution` → `warning` and v1 `warning` → `critical`.
 - **Later, in the theme editor:** a user gives a colour spread of four or five swatches and MFDIY generates each scale, which they can then hand-edit step by step. When a swatch sits close to an edge (e.g. `#f1f1f1`, whose lighter steps would all clip to `#fff`), the editor flags it. Out of scope for now, but role-named scales are chosen with it in mind.
 
 ## Open questions
 
 - **The token list**: the semantic and component tokens. Being drafted with the maintainer.
-- **The name of the red scale and status.** "Caution" and "warning" read as near-synonyms; proposed `caution` (amber) and `critical` (red). "Danger" was considered for amber but reads as red too.
 - Design exploration: <https://claude.ai/artifact/UqUb5mJXkwssEwP9WpBNbQ> (private to the maintainer).

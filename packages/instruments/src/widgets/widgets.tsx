@@ -18,7 +18,8 @@ function inputLabel(props: WidgetProps, input: string, fallback: string): string
 function LightWidget(props: WidgetProps) {
   const lit = props.inputs['value']?.value;
   const litState = readOption<string>(props, 'litState', 'on');
-  const state: LightState = lit === true ? (litState === 'caution' || litState === 'warning' ? litState : 'on') : 'off';
+  const state: LightState =
+    lit === true ? (litState === 'warning' || litState === 'critical' ? litState : 'on') : 'off';
   return (
     <Light
       disabled={props.action ? !props.action.available : undefined}
@@ -32,10 +33,10 @@ function LightWidget(props: WidgetProps) {
 
 function BarWidget(props: WidgetProps) {
   const level = normalise(props.inputs['value']);
-  const cautionBelow = readOption(props, 'cautionBelow', 0.25);
-  const warningBelow = readOption(props, 'warningBelow', 0.1);
+  const warningBelow = readOption(props, 'warningBelow', 0.25);
+  const criticalBelow = readOption(props, 'criticalBelow', 0.1);
   const state: BarState =
-    level === null ? 'normal' : level < warningBelow ? 'warning' : level < cautionBelow ? 'caution' : 'normal';
+    level === null ? 'normal' : level < criticalBelow ? 'critical' : level < warningBelow ? 'warning' : 'normal';
 
   return (
     <Bar
@@ -82,29 +83,39 @@ export const lightManifest: WidgetManifest = {
   inputs: { value: { label: 'Lit when', accepts: ['boolean'], required: true } },
   options: {
     label: labelOption,
-    litState: { label: 'Colour when lit (on, caution, warning)', type: 'string', default: 'on' }
+    litState: { label: 'Colour when lit (on, warning, critical)', type: 'string', default: 'on' }
   },
   actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['light.on', 'light.off', 'light.text', 'state.caution', 'state.warning'],
+  tokens: [
+    'light.on',
+    'light.on.text',
+    'light.off',
+    'light.off.text',
+    'light.warning',
+    'light.warning.text',
+    'light.critical',
+    'light.critical.text',
+    'button.failed'
+  ],
   Component: LightWidget
 };
 
 export const barManifest: WidgetManifest = {
   type: 'bar',
   label: 'Bar',
-  description: 'A linear gauge for a number signal, with caution and warning thresholds.',
+  description: 'A linear gauge for a number signal, with warning and critical thresholds.',
   inputs: { value: { label: 'Value', accepts: ['number'], required: true } },
   options: {
     label: labelOption,
-    cautionBelow: { label: 'Caution below', type: 'number', default: 0.25, min: 0, max: 1 },
-    warningBelow: { label: 'Warning below', type: 'number', default: 0.1, min: 0, max: 1 }
+    warningBelow: { label: 'Warning below', type: 'number', default: 0.25, min: 0, max: 1 },
+    criticalBelow: { label: 'Critical below', type: 'number', default: 0.1, min: 0, max: 1 }
   },
   actionable: false,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['bar.fill', 'bar.track', 'readout.value', 'state.caution', 'state.warning'],
+  tokens: ['bar.fill', 'bar.fill.warning', 'bar.fill.critical', 'bar.track', 'bar.value'],
   Component: BarWidget
 };
 
@@ -120,7 +131,7 @@ export const readoutManifest: WidgetManifest = {
   actionable: false,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['readout.label', 'readout.value'],
+  tokens: ['readout.label', 'readout.value', 'readout.unit'],
   Component: ReadoutWidget
 };
 
@@ -133,7 +144,7 @@ export const buttonManifest: WidgetManifest = {
   actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['button.background', 'button.text', 'button.outline'],
+  tokens: ['button.face', 'button.label', 'button.outline', 'button.failed'],
   Component: ButtonWidget
 };
 

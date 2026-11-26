@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openLibrary, type Library, type LibraryChange } from './library.js';
 
 const document = (name: string): MfdDocument => ({
-  schema: 1,
+  schema: 2,
   name,
   game: 'test',
   pages: [
@@ -71,6 +71,25 @@ describe('openLibrary', () => {
 
     expect((await openLibrary(data, [])).list()).toEqual([]);
     expect(await readFile(file, 'utf8')).toContain('99');
+  });
+
+  it('migrates documents saved by an older version, but leaves the file until the next save', async () => {
+    await openLibrary(data, []);
+
+    const file = join(data, 'documents', 'olddocument.json');
+    const saved = JSON.stringify({
+      id: 'olddocument',
+      revision: 3,
+      updatedAt: 0,
+      document: { ...document('Old'), schema: 1, tokens: { 'color.caution': '#ffb547' } }
+    });
+    await writeFile(file, saved);
+
+    expect((await openLibrary(data, [])).get('olddocument')?.document).toMatchObject({
+      schema: 2,
+      tokens: { 'warning.8': '#ffb547' }
+    });
+    expect(await readFile(file, 'utf8')).toBe(saved);
   });
 
   it('gives a hand-copied file its own id', async () => {

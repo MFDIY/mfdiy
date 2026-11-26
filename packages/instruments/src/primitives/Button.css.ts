@@ -9,15 +9,15 @@ const pulse = keyframes({
 });
 
 export const button = style({
-  backgroundColor: token('button.background'),
-  border: `${token('size.border')} solid ${token('button.outline')}`,
-  borderRadius: token('size.radius'),
-  color: token('button.text'),
+  backgroundColor: token('button.face'),
+  border: `${token('border.width')} solid ${token('button.outline')}`,
+  borderRadius: token('radius'),
+  color: token('button.label'),
   font: 'inherit',
   fontSize: 'clamp(10px, 24cqmin, 22px)',
   letterSpacing: '0.08em',
   padding: '0 4cqmin',
-  textTransform: 'uppercase',
+  textTransform: token('label.case') as 'uppercase',
   transition: transition('background-color', 'border-color', 'box-shadow', 'transform'),
   WebkitUserSelect: 'none',
 
@@ -26,19 +26,19 @@ export const button = style({
       transform: 'scale(0.97)'
     },
     '&:focus-visible': {
-      outline: `2px solid ${token('state.on')}`,
+      outline: `2px solid ${token('accent')}`,
       outlineOffset: '2px'
     },
     '&[data-status="pending"]': {
       animation: `${pulse} 0.8s ease-in-out infinite`
     },
     '&[data-status="ok"]': {
-      borderColor: token('state.on'),
-      boxShadow: glow(token('state.on'))
+      borderColor: token('status.on'),
+      boxShadow: glow(token('status.on'))
     },
     '&[data-status="failed"]': {
-      borderColor: token('state.warning'),
-      boxShadow: glow(token('state.warning'))
+      borderColor: token('button.failed'),
+      boxShadow: glow(token('button.failed'))
     },
     '&:disabled': {
       opacity: 0.4

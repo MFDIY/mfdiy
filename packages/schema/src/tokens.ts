@@ -1,80 +1,207 @@
 import * as v from 'valibot';
 
 /**
- * The MFD theme tokens: MFDIY's public theming API (see docs/decisions/0002 and 0003).
+ * The theme tokens: MFDIY's public theming API and the vocabulary its own interface is built
+ * from (see docs/decisions/0002, 0003 and 0022).
  *
  * Shared themes depend on these names. Renaming or removing a token is a breaking change that
- * requires a `THEME_SCHEMA_VERSION` bump and a migration.
+ * requires a `THEME_SCHEMA_VERSION` bump and a migration (`migrations.ts`). Adding one is not, so the
+ * contract only holds tokens something actually reads; new ones arrive with the feature that uses
+ * them.
  *
  * Tiers:
- * - `base`: the only tokens with default values. A simple theme sets just these.
- * - `semantic`: meaning-based; unset by default and resolved to `fallback` in styles.
- * - `component`: per-primitive; unset by default and resolved to `fallback` in styles.
+ * - `primitive`: the palette and other raw values. The only tokens with default values.
+ * - `semantic`: what something means; unset by default and resolved to `fallback` where used.
+ * - `component`: one part of one MFD primitive; unset by default and resolved to `fallback`.
  *
  * Semantic and component tokens deliberately have no default value. If they were defined on the
- * MFD root as `var(--base)`, the browser would resolve them on the root, and overriding a base token
- * on one widget wouldn't reach them. Resolving the fallback chain at the point of use keeps every
- * level of override working.
+ * MFD root as `var(--primitive)`, the browser would resolve them on the root, and overriding a
+ * primitive on one widget wouldn't reach them. Resolving the fallback chain at the point of use
+ * (`token()`) keeps every level of override working.
  */
-export const THEME_SCHEMA_VERSION = 1;
+export const THEME_SCHEMA_VERSION = 2;
 
-export const tokenTypes = ['color', 'length', 'number', 'font-family', 'duration'] as const;
+export const tokenTypes = ['color', 'length', 'font-family', 'duration', 'keyword'] as const;
 
 export type TokenType = (typeof tokenTypes)[number];
 
+/* ---------------- Colour scales ---------------- */
+
+/** Named by role, never by hue, so a theme can recolour a scale without its name becoming wrong. */
+export const scaleNames = ['neutral', 'primary', 'secondary', 'warning', 'critical'] as const;
+
+export type ScaleName = (typeof scaleNames)[number];
+
+/** Steps count contrast away from the background, so a light theme reverses a scale. */
+export const scaleSteps = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+
+export type ScaleStep = (typeof scaleSteps)[number];
+
+export type ScaleTokenName = `${ScaleName}.${ScaleStep}`;
+
+const scaleDescriptions: Record<ScaleName, string> = {
+  neutral: 'Neutral: backgrounds, lines and text.',
+  primary: 'Primary: the accent, and whatever is on.',
+  secondary: 'Secondary: a second accent.',
+  warning: 'Warning (amber): needs attention soon.',
+  critical: 'Critical (red): act now.'
+};
+
+const stepRoles: Record<ScaleStep, string> = {
+  1: 'background',
+  2: 'raised surface, unlit fill',
+  3: 'hover fill',
+  4: 'hairline',
+  5: 'strong line',
+  6: 'faint text',
+  7: 'dim text',
+  8: 'solid: lit, selected, primary',
+  9: 'brightest text'
+};
+
+type ScaleTokenSpec = { tier: 'primitive'; type: 'color'; description: string };
+
+const scaleTokens = Object.fromEntries(
+  scaleNames.flatMap(scale =>
+    scaleSteps.map(step => [
+      `${scale}.${step}`,
+      { tier: 'primitive', type: 'color', description: `${scaleDescriptions[scale]} Step ${step}: ${stepRoles[step]}.` }
+    ])
+  )
+) as Record<ScaleTokenName, ScaleTokenSpec>;
+
+/* ---------------- The contract ---------------- */
+
 type TokenSpec =
-  | { tier: 'base'; type: TokenType; description: string }
+  | { tier: 'primitive'; type: TokenType; description: string; values?: readonly string[] }
   | { tier: 'semantic' | 'component'; type: TokenType; fallback: string; description: string };
 
 export const tokens = {
-  /* ---------------- Base ---------------- */
-  'color.background': { tier: 'base', type: 'color', description: 'Screen background.' },
-  'color.foreground': { tier: 'base', type: 'color', description: 'Primary text and symbology.' },
-  'color.dim': { tier: 'base', type: 'color', description: 'Secondary text, outlines and inactive elements.' },
-  'color.primary': { tier: 'base', type: 'color', description: 'Accent for active and nominal states.' },
-  'color.off': { tier: 'base', type: 'color', description: 'Inactive lights and empty tracks.' },
-  'color.caution': { tier: 'base', type: 'color', description: 'Caution (amber) state.' },
-  'color.warning': { tier: 'base', type: 'color', description: 'Warning (red) state.' },
-  'font.family': { tier: 'base', type: 'font-family', description: 'Font for all MFD text.' },
-  'size.radius': { tier: 'base', type: 'length', description: 'Corner radius of frames and lights.' },
-  'size.border': { tier: 'base', type: 'length', description: 'Width of outlines.' },
-  'size.glow': { tier: 'base', type: 'length', description: 'Blur radius of the phosphor glow. 0 disables it.' },
-  'motion.duration': { tier: 'base', type: 'duration', description: 'Duration of value and state transitions.' },
+  /* ---------------- Primitive ---------------- */
+  ...scaleTokens,
+  'font.text': { tier: 'primitive', type: 'font-family', description: 'Font for labels and text.' },
+  'font.numeric': { tier: 'primitive', type: 'font-family', description: 'Font for values.' },
+  'label.case': {
+    tier: 'primitive',
+    type: 'keyword',
+    values: ['uppercase', 'none'],
+    description: 'Letter case of labels: `uppercase`, or `none` to show them as typed.'
+  },
+  'label.tracking': { tier: 'primitive', type: 'length', description: 'Letter spacing of labels.' },
+  radius: { tier: 'primitive', type: 'length', description: 'Corner radius of frames and lights.' },
+  'border.width': { tier: 'primitive', type: 'length', description: 'Width of outlines.' },
+  glow: {
+    tier: 'primitive',
+    type: 'length',
+    description: 'Blur radius of the glow around lit elements. 0 turns it off.'
+  },
+  duration: { tier: 'primitive', type: 'duration', description: 'Duration of value and state transitions.' },
 
   /* ---------------- Semantic ---------------- */
-  surface: { tier: 'semantic', type: 'color', fallback: 'color.background', description: 'Widget surfaces.' },
-  text: { tier: 'semantic', type: 'color', fallback: 'color.foreground', description: 'Text.' },
-  'text.dim': { tier: 'semantic', type: 'color', fallback: 'color.dim', description: 'Labels and secondary text.' },
-  outline: { tier: 'semantic', type: 'color', fallback: 'color.dim', description: 'Widget outlines.' },
-  'state.on': { tier: 'semantic', type: 'color', fallback: 'color.primary', description: 'Active / nominal.' },
-  'state.off': { tier: 'semantic', type: 'color', fallback: 'color.off', description: 'Inactive.' },
-  'state.caution': { tier: 'semantic', type: 'color', fallback: 'color.caution', description: 'Caution.' },
-  'state.warning': { tier: 'semantic', type: 'color', fallback: 'color.warning', description: 'Warning.' },
+  surface: { tier: 'semantic', type: 'color', fallback: 'neutral.1', description: 'Widget surfaces.' },
+  text: { tier: 'semantic', type: 'color', fallback: 'neutral.9', description: 'Text.' },
+  'text.dim': { tier: 'semantic', type: 'color', fallback: 'neutral.7', description: 'Labels and secondary text.' },
+  line: { tier: 'semantic', type: 'color', fallback: 'neutral.4', description: 'Outlines.' },
+  accent: { tier: 'semantic', type: 'color', fallback: 'primary.8', description: 'Accent, e.g. the focus ring.' },
+  'accent.text': { tier: 'semantic', type: 'color', fallback: 'neutral.1', description: 'Text on the accent.' },
+  'status.on': { tier: 'semantic', type: 'color', fallback: 'primary.8', description: 'On, nominal.' },
+  'status.on.text': { tier: 'semantic', type: 'color', fallback: 'accent.text', description: 'Text on "on".' },
+  'status.off': { tier: 'semantic', type: 'color', fallback: 'primary.2', description: 'Off, inactive.' },
+  'status.off.text': { tier: 'semantic', type: 'color', fallback: 'text.dim', description: 'Text on "off".' },
+  'status.warning': { tier: 'semantic', type: 'color', fallback: 'warning.8', description: 'Warning.' },
+  'status.warning.text': { tier: 'semantic', type: 'color', fallback: 'neutral.1', description: 'Text on warning.' },
+  'status.critical': { tier: 'semantic', type: 'color', fallback: 'critical.8', description: 'Critical.' },
+  'status.critical.text': { tier: 'semantic', type: 'color', fallback: 'neutral.1', description: 'Text on critical.' },
 
   /* ---------------- Component ---------------- */
-  'light.on': { tier: 'component', type: 'color', fallback: 'state.on', description: 'Light: on.' },
-  'light.off': { tier: 'component', type: 'color', fallback: 'state.off', description: 'Light: off.' },
-  'light.text': { tier: 'component', type: 'color', fallback: 'surface', description: 'Light: label when lit.' },
-  'bar.fill': { tier: 'component', type: 'color', fallback: 'state.on', description: 'Bar: fill.' },
-  'bar.track': { tier: 'component', type: 'color', fallback: 'state.off', description: 'Bar: empty track.' },
+  'light.on': { tier: 'component', type: 'color', fallback: 'status.on', description: 'Light: on.' },
+  'light.on.text': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.on.text',
+    description: 'Light: label when on.'
+  },
+  'light.off': { tier: 'component', type: 'color', fallback: 'status.off', description: 'Light: off.' },
+  'light.off.text': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.off.text',
+    description: 'Light: label when off.'
+  },
+  'light.warning': { tier: 'component', type: 'color', fallback: 'status.warning', description: 'Light: warning.' },
+  'light.warning.text': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.warning.text',
+    description: 'Light: label when warning.'
+  },
+  'light.critical': { tier: 'component', type: 'color', fallback: 'status.critical', description: 'Light: critical.' },
+  'light.critical.text': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.critical.text',
+    description: 'Light: label when critical.'
+  },
+  'bar.fill': { tier: 'component', type: 'color', fallback: 'status.on', description: 'Bar: fill.' },
+  'bar.fill.warning': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.warning',
+    description: 'Bar: fill, warning.'
+  },
+  'bar.fill.critical': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.critical',
+    description: 'Bar: fill, critical.'
+  },
+  'bar.track': { tier: 'component', type: 'color', fallback: 'status.off', description: 'Bar: empty track.' },
+  'bar.value': { tier: 'component', type: 'color', fallback: 'text', description: 'Bar: value.' },
   'readout.value': { tier: 'component', type: 'color', fallback: 'text', description: 'Readout: value.' },
+  'readout.unit': { tier: 'component', type: 'color', fallback: 'text.dim', description: 'Readout: unit.' },
   'readout.label': { tier: 'component', type: 'color', fallback: 'text.dim', description: 'Readout: label.' },
-  'button.background': { tier: 'component', type: 'color', fallback: 'surface', description: 'Button: face.' },
-  'button.text': { tier: 'component', type: 'color', fallback: 'text', description: 'Button: label.' },
-  'button.outline': { tier: 'component', type: 'color', fallback: 'outline', description: 'Button: outline.' }
+  'button.face': { tier: 'component', type: 'color', fallback: 'surface', description: 'Button: face.' },
+  'button.label': { tier: 'component', type: 'color', fallback: 'text', description: 'Button: label.' },
+  'button.outline': { tier: 'component', type: 'color', fallback: 'line', description: 'Button: outline.' },
+  'button.failed': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.critical',
+    description: 'Button and light: the action failed.'
+  }
 } as const satisfies Record<string, TokenSpec>;
 
 export type TokenName = keyof typeof tokens;
 
 export const tokenNames = Object.keys(tokens) as TokenName[];
 
-export type BaseTokenName = {
-  [K in TokenName]: (typeof tokens)[K]['tier'] extends 'base' ? K : never;
+export type PrimitiveTokenName = {
+  [K in TokenName]: (typeof tokens)[K]['tier'] extends 'primitive' ? K : never;
 }[TokenName];
 
-/** Kebab-case CSS custom property name without the leading dashes, e.g. `mfd-state-on`. */
+/** Kebab-case CSS custom property name without the leading dashes, e.g. `mfd-status-on`. */
 export function toCssVariableName(token: TokenName): string {
   return `mfd-${token.replaceAll('.', '-')}`;
+}
+
+function fallbackChain(name: TokenName): TokenName[] {
+  const spec: TokenSpec = tokens[name];
+
+  return 'fallback' in spec ? [name, ...fallbackChain(spec.fallback as TokenName)] : [name];
+}
+
+/**
+ * Returns a CSS value for a token that resolves its whole fallback chain at the point of use,
+ * e.g. `token('light.on')` → `var(--mfd-light-on, var(--mfd-status-on, var(--mfd-primary-8)))`.
+ *
+ * Always use this in styles instead of naming the variables directly, so overrides at any level
+ * (document, page, widget) and any tier take effect.
+ */
+export function token(name: TokenName): string {
+  return fallbackChain(name).reduceRight(
+    (inner, link) => `var(--${toCssVariableName(link)}${inner ? `, ${inner}` : ''})`,
+    ''
+  );
 }
 
 /* ---------------- Value validation ---------------- */
@@ -88,27 +215,14 @@ const UNSAFE_VALUE = /url\(|image\(|image-set\(|src\(|var\(|env\(|attr\(|express
 
 const NUMBER = String.raw`-?(?:\d+\.?\d*|\.\d+)`;
 
-const COLOR_PATTERNS = [
-  /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i,
-  /^(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch)\([\d\s.,%/+-]+\)$/i,
-  /^[a-z]+$/i
-];
+/** Hex only (0022): `#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`. */
+const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 
 const LENGTH_PATTERN = new RegExp(`^(?:0|${NUMBER}(?:px|rem|em|%|vmin|vmax|vw|vh|cqmin|cqmax|cqi|cqb))$`, 'i');
-
-const NUMBER_PATTERN = new RegExp(`^${NUMBER}$`);
 
 const DURATION_PATTERN = new RegExp(`^${NUMBER}(?:ms|s)$`, 'i');
 
 const FONT_FAMILY_PATTERN = /^[\w\s,"'-]+$/;
-
-const valueValidators: Record<TokenType, (value: string) => boolean> = {
-  color: value => COLOR_PATTERNS.some(pattern => pattern.test(value)),
-  length: value => LENGTH_PATTERN.test(value),
-  number: value => NUMBER_PATTERN.test(value),
-  'font-family': value => FONT_FAMILY_PATTERN.test(value),
-  duration: value => DURATION_PATTERN.test(value)
-};
 
 export function isValidTokenValue(token: TokenName, value: string): boolean {
   const trimmed = value.trim();
@@ -117,7 +231,20 @@ export function isValidTokenValue(token: TokenName, value: string): boolean {
     return false;
   }
 
-  return valueValidators[tokens[token].type](trimmed);
+  const spec: TokenSpec = tokens[token];
+
+  switch (spec.type) {
+    case 'color':
+      return HEX_COLOR_PATTERN.test(trimmed);
+    case 'length':
+      return LENGTH_PATTERN.test(trimmed);
+    case 'duration':
+      return DURATION_PATTERN.test(trimmed);
+    case 'font-family':
+      return FONT_FAMILY_PATTERN.test(trimmed);
+    case 'keyword':
+      return 'values' in spec && spec.values !== undefined && spec.values.includes(trimmed);
+  }
 }
 
 export const TokenValuesSchema = v.pipe(

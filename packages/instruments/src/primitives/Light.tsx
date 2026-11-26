@@ -4,7 +4,7 @@ import { Frame } from './Frame.js';
 import * as styles from './Light.css.js';
 import { pressHandlers } from './pressHandlers.js';
 
-export const lightStates = ['off', 'on', 'caution', 'warning'] as const;
+export const lightStates = ['off', 'on', 'warning', 'critical'] as const;
 
 export type LightState = (typeof lightStates)[number];
 

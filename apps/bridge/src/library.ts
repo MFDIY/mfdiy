@@ -1,5 +1,6 @@
 import {
   DocumentIdSchema,
+  migrateDocument,
   StoredDocumentSchema,
   summariseDocument,
   type DocumentRequest,
@@ -14,6 +15,16 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import * as v from 'valibot';
+
+/**
+ * Documents saved by an older version are migrated in memory when loaded, and written in the
+ * current format the next time they change.
+ */
+function migrateStored(stored: unknown): unknown {
+  return typeof stored === 'object' && stored !== null && 'document' in stored
+    ? { ...stored, document: migrateDocument(stored.document) }
+    : stored;
+}
 
 /** Far beyond what anyone makes by hand; stops a runaway client filling the disk. */
 const MAX_DOCUMENTS = 500;
@@ -67,7 +78,10 @@ export async function openLibrary(dataDirectory: string, starters: readonly MfdD
       }
 
       try {
-        const stored = v.parse(StoredDocumentSchema, JSON.parse(await readFile(join(directory, file), 'utf8')));
+        const stored = v.parse(
+          StoredDocumentSchema,
+          migrateStored(JSON.parse(await readFile(join(directory, file), 'utf8')))
+        );
 
         // A file copied by hand carries the original's id; the file name is the one that's unique.
         documents.set(id, { ...stored, id });
