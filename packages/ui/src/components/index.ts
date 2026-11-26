@@ -39,3 +39,10 @@ export { TextLink, type TextLinkProps } from './TextLink/TextLink.js';
 export { Text, tagNames as textTagNames, variants as textVariants, type TextProps } from './Text/Text.js';
 
 export { Sheet, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
+
+export {
+  SearchList,
+  type SearchListGroup,
+  type SearchListItem,
+  type SearchListProps
+} from './SearchList/SearchList.js';

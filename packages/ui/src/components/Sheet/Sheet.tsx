@@ -3,6 +3,7 @@ import type { Stop } from './props/Stop.js';
 import { Drawer } from '@base-ui/react/drawer';
 import { useRef, useState, type PropsWithChildren } from 'react';
 
+import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Button } from '../Button/Button.js';
 import { Text } from '../Text/Text.js';
@@ -10,6 +11,45 @@ import { Text } from '../Text/Text.js';
 import * as styles from './Sheet.css.js';
 
 export { stops } from './props/Stop.js';
+
+/** Covers the screen, but lets everything outside the sheet be pressed: the sheet is not modal. */
+const viewportClass = designSystem({
+  alignItems: 'flex-end',
+  display: 'flex',
+  inset: 'none',
+  pointerEvents: 'none',
+  position: 'fixed'
+});
+
+/** A step lighter than the page: in a flat design, tone is what says it's on top (0022). */
+const popupClass = [
+  designSystem({
+    backgroundColor: 'surface.raised',
+    borderTopColor: 'line.strong',
+    borderTopStyle: 'solid',
+    borderTopWidth: 'hairline',
+    color: 'text',
+    display: 'flex',
+    flexDirection: 'column',
+    height: 'viewport',
+    outlineStyle: 'none',
+    pointerEvents: 'auto',
+    touchAction: 'none',
+    width: 'full'
+  }),
+  styles.popup
+].join(' ');
+
+/** Scrolls on its own; the page never does (0007). */
+const contentClass = designSystem({
+  flexBasis: 'auto',
+  flexGrow: '1',
+  flexShrink: '1',
+  minHeight: 'none',
+  overflowY: 'auto',
+  overscrollBehavior: 'none',
+  touchAction: 'auto'
+});
 
 /** Fractions of the screen's height, as Base UI's Drawer takes them. */
 const snapPoints = { half: 0.5, full: 1 } as const satisfies Record<Stop, number>;
@@ -56,12 +96,12 @@ export function Sheet({ children, defaultStop = 'half', onClose, open, title }: 
       snapToSequentialPoints
     >
       <Drawer.Portal>
-        <Drawer.Viewport className={styles.viewport}>
-          <Drawer.Popup className={styles.popup} initialFocus={popupRef} ref={popupRef}>
+        <Drawer.Viewport className={viewportClass}>
+          <Drawer.Popup className={popupClass} initialFocus={popupRef} ref={popupRef}>
             {/* Not a button: a drag can't start on one with a mouse. The chevron moves between the stops instead. */}
-            <Box className={styles.header}>
-              <Box className={styles.handle}>
-                <Box className={styles.grabBar} />
+            <Box flexShrink='0' touchAction='none' userSelect='none'>
+              <Box cursor='grab' display='flex' justifyContent='center' paddingBlock='3x'>
+                <Box backgroundColor='line.strong' height='1x' width='6x' />
               </Box>
               <Box alignItems='center' display='flex' gap='2x' paddingInline='5x'>
                 <Box flexGrow='1' minWidth='none'>
@@ -89,7 +129,7 @@ export function Sheet({ children, defaultStop = 'half', onClose, open, title }: 
                 </Button>
               </Box>
             </Box>
-            <Drawer.Content className={styles.content}>
+            <Drawer.Content className={contentClass}>
               <Box padding='5x'>{children}</Box>
             </Drawer.Content>
           </Drawer.Popup>

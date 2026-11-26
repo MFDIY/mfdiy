@@ -36,6 +36,7 @@ export const backgroundColor = {
   surface: v['surface'],
   'surface.raised': v['surface.raised'],
   backdrop: v['backdrop'],
+  'line.strong': v['line.strong'],
   accent: v['accent'],
   'accent.hover': v['accent.hover'],
   'accent.pressed': v['accent.pressed'],
