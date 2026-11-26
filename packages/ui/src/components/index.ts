@@ -39,6 +39,8 @@ export { TextInput, type TextInputProps } from './TextInput/TextInput.js';
 
 export { TextLink, type TextLinkProps } from './TextLink/TextLink.js';
 
+export { Tabs, type TabsItem, type TabsProps } from './Tabs/Tabs.js';
+
 export { Text, tagNames as textTagNames, variants as textVariants, type TextProps } from './Text/Text.js';
 
 export { Sheet, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
