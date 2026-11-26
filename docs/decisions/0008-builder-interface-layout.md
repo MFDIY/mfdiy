@@ -21,6 +21,10 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 - Tapping an empty cell opens the **widget library in a bottom sheet**, half-open so the marked cell stays visible above it, and draggable to full height. One sheet at a time: selecting a widget swaps it for the properties sheet.
 - Opened **by touch**, its search field isn't focused, so no on-screen keyboard covers the list until it's tapped.
 
+### Which form the library takes
+
+**Pointer type, not only width, decides.** With a mouse or pen (`any-pointer: fine`) on a wide screen, the library is the sidebar, and widgets are dragged from it onto the canvas. With touch only, even on a large tablet, it's a sheet that opens when a cell is tapped: a finger moving over a list scrolls it, so dragging out of it would fight the scrolling. (Long-press to drag on touch could be added later.)
+
 ### In between
 
 As the screen narrows, panels move into sheets one at a time, until on a phone everything but the canvas and a thin toolbar lives in sheets. Which panel moves first, and at what width, is decided when the layout is built, by container width, not device detection.
