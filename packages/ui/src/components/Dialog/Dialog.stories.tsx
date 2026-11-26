@@ -14,10 +14,14 @@ const meta = {
   title: 'Components / Dialog',
   component: Dialog,
   argTypes: {
+    // Content, not settings: each story provides its own.
+    actions: { control: false },
+    children: { control: false },
     dismissible: { control: { type: 'boolean' }, table: { defaultValue: { summary: 'false' } } },
     title: { control: { type: 'text' } }
   },
   args: {
+    dismissible: false,
     title: 'Save changes to “Fighter”?',
     onClose: () => undefined
   },

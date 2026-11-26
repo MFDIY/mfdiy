@@ -31,7 +31,7 @@ const meta = {
     placeholder: { control: { type: 'text' } },
     value: { control: { type: 'text' } }
   },
-  args: { label: 'Name', onChange: () => undefined, value: 'Fighter' },
+  args: { disabled: false, label: 'Name', onChange: () => undefined, value: 'Fighter' },
   // Keyed on the control, so changing `value` in the controls panel starts the field over.
   render: args => <EditableTextField {...args} key={args.value} />,
   decorators: [
