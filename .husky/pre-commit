@@ -1,1 +1,7 @@
+# Commit the lockfile npm install would produce, however a package.json was edited.
+if git diff --cached --name-only | grep -qE '(^|/)package(-lock)?\.json$'; then
+  npm install --package-lock-only --ignore-scripts --no-audit --no-fund --silent
+  git add package-lock.json
+fi
+
 npx lint-staged
