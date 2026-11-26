@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 
 import '@mfdiy/ui';
+import './root.css.js';
 import martianMono from '@mfdiy/ui/fonts/MartianMono.woff2?url';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 

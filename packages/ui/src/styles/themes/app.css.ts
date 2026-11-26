@@ -29,8 +29,3 @@ globalStyle(':root', {
     }
   }
 });
-
-globalStyle('body', {
-  height: '100dvh',
-  overflow: 'clip'
-});

@@ -28,6 +28,11 @@ globalStyle('fieldset, select', {
   border: 'none'
 });
 
+/** Links that aren't a `TextLink` take the colour of the text around them, never browser blue. */
+globalStyle('a', {
+  color: 'inherit'
+});
+
 globalStyle('ol, ul', {
   listStyleType: 'none'
 });

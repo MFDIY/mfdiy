@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
 import { stylePropArgTypes } from '../../../.storybook/stylePropArgTypes.js';
+import { Box } from '../Box/Box.js';
+import { Stack } from '../Stack/Stack.js';
 
 import { Text, supportedStyleProps, tagNames, variants } from './Text.js';
 
@@ -131,7 +133,7 @@ export const WhiteSpace: Story = {
 
 export const InlinedVariants = {
   render: () => (
-    <Text>
+    <Text variant='body'>
       Lorem ipsum dolor sit amet, <b>consectetur adipiscing</b> elit. Nam tempor ipsum ac{' '}
       <strong>pharetra semper</strong>. Cras aliquet <i>pharetra</i> diam nec <em>euismod</em>. Maecenas iaculis orci et
       velit ullamcorper pretium. Quisque sed sapien et erat pharetra aliquam ac eget tellus. Nunc lacus elit, porta eu
@@ -161,3 +163,37 @@ export const Body = { args: { variant: 'body' } } satisfies Story;
 export const Value = { args: { children: '212 m/s', variant: 'value' } } satisfies Story;
 
 export const Heading = { args: { variant: 'heading' } } satisfies Story;
+
+/** All four variants as the builder uses them: a properties panel. */
+export const Specimen = {
+  render: () => (
+    <Box borderColor='line.strong' borderStyle='solid' borderWidth='hairline' padding='5x' width='max-content'>
+      <Stack spacing='5x'>
+        <Text tagName='h2' variant='heading'>
+          Landing gear
+        </Text>
+        <Stack spacing='2x'>
+          <Text color='text.dim' variant='label'>
+            Action
+          </Text>
+          <Text variant='body'>Toggle landing gear</Text>
+        </Stack>
+        <Stack spacing='2x'>
+          <Text color='text.dim' variant='label'>
+            Size
+          </Text>
+          <Text variant='value'>4 × 2 cells</Text>
+        </Stack>
+        <Stack spacing='2x'>
+          <Text variant='body'>Readout</Text>
+          <Text color='text.dim' variant='body'>
+            Shows the value of any signal as text.
+          </Text>
+        </Stack>
+        <Text color='status.critical' variant='body'>
+          Hold time must be 0–5 s.
+        </Text>
+      </Stack>
+    </Box>
+  )
+} satisfies Story;
