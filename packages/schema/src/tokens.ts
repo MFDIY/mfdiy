@@ -21,9 +21,20 @@ import * as v from 'valibot';
  */
 export const THEME_SCHEMA_VERSION = 2;
 
-export const tokenTypes = ['color', 'length', 'font-family', 'duration', 'keyword'] as const;
+export const tokenTypes = ['color', 'length', 'font', 'duration', 'keyword'] as const;
 
 export type TokenType = (typeof tokenTypes)[number];
+
+/* ---------------- Fonts ---------------- */
+
+/**
+ * The fonts a theme can pick from: bundled with MFDIY, so an MFD looks the same on every screen,
+ * and declared in `packages/ui/src/styles/fonts.css.ts`. A theme names one; it never supplies its
+ * own font stack (0022). The theme editor offers them in a picker, not a text field.
+ */
+export const bundledFonts = ['Martian Mono'] as const;
+
+export type BundledFont = (typeof bundledFonts)[number];
 
 /* ---------------- Colour scales ---------------- */
 
@@ -79,8 +90,8 @@ type TokenSpec =
 export const tokens = {
   /* ---------------- Primitive ---------------- */
   ...scaleTokens,
-  'font.text': { tier: 'primitive', type: 'font-family', description: 'Font for labels and text.' },
-  'font.numeric': { tier: 'primitive', type: 'font-family', description: 'Font for values.' },
+  'font.text': { tier: 'primitive', type: 'font', values: bundledFonts, description: 'Font for labels and text.' },
+  'font.numeric': { tier: 'primitive', type: 'font', values: bundledFonts, description: 'Font for values.' },
   'label.case': {
     tier: 'primitive',
     type: 'keyword',
@@ -209,6 +220,18 @@ export function token(name: TokenName): string {
   );
 }
 
+export type FontTokenName = {
+  [K in TokenName]: (typeof tokens)[K]['type'] extends 'font' ? K : never;
+}[TokenName];
+
+/**
+ * A font token as a CSS `font-family`, with a generic fallback for the moment before the bundled
+ * font has loaded. Use this instead of `token()` for fonts.
+ */
+export function fontFamily(name: FontTokenName): string {
+  return `${token(name)}, ui-monospace, monospace`;
+}
+
 /* ---------------- Value validation ---------------- */
 
 /**
@@ -227,8 +250,6 @@ const LENGTH_PATTERN = new RegExp(`^(?:0|${NUMBER}(?:px|rem|em|%|vmin|vmax|vw|vh
 
 const DURATION_PATTERN = new RegExp(`^${NUMBER}(?:ms|s)$`, 'i');
 
-const FONT_FAMILY_PATTERN = /^[\w\s,"'-]+$/;
-
 export function isValidTokenValue(token: TokenName, value: string): boolean {
   const trimmed = value.trim();
 
@@ -245,8 +266,7 @@ export function isValidTokenValue(token: TokenName, value: string): boolean {
       return LENGTH_PATTERN.test(trimmed);
     case 'duration':
       return DURATION_PATTERN.test(trimmed);
-    case 'font-family':
-      return FONT_FAMILY_PATTERN.test(trimmed);
+    case 'font':
     case 'keyword':
       return 'values' in spec && spec.values !== undefined && spec.values.includes(trimmed);
   }

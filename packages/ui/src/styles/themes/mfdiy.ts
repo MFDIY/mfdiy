@@ -61,9 +61,8 @@ export const mfdiy: Record<PrimitiveTokenName, string> = {
   'critical.8': '#ff5f4a',
   'critical.9': '#ffd9d3',
 
-  // Bundled (`fonts.css.ts`); the fallbacks only show while it loads.
-  'font.text': '"Martian Mono", ui-monospace, monospace',
-  'font.numeric': '"Martian Mono", ui-monospace, monospace',
+  'font.text': 'Martian Mono',
+  'font.numeric': 'Martian Mono',
   'label.case': 'uppercase',
   'label.tracking': '0.14em',
   // MFD spacing; the interface has its own spacing scale.

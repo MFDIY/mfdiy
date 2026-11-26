@@ -59,8 +59,8 @@ export const phosphor: PrimitiveTokenValues = {
   'critical.8': '#ff5f4a',
   'critical.9': '#ffe4df',
 
-  'font.text': '"Martian Mono", ui-monospace, monospace',
-  'font.numeric': '"Martian Mono", ui-monospace, monospace',
+  'font.text': 'Martian Mono',
+  'font.numeric': 'Martian Mono',
   'label.case': 'uppercase',
   'label.tracking': '0.12em',
   gap: '1.5cqmin',

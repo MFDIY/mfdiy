@@ -1,6 +1,6 @@
 import { style } from '@vanilla-extract/css';
 
-import { token } from '../theme/token.js';
+import { fontFamily, token } from '../theme/token.js';
 
 export const readout = style({
   border: `${token('border.width')} solid ${token('line')}`,
@@ -15,7 +15,7 @@ export const label = style({
 
 export const value = style({
   color: token('readout.value'),
-  fontFamily: token('font.numeric'),
+  fontFamily: fontFamily('font.numeric'),
   // Bounded by width too, so long values shrink instead of truncating in narrow cells.
   fontSize: 'clamp(14px, min(32cqmin, 16cqi), 64px)',
   fontVariantNumeric: 'tabular-nums',

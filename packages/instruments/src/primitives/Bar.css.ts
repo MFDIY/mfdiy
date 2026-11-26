@@ -1,6 +1,6 @@
 import { style } from '@vanilla-extract/css';
 
-import { token } from '../theme/token.js';
+import { fontFamily, token } from '../theme/token.js';
 
 import { glow, transition } from './styleHelpers.js';
 
@@ -14,7 +14,7 @@ export const bar = style({
 
 export const value = style({
   color: token('bar.value'),
-  fontFamily: token('font.numeric'),
+  fontFamily: fontFamily('font.numeric'),
   fontSize: 'clamp(12px, 26cqmin, 48px)',
   fontVariantNumeric: 'tabular-nums',
   lineHeight: 1,

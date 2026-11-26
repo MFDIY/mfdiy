@@ -13,7 +13,7 @@ describe('isValidTokenValue', () => {
     ['radius', '0'],
     ['glow', '1.5cqmin'],
     ['duration', '200ms'],
-    ['font.text', '"Share Tech Mono", ui-monospace, monospace'],
+    ['font.text', 'Martian Mono'],
     ['label.case', 'uppercase'],
     ['label.case', 'none']
   ] as const)('accepts %s = %s', (token, value) => {
@@ -34,6 +34,9 @@ describe('isValidTokenValue', () => {
     ['radius', 'red'],
     ['radius', 'calc(1px + 2px)'],
     ['font.text', 'Arial} body { display: none'],
+    // Only bundled fonts, by name (0022).
+    ['font.text', '"Share Tech Mono", ui-monospace, monospace'],
+    ['font.text', 'martian mono'],
     ['duration', '200'],
     ['label.case', 'lowercase'],
     ['label.case', 'UPPERCASE'],

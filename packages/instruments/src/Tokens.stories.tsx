@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { scaleNames, scaleSteps, token, tokenNames, tokens, type TokenName } from '@mfdiy/schema';
+import { fontFamily, scaleNames, scaleSteps, token, tokenNames, tokens, type TokenName } from '@mfdiy/schema';
 import { mfdiy } from '@mfdiy/ui';
 import { Box } from '@mfdiy/ui/components';
 
@@ -12,7 +12,7 @@ type Values = Partial<Record<TokenName, string>>;
 
 const semanticNames = tokenNames.filter(name => tokens[name].tier === 'semantic');
 
-const mono = { fontFamily: token('font.text') };
+const mono = { fontFamily: fontFamily('font.text') };
 
 function Heading({ children }: { children: string }) {
   return (
@@ -88,7 +88,7 @@ function Samples() {
           border: `${token('border.width')} solid ${token('line')}`,
           borderRadius: token('radius'),
           color: token('text'),
-          fontFamily: token('font.numeric'),
+          fontFamily: fontFamily('font.numeric'),
           fontSize: '28px',
           padding: '8px 12px'
         }}
@@ -104,7 +104,7 @@ function Samples() {
           borderRadius: token('radius'),
           boxShadow: `0 0 ${token('glow')} color-mix(in srgb, ${token('status.on')} 60%, transparent)`,
           color: token('status.on.text'),
-          fontFamily: token('font.text'),
+          fontFamily: fontFamily('font.text'),
           fontSize: '13px',
           letterSpacing: token('label.tracking'),
           padding: '10px 14px',
