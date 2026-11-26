@@ -12,14 +12,18 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 - **Top toolbar** (slim): profile name, page tabs, Save and Save as new (0019), undo / redo, remove, preview shape, zoom, preview toggle.
 - **Properties panel** on the right for the selected widget: bindings, options, action, theme overrides, position and size.
 - **Canvas** fills the rest, centred and fitted to the preview shape.
-- **No permanent widget palette.** Tapping or clicking an empty cell opens the command palette (see "Add" in 0006). It's centred on the screen, and **blurs** what's behind it, as in Bonsai.
+- **Widget library** on the left, **always visible**: widgets and data to add, searchable. Tapping or clicking an empty cell marks the spot, and picking from the library adds the widget there (see "Add" in 0006).
 
 ### Narrow screens (phones)
 
 - The canvas takes almost the whole screen, under a thin toolbar.
 - Selecting a widget opens a **bottom sheet** with its properties. Half-open it shows the essentials and keeps the selected widget visible above it, zooming to it if needed; dragged up it shows the full panel.
-- Tapping an empty cell opens the **command palette**, which fills the screen.
+- Tapping an empty cell opens the **widget library in a bottom sheet**, half-open so the marked cell stays visible above it, and draggable to full height. One sheet at a time: selecting a widget swaps it for the properties sheet.
 - Opened **by touch**, its search field isn't focused, so no on-screen keyboard covers the list until it's tapped.
+
+### In between
+
+As the screen narrows, panels move into sheets one at a time, until on a phone everything but the canvas and a thin toolbar lives in sheets. Which panel moves first, and at what width, is decided when the layout is built, by container width, not device detection.
 
 ### Preview mode
 
@@ -29,12 +33,13 @@ A toggle hides all builder controls and shows the layout full-screen with live d
 
 - Keeps the canvas as large as possible on every device while giving properties a natural home: a panel where there is room, a sheet where there isn't.
 - Bottom sheets are a familiar pattern on phones and keep the selected widget in view while it's edited.
-- Opening the palette by tapping a cell is faster on touch than dragging from a sidebar, and avoids a permanent panel competing for space.
+- A library beside the canvas, or a half-open sheet under it, never covers the cell a widget is being added to, as a centred palette did. And the library and properties follow one pattern: a panel where there is room, a sheet where there isn't.
 
 ## Consequences
 
 - The **canvas component fits any box** it's given; it doesn't assume it owns the viewport.
 - **Properties are written once** and presented as either a side panel or a bottom sheet depending on available width (container queries, not device detection).
-- The builder needs a bottom-sheet component in `packages/ui` that works with touch, mouse and keyboard and respects 0007 (no page scrolling; the sheet's own content may scroll, as it's builder UI, not MFD content).
-- The canvas, properties and palette must not depend on the surrounding builder page, so they can be reused for in-place editing (0009).
+- The builder needs a bottom-sheet component in `packages/ui`, built on Base UI's Drawer (0003): non-modal so the canvas stays usable above it, with a half-open and a full-height stop, working with touch, mouse and keyboard, and respecting 0007 (no page scrolling; the sheet's own content may scroll, as it's builder UI, not MFD content).
+- **The library and properties are each written once** and presented as a side panel or a sheet. The command palette is removed once the library replaces it; a keyboard shortcut focuses the library's search instead.
+- The canvas, properties and library must not depend on the surrounding builder page, so they can be reused for in-place editing (0009).
 - **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. A **segmented single-choice control** (e.g. a Light's colour when lit) is designed when the properties panel needs it; Bonsai's SegmentedControl was removed (0022).

@@ -76,7 +76,7 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 - `packages/schema`: Valibot schemas for every public format: signals, bridge protocol, theme tokens, documents.
 - `packages/instruments`: MFD primitives (pure), widgets and manifests (data-aware), the `--mfd-*` theme contract.
 - `packages/builder`: the builder's canvas and palette (`PageEditor`), independent of the page hosting them. Develop it in Storybook first.
-- `packages/ui`: builder design system, forked from Bonsai (`manage.vet`). One-way fork; prune freely.
+- `packages/ui`: builder design system: Bonsai's styling contract (tokens, Sprinkles, `Box`), with interactive components built on Base UI (0003, 0022).
 - `packages/adapter-star-citizen`: Star Citizen signal and action catalogue, and the starter documents a new library gets.
 - `packages/config`: shared TypeScript config.
 

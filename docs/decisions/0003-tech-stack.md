@@ -18,7 +18,7 @@
 | `apps/app`                      | Builder and display. React Router 7 in SPA mode (no SSR).                                                         |
 | `apps/bridge`                   | Node app on the gaming PC: game gRPC → WebSocket. Also serves the built `apps/app` on the LAN (see consequences). |
 | `packages/builder`              | The builder's canvas, and later its palette and properties. Independent of the page hosting it (0008).            |
-| `packages/ui`                   | Builder chrome design system, forked from Bonsai.                                                                 |
+| `packages/ui`                   | Builder chrome design system: Bonsai's styling contract, interactive parts on Base UI.                           |
 | `packages/instruments`          | MFD primitives, widget manifests and the MFD theme contract.                                                      |
 | `packages/schema`               | Valibot schemas and version migrations for documents, themes and signals.                                         |
 | `packages/adapter-star-citizen` | Maps the game's telemetry to MFDIY's game-agnostic signal catalogue and actions.                                  |
@@ -27,7 +27,9 @@
 
 ### Two styling systems, kept apart
 
-**1. Builder chrome (`packages/ui`)**: a normal app design system, **forked from Bonsai** (`manage.vet/packages/bonsai`). It is a one-way copy: no syncing with Bonsai, and drift is accepted. Fork selectively, bringing over only the components the builder needs, and prune freely. Reuse the Bonsai pattern in full: `createGlobalThemeContract`, `createGlobalTheme`, Sprinkles with container, media and pseudo conditions, `Box` with style props, and Storybook. Bonsai's _looks_ are not kept: its tokens, themes and variants are rebuilt so the chrome and the MFDs share one design language and one set of semantic names (0022). Users never theme this, and a user's MFD theme can never affect it.
+**1. Builder chrome (`packages/ui`)**: a normal app design system, **forked from Bonsai** (`manage.vet/packages/bonsai`). It is a one-way copy: no syncing with Bonsai, and drift is accepted. Bonsai is as much a styling contract and its mechanisms as a set of components: reuse that pattern in full: `createGlobalThemeContract`, `createGlobalTheme`, Sprinkles with container, media and pseudo conditions, `Box` with style props, and Storybook. Bonsai's _looks_ are not kept: its tokens, themes and variants are rebuilt so the chrome and the MFDs share one design language and one set of semantic names (0022). Users never theme this, and a user's MFD theme can never affect it.
+
+**Interactive components are built on Base UI** (`@base-ui/react`, MIT): unstyled primitives for sheets (Drawer), menus, tabs, selects, toggle groups, number fields and the like, which bring keyboard, focus and screen-reader behaviour. They are styled with the chrome's tokens through `Box` and style props, and imported per component (`@base-ui/react/drawer`), so only what's used is bundled. Bonsai's own components are only forked where Base UI has no equivalent, and the ones already rebuilt (Box, Text, Button, TextField, Dialog, layout) stay.
 
 **`Box` covers everything.** Code in `apps/app`, `packages/builder` and `packages/instruments` uses `Box` (or a component built on it) instead of native elements, and style props instead of CSS. `Box` is polymorphic, so `tagName` keeps the HTML semantic. `className` is only for styles Bonsai doesn't support, and adding that support to Bonsai is considered case by case first. Values are always Bonsai tokens, including those for editing controls on the canvas, which have the same value in every colour scheme so they stand out from any MFD theme. MFD styling keeps reading `--mfd-*` tokens.
 
