@@ -70,16 +70,16 @@ export const TextResponsive = {
   render: args => {
     return (
       <Stack spacing='5x'>
-        <Text variant='heading.1'>
+        <Text variant='heading'>
           <TextLink {...args}>Lorem ipsum</TextLink>
         </Text>
-        <Text variant='heading.2'>
+        <Text variant='heading'>
           <TextLink {...args}>Lorem ipsum</TextLink>
         </Text>
-        <Text variant='heading.3'>
+        <Text variant='heading'>
           <TextLink {...args}>Lorem ipsum</TextLink>
         </Text>
-        <Text variant='heading.4'>
+        <Text variant='heading'>
           <TextLink {...args}>Lorem ipsum</TextLink>
         </Text>
       </Stack>

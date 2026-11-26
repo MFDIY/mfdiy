@@ -37,8 +37,6 @@ export type TextInputProps = StyleProps &
     type?: Type | undefined;
   };
 
-const BORDER_RADIUS = '2x' as const satisfies DesignSystem['borderRadius'];
-
 export function TextInput({
   'aria-describedby': ariaDescribedBy,
   'aria-label': ariaLabel,
@@ -90,39 +88,31 @@ export function TextInput({
   }
 
   return (
-    <Surface
-      borderRadius={BORDER_RADIUS}
-      elevation={elevation}
-      outlineColor={error ? 'error-ring' : 'focus-ring'}
-      outlineStyle={
-        hideFocusRing ? 'none' : { default: error ? 'solid' : 'none', active: 'solid', focusWithin: 'solid' }
-      }
-      outlineWidth={error ? 'error-ring' : 'focus-ring'}
-      position='relative'
-    >
+    <Surface elevation={elevation} position='relative'>
       <Box
         {...nativeProps}
         appearance='none'
         aria-describedby={ariaDescribedBy}
         aria-label={ariaLabel}
         aria-labelledby={typeof ariaLabel === 'undefined' ? ariaLabelledBy : undefined}
-        backgroundColor={elevation === 'base' ? 'elevation.depressed' : 'transparent'}
-        borderColor={elevation === 'base' ? 'input.text' : 'transparent'}
-        borderRadius={BORDER_RADIUS}
+        backgroundColor='transparent'
+        borderColor={
+          error
+            ? 'status.critical'
+            : elevation === 'base'
+              ? { default: 'line', hover: 'line.strong', focusVisible: hideFocusRing ? 'line' : 'focus' }
+              : 'transparent'
+        }
         borderStyle='solid'
-        borderWidth='input.text'
-        className={[
-          textStyles.variants['input.text'],
-          styles.removeNativeDecoration,
-          designSystemClassNames,
-          className
-        ]}
+        borderWidth='hairline'
+        boxShadow={{ default: 'none', focusVisible: hideFocusRing ? 'none' : 'focus.glow' }}
+        className={[textStyles.variants['body'], styles.removeNativeDecoration, designSystemClassNames, className]}
         color={{
-          default: 'input.text',
-          placeholder: 'input.text.placeholder'
+          default: 'text',
+          placeholder: 'text.faint'
         }}
         fontFamily='regular'
-        height='button.large'
+        height='control.large'
         id={id}
         onChange={handleChange}
         outlineStyle='none'
@@ -138,13 +128,11 @@ export function TextInput({
         <Box className={styles.clearButton} display='flex' insetY='none' position='absolute' right='none'>
           <Button
             aria-label='Clear'
-            borderBottomLeftRadius='none'
-            borderTopLeftRadius='none'
             onClick={handleClear}
             onMouseDown={event => event.preventDefault()}
             size='small'
             tabIndex={-1}
-            variant='transparent'
+            variant='quiet'
             width='full'
           >
             ✕

@@ -8,7 +8,7 @@ export type DividerProps = {
   color?: DesignSystem['borderColor'] | undefined;
 };
 
-export function Divider({ className, color = 'divider' }: DividerProps) {
+export function Divider({ className, color = 'line' }: DividerProps) {
   return (
     <Box
       alignSelf='stretch'
@@ -18,7 +18,7 @@ export function Divider({ className, color = 'divider' }: DividerProps) {
       borderRightColor={color}
       borderRightStyle='solid'
       borderTopStyle='hidden'
-      borderWidth='divider'
+      borderWidth='hairline'
       className={className}
       margin='none'
       tagName='hr'

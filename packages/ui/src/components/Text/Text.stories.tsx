@@ -1,9 +1,7 @@
-import type { Variant } from './props/Variant.js';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
 import { stylePropArgTypes } from '../../../.storybook/stylePropArgTypes.js';
-import { containerSizeConditionalProperties } from '../../styles/sprinkles.css.js';
 
 import { Text, supportedStyleProps, tagNames, variants } from './Text.js';
 
@@ -57,7 +55,7 @@ const meta = {
         }
       }
     },
-    variant: createArgTypeFromConditionalStyleProp(variants, containerSizeConditionalProperties.conditions),
+    variant: createArgTypeFromConditionalStyleProp(variants, undefined),
     ...textStylePropArgTypes
   },
   args: {
@@ -145,81 +143,21 @@ export const InlinedVariants = {
 } satisfies Story;
 
 export const TextScale = {
-  render: ({ children: _children, ...restProps }) => {
-    const variants = [
-      'display',
-      'heading.1',
-      'heading.2',
-      'heading.3',
-      'heading.4',
-      'body',
-      'button.large',
-      'button.standard',
-      'button.small'
-    ] as const satisfies Variant[];
-
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-        {variants.map(variant => (
-          <Text {...restProps} key={variant} variant={variant}>
-            {variant}
-          </Text>
-        ))}
-      </div>
-    );
-  }
+  render: ({ children: _children, ...restProps }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+      {variants.map(variant => (
+        <Text {...restProps} key={variant} variant={variant}>
+          {variant}
+        </Text>
+      ))}
+    </div>
+  )
 } satisfies Story;
 
-export const Body = {
-  args: {
-    variant: 'body'
-  }
-} satisfies Story;
+export const Label = { args: { variant: 'label' } } satisfies Story;
 
-export const ButtonLarge = {
-  args: {
-    variant: 'button.large'
-  }
-} satisfies Story;
+export const Body = { args: { variant: 'body' } } satisfies Story;
 
-export const ButtonSmall = {
-  args: {
-    variant: 'button.small'
-  }
-} satisfies Story;
+export const Value = { args: { children: '212 m/s', variant: 'value' } } satisfies Story;
 
-export const ButtonStandard = {
-  args: {
-    variant: 'button.standard'
-  }
-} satisfies Story;
-
-export const Display = {
-  args: {
-    variant: 'display'
-  }
-} satisfies Story;
-
-export const Heading1 = {
-  args: {
-    variant: 'heading.1'
-  }
-} satisfies Story;
-
-export const Heading2 = {
-  args: {
-    variant: 'heading.2'
-  }
-} satisfies Story;
-
-export const Heading3 = {
-  args: {
-    variant: 'heading.3'
-  }
-} satisfies Story;
-
-export const Heading4 = {
-  args: {
-    variant: 'heading.4'
-  }
-} satisfies Story;
+export const Heading = { args: { variant: 'heading' } } satisfies Story;

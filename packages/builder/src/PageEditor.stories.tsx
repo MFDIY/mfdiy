@@ -41,7 +41,7 @@ function Demo({ catalogue, themeName }: DemoProps) {
   const [layout] = page.layouts;
 
   return layout ? (
-    <Box backgroundColor='page' height='viewport' padding='5x'>
+    <Box backgroundColor='surface' height='viewport' padding='5x'>
       <PageEditor
         catalogue={catalogue}
         documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}

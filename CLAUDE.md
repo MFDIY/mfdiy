@@ -50,7 +50,7 @@ The repository is public in the `MFDIY` org, and the landing page is live at htt
 
 Waiting on the maintainer: generate the schema on the gaming PC (PTU and LIVE) and put both files where a session can read them; confirm PTU access; read the game developer's terms before charging for anything, and its fan-content and posting rules before announcing the beta.
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 656 kB of builder CSS (54 kB gzipped), makes every package that imports `@mfdiy/ui` spend ~22 s re-checking its types (0021), and can be pruned.
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup still produces about 177 kB of builder CSS (20.5 kB gzipped), down from 656 kB before the chrome rebuild (0022); a cold type check of a package that imports `@mfdiy/ui` takes ~15 s.
 
 ## Commands
 

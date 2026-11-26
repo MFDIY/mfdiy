@@ -1,7 +1,15 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 
-import { ThemeSchema, isValidTokenValue, toCssVariableName, token, tokenNames, tokens } from './tokens.js';
+import {
+  ThemeSchema,
+  isValidTokenValue,
+  resolveToken,
+  toCssVariableName,
+  token,
+  tokenNames,
+  tokens
+} from './tokens.js';
 
 describe('isValidTokenValue', () => {
   it.each([
@@ -99,6 +107,12 @@ describe('tokens', () => {
 describe('token', () => {
   it('resolves the whole fallback chain where it is used', () => {
     expect(token('light.on')).toBe('var(--mfd-light-on, var(--mfd-status-on, var(--mfd-primary-8)))');
+  });
+
+  it('resolves a theme value along the same chain', () => {
+    expect(resolveToken('light.on', { 'primary.8': '#ffffff' })).toBe('#ffffff');
+    expect(resolveToken('light.on', { 'primary.8': '#ffffff', 'status.on': '#000000' })).toBe('#000000');
+    expect(resolveToken('light.on', {})).toBeUndefined();
   });
 
   it('reads a primitive directly', () => {

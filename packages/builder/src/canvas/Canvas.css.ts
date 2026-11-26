@@ -1,5 +1,5 @@
 import { token } from '@mfdiy/instruments';
-import { globalVars } from '@mfdiy/ui';
+import { uiVars } from '@mfdiy/ui';
 import { style, styleVariants } from '@vanilla-extract/css';
 
 /*
@@ -27,7 +27,7 @@ export const dots = style({ inset: `calc(${gap} / -2)` });
 /** The MFD's own background, so the dot grid doesn't show through widgets. */
 export const content = style({ backgroundColor: token('surface') });
 
-const handleSize = globalVars['size.canvas.handle'];
+const handleSize = uiVars['size.canvas.handle'];
 
 // Handles reach half their size into the widget, but always leave its middle free for dragging.
 const insetX = `min(${handleSize} / 2, 30cqw)`;

@@ -51,7 +51,6 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
         aria-label={widgetName(widget)}
         aria-pressed={selected}
         backgroundColor='transparent'
-        borderRadius='1x'
         borderStyle='hidden'
         boxShadow={selected ? 'canvas.selected' : 'none'}
         cursor={lifted ? 'grabbing' : 'grab'}
@@ -64,9 +63,9 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
           }
         }}
         onPointerDown={event => onPointerDown(event, widget.id)}
-        outlineColor='focus-ring'
+        outlineColor='focus'
         outlineStyle={{ default: 'none', focusVisible: 'solid' }}
-        outlineWidth='focus-ring'
+        outlineWidth='focus'
         padding='none'
         position='absolute'
         tagName='button'
@@ -95,10 +94,9 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
             >
               <Box
                 backgroundColor='canvas.handle'
-                borderColor='canvas.handle'
-                borderRadius='1x'
+                borderColor='canvas.edit'
                 borderStyle='solid'
-                borderWidth='canvas'
+                borderWidth='edit'
                 boxShadow='canvas.halo'
                 className={[styles.knob, styles.knobColumn[column], styles.knobRow[row]]}
                 height='4x'

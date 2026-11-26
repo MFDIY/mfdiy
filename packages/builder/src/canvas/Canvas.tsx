@@ -386,9 +386,8 @@ export function Canvas({
                 area={area}
                 backgroundImage='canvas.overlap'
                 borderColor='canvas.overlap'
-                borderRadius='1x'
                 borderStyle='dashed'
-                borderWidth='canvas'
+                borderWidth='edit'
                 boxShadow='canvas.halo'
                 data-canvas='overlap'
                 key={widgetIds.join(' ')}
@@ -407,7 +406,7 @@ export function Canvas({
               pointerEvents='none'
               position='absolute'
             >
-              <Box backgroundColor='elevation.floating' borderRadius='2x' color='body' padding='4x'>
+              <Box backgroundColor='surface.raised' color='text' padding='4x'>
                 <Text variant='body'>Tap anywhere to add a widget</Text>
               </Box>
             </Box>
@@ -429,10 +428,9 @@ function Ghost({ area, quiet = false }: GhostProps) {
     <LayoutArea
       area={area}
       backgroundColor={quiet ? 'transparent' : 'canvas.ghost'}
-      borderColor='canvas.ghost'
-      borderRadius='1x'
+      borderColor='canvas.edit'
       borderStyle={quiet ? 'dashed' : 'solid'}
-      borderWidth={quiet ? 'divider' : 'canvas'}
+      borderWidth={quiet ? 'hairline' : 'edit'}
       boxShadow={quiet ? 'none' : 'canvas.halo'}
       data-canvas='ghost'
       pointerEvents='none'
@@ -456,14 +454,7 @@ function Plus({ area }: { area: Area }) {
       position='relative'
       zIndex='3'
     >
-      <Box
-        aria-hidden
-        className={styles.plus}
-        color='canvas.handle'
-        data-canvas='plus'
-        tagName='svg'
-        viewBox='0 0 24 24'
-      >
+      <Box aria-hidden className={styles.plus} color='canvas.edit' data-canvas='plus' tagName='svg' viewBox='0 0 24 24'>
         <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='2' tagName='path' />
       </Box>
     </LayoutArea>

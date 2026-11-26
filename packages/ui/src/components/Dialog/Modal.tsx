@@ -24,12 +24,12 @@ export function Modal({ children, className, onClose, style, titleId }: ModalPro
   return (
     <Box
       aria-labelledby={titleId}
-      backgroundColor='elevation.floating'
-      borderRadius='2x'
-      borderStyle='hidden'
-      boxShadow='elevation.floating'
+      backgroundColor='surface'
+      borderColor='line.strong'
+      borderStyle='solid'
+      borderWidth='hairline'
       className={className}
-      color='body'
+      color='text'
       onClose={onClose}
       // The contents cover the modal, so a press on the modal itself is on its backdrop.
       onPointerDown={event => {

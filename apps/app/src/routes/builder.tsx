@@ -153,7 +153,7 @@ function Editor({ id }: { id: string }) {
             <Text variant='body'>
               <TextLink to='/'>Back</TextLink>
             </Text>
-            <Text tagName='h1' variant='heading.4'>
+            <Text tagName='h1' variant='heading'>
               {document.name}
             </Text>
             {page && document.pages.length > 1 ? (
@@ -197,7 +197,7 @@ function Editor({ id }: { id: string }) {
             </Button>
           </Inline>
           <Inline alignItems='center' spacing='3x'>
-            <Text role='status' variant={failure || conflict ? 'field.error' : 'deemphasized'}>
+            <Text color={failure || conflict ? 'status.critical' : 'text.dim'} role='status' variant='body'>
               {saving
                 ? 'Saving…'
                 : failure
@@ -215,7 +215,7 @@ function Editor({ id }: { id: string }) {
               disabled={!dirty || saving}
               onClick={() => (conflict ? setDialog('conflict') : void save())}
               size='large'
-              variant='attention'
+              variant='primary'
             >
               Save
             </Button>
@@ -242,10 +242,10 @@ function Editor({ id }: { id: string }) {
       {blocker.state === 'blocked' ? (
         <Dialog onClose={() => blocker.reset()} title={`Save changes to “${document.name}”?`}>
           <Inline spacing='3x'>
-            <Button disabled={saving} onClick={() => void saveAndLeave()} size='large' variant='attention'>
+            <Button disabled={saving} onClick={() => void saveAndLeave()} size='large' variant='primary'>
               Save
             </Button>
-            <Button onClick={() => blocker.proceed()} size='large' variant='destructive'>
+            <Button onClick={() => blocker.proceed()} size='large' variant='danger'>
               Discard
             </Button>
             <Button onClick={() => blocker.reset()} size='large'>
@@ -267,7 +267,7 @@ function Editor({ id }: { id: string }) {
           <Stack spacing='5x'>
             <Text variant='body'>Your changes aren’t saved, but they’re still here.</Text>
             <Inline spacing='3x'>
-              <Button onClick={() => setDialog('save-as-new')} size='large' variant='attention'>
+              <Button onClick={() => setDialog('save-as-new')} size='large' variant='primary'>
                 Save as new
               </Button>
               {watched.status === 'ready' ? (
@@ -278,7 +278,7 @@ function Editor({ id }: { id: string }) {
                     setDialog(null);
                   }}
                   size='large'
-                  variant='destructive'
+                  variant='danger'
                 >
                   Discard mine
                 </Button>

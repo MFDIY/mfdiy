@@ -1,6 +1,6 @@
 import { style } from '@vanilla-extract/css';
 
-import { globalVars } from '../../styles/vars.css.js';
+import { uiVars } from '../../styles/vars.css.js';
 
 const scrollbar = style({
   scrollbarColor: 'gray transparent',
@@ -12,7 +12,7 @@ const maxHeight = style({
 });
 
 const scrollPadding = style({
-  scrollPaddingBlock: globalVars['spacing.6x']
+  scrollPaddingBlock: uiVars['spacing.6x']
 });
 
 export const container = style([scrollbar, maxHeight, scrollPadding]);

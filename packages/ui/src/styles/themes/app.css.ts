@@ -1,48 +1,36 @@
-import { createGlobalTheme, globalStyle, style } from '@vanilla-extract/css';
+import { createGlobalTheme, globalStyle } from '@vanilla-extract/css';
 
-import { root as textRoot } from '../../components/Text/Text.css.js';
-import { colorSchemeVars, globalVars } from '../vars.css.js';
+import { uiVars } from '../vars.css.js';
 
-import { darkColorSchemeTokens, fonts, globalTokens, lightColorSchemeTokens } from './app-tokens.js';
+import { chromeTokens, coarsePointerTokens } from './chrome.js';
 
-export const appTheme = style({});
+/** The `mfdiy` theme on the whole page. Dark only; there are no colour schemes (0022). */
+createGlobalTheme(':root', uiVars, chromeTokens);
 
 globalStyle(':root', {
-  backgroundColor: colorSchemeVars['color.surface.page'],
-  color: colorSchemeVars['color.content.body'],
-  fontFamily: fonts['family'],
-  lineHeight: '1cap'
+  backgroundColor: uiVars['surface'],
+  color: uiVars['text'],
+  colorScheme: 'dark',
+  fontFamily: uiVars['font'],
+  fontSize: uiVars['font.size.body'],
+  fontStretch: uiVars['font.stretch'],
+  // Martian Mono's coding ligatures don't belong in interface text.
+  fontVariantLigatures: 'none',
+  lineHeight: '1cap',
+
+  '@media': {
+    '(any-pointer: coarse)': {
+      vars: Object.fromEntries(
+        Object.entries(coarsePointerTokens).map(([name, value]) => [
+          uiVars[name as keyof typeof coarsePointerTokens],
+          value
+        ])
+      )
+    }
+  }
 });
 
 globalStyle('body', {
   height: '100dvh',
   overflow: 'clip'
 });
-
-globalStyle(`a${textRoot}, ${textRoot} a`, {
-  fontWeight: fonts['weight-median']
-});
-
-globalStyle(`b${textRoot}, strong${textRoot}, ${textRoot} b, ${textRoot} strong`, {
-  fontWeight: fonts['weight-bulky']
-});
-
-createGlobalTheme(':root', globalVars, globalTokens);
-
-/** Touch-sized targets wherever a finger might be used (0001). */
-globalStyle(':root', {
-  '@media': {
-    '(any-pointer: coarse)': {
-      vars: {
-        [globalVars['height.button.large']]: '44px',
-        [globalVars['height.button.small']]: '44px',
-        [globalVars['height.button.standard']]: '44px',
-        [globalVars['size.canvas.handle']]: '44px'
-      }
-    }
-  }
-});
-
-createGlobalTheme('[data-color-scheme="light"]', colorSchemeVars, lightColorSchemeTokens);
-
-createGlobalTheme('[data-color-scheme="dark"]', colorSchemeVars, darkColorSchemeTokens);

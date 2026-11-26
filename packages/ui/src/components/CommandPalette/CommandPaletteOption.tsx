@@ -34,9 +34,8 @@ export function CommandPaletteOption({
       {...itemProps}
       alignItems='center'
       aria-selected={isActive}
-      backgroundColor={isActive ? 'button.transparent-hover' : 'button.transparent'}
-      boxShadow={isActive ? 'button.transparent-hover' : 'button.transparent'}
-      color={isActive ? 'button.transparent-hover' : 'button.transparent'}
+      backgroundColor={isActive ? 'hover' : 'transparent'}
+      color='text'
       columnGap='4x'
       display='flex'
       flexDirection='row'
@@ -52,30 +51,30 @@ export function CommandPaletteOption({
       userSelect='none'
     >
       {command.preview ? (
-        <Box aria-hidden borderRadius='1x' className={styles.preview} flexShrink='0' inert overflow='hidden'>
+        <Box aria-hidden className={styles.preview} flexShrink='0' inert overflow='hidden'>
           {command.preview}
         </Box>
       ) : null}
       <Stack flexGrow='1' minWidth='none' spacing='2x'>
-        <Text variant='command.label'>
+        <Text variant='body'>
           {command.label}
           {command.entity ? (
             <>
               {' · '}
-              <Text color='deemphasized' tagName='span' variant='deemphasized'>
+              <Text color='text.dim' tagName='span'>
                 {command.entity}
               </Text>
             </>
           ) : null}
         </Text>
         {command.description ? (
-          <Text color='deemphasized' variant='command.description'>
+          <Text color='text.dim' variant='body'>
             {command.description}
           </Text>
         ) : null}
       </Stack>
       <Box visibility={isActive ? undefined : 'hidden'}>
-        <Box color='deemphasized' fontSize='button.small' fontWeight='deemphasized' tagName='span'>
+        <Box color='text.dim' fontSize='label' tagName='span'>
           ⏎
         </Box>
       </Box>

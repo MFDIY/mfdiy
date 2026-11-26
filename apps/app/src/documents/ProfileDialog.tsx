@@ -49,7 +49,7 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
   }
 
   const failure = error ? (
-    <Text role='alert' variant='field.error'>
+    <Text color='status.critical' role='alert' variant='body'>
       {error}
     </Text>
   ) : null;
@@ -67,7 +67,7 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
                 void run(request({ type: 'document-delete', id: profile.id, revision: step.deleteRevision }))
               }
               size='large'
-              variant='destructive'
+              variant='danger'
             >
               Delete
             </Button>
@@ -103,12 +103,12 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
             setStep({ deleteRevision: profile.revision });
           }}
           size='large'
-          variant='destructive'
+          variant='danger'
           width='full'
         >
           Delete
         </Button>
-        <Button onClick={onClose} size='large' variant='transparent' width='full'>
+        <Button onClick={onClose} size='large' variant='quiet' width='full'>
           Cancel
         </Button>
       </Stack>

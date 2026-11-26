@@ -18,13 +18,6 @@ export default {
       }
     }
   },
-  decorators: [
-    Story => {
-      document.documentElement.setAttribute('data-color-scheme', 'dark');
-
-      return <Story />;
-    }
-  ],
   initialGlobals: {
     theme: builtInThemes[0]?.name
   },

@@ -21,7 +21,7 @@ export function Dialog({ children, onClose, title }: DialogProps) {
     <Modal className={styles.dialog} onClose={onClose} titleId={titleId}>
       <Box padding='5x'>
         <Stack spacing='5x'>
-          <Text id={titleId} tagName='h2' variant='heading.3'>
+          <Text id={titleId} tagName='h2' variant='heading'>
             {title}
           </Text>
           {children}

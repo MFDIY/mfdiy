@@ -147,7 +147,7 @@ export function CommandPalette({
     designSystem({
       alignItems: 'center',
       backdropFilter: status === 'open' ? 'blur' : 'none',
-      backgroundColor: status === 'open' ? 'page-transparent' : 'transparent',
+      backgroundColor: status === 'open' ? 'backdrop' : 'transparent',
       containerType: 'size',
       display: 'flex',
       justifyContent: 'center',
@@ -171,11 +171,11 @@ export function CommandPalette({
           <Box
             {...getFloatingProps({ onKeyDown: handleKeyDown })}
             aria-label={label}
-            backgroundColor='elevation.floating'
-            borderColor='divider'
+            backgroundColor='surface'
+            borderColor='line.strong'
             borderStyle='solid'
             className={clsx(styles.container, styles.transitionDuration)}
-            color='body'
+            color='text'
             display='flex'
             flexDirection='column'
             height='full'
@@ -192,7 +192,7 @@ export function CommandPalette({
           >
             <Box alignItems='stretch' columnGap='1x' display='flex' flexDirection='row' flexWrap='nowrap' padding='3x'>
               {onBack ? (
-                <Button aria-label='Back' onClick={handleBack} size='large' variant='transparent'>
+                <Button aria-label='Back' onClick={handleBack} size='large' variant='quiet'>
                   ‹
                 </Button>
               ) : null}
@@ -214,7 +214,7 @@ export function CommandPalette({
                 />
               </Box>
               <Box className={styles.closeButton} flexShrink='0'>
-                <Button aria-label='Close' onClick={handleClose} size='large' variant='transparent'>
+                <Button aria-label='Close' onClick={handleClose} size='large' variant='quiet'>
                   ✕
                 </Button>
               </Box>

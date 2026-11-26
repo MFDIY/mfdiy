@@ -6,16 +6,14 @@ export function TextLink({ children, ...restProps }: TextLinkProps) {
   return (
     <Link
       {...restProps}
-      backgroundImage='link'
-      backgroundPosition='left bottom'
-      backgroundRepeat='no-repeat'
-      backgroundSize={{ default: 'link-hover', 'can-hover': 'link', hover: 'link-hover' }}
-      color={{ default: 'link', hover: 'link-hover' }}
-      fontWeight='link'
-      position='relative'
-      textDecoration='none'
-      transitionDuration={{ default: 'long', hover: 'short' }}
-      transitionProperty='link'
+      color={{ default: 'text', hover: 'accent' }}
+      outlineColor='focus'
+      outlineOffset='focus'
+      outlineStyle={{ default: 'none', focusVisible: 'solid' }}
+      outlineWidth='focus'
+      textDecoration='underline'
+      transitionDuration='short'
+      transitionProperty='colors'
       transitionTimingFunction='ease-out'
     >
       {children}

@@ -44,7 +44,7 @@ export function Link({
 }: LinkBaseProps & BoxStyleProps) {
   const { designSystemClassNames, nativeProps } = useRestProps(restProps, {
     styleProps: {
-      color: color ?? 'body',
+      color: color ?? 'text',
       textDecoration: textDecoration ?? 'none'
     }
   });

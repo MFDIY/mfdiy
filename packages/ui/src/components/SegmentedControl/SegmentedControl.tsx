@@ -17,14 +17,14 @@ type Props<T> = {
 
 export function SegmentedControl<T extends string>({ onChange, options, value }: Props<T>) {
   return (
-    <ButtonGroup elevation='depressed'>
+    <ButtonGroup>
       {options.map(option => (
         <Button
           aria-pressed={option.value === value}
           key={option.value}
           onClick={() => onChange(option.value)}
           size='large'
-          variant={option.value === value ? undefined : 'transparent'}
+          variant={option.value === value ? 'primary' : 'default'}
         >
           {option.label}
         </Button>

@@ -68,7 +68,7 @@ function Demo({ aspectRatio, initialLayout, initialSelectedId, themeName, widget
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null);
 
   return (
-    <Box backgroundColor='page' height='viewport' padding='5x'>
+    <Box backgroundColor='surface' height='viewport' padding='5x'>
       <Canvas
         aspectRatio={aspectRatio}
         documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}

@@ -1,5 +1,3 @@
-export { Bleed, spacing as bleedSpacing, tagNames as bleedTagNames, type BleedProps } from './Bleed/Bleed.js';
-
 export { Box, tagNames as boxTagNames, type BoxProps } from './Box/Box.js';
 
 export { Button, type ButtonProps } from './Button/Button.js';

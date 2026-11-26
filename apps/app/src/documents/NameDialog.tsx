@@ -52,12 +52,12 @@ export function NameDialog({ initialName = '', onClose, onDone, onSubmit, submit
         <Stack spacing='5x'>
           <TextField label='Name' maxLength={MAX_DOCUMENT_NAME_LENGTH} onChange={setName} value={name} />
           {error ? (
-            <Text role='alert' variant='field.error'>
+            <Text color='status.critical' role='alert' variant='body'>
               {error}
             </Text>
           ) : null}
           <Inline spacing='3x'>
-            <Button disabled={busy || trimmed === ''} size='large' type='submit' variant='attention'>
+            <Button disabled={busy || trimmed === ''} size='large' type='submit' variant='primary'>
               {submitLabel}
             </Button>
             <Button onClick={onClose} size='large'>

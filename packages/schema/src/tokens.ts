@@ -220,6 +220,17 @@ export function token(name: TokenName): string {
   );
 }
 
+/**
+ * The value a token ends up with in a theme: its own, or the first one set along its fallback
+ * chain. For themes that never change at runtime, such as the brand's (`mfdiy`), so their tokens
+ * can be resolved once at build time.
+ */
+export function resolveToken(name: TokenName, values: Partial<Record<TokenName, string>>): string | undefined {
+  return fallbackChain(name)
+    .map(link => values[link])
+    .find(value => value !== undefined);
+}
+
 export type FontTokenName = {
   [K in TokenName]: (typeof tokens)[K]['type'] extends 'font' ? K : never;
 }[TokenName];

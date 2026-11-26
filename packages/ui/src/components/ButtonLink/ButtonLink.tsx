@@ -1,5 +1,6 @@
 import type { Variant } from '../Button/props/Variant.js';
 
+import { variantStyles } from '../Button/variantStyles.js';
 import { Link, type LinkBaseProps } from '../Link/Link.js';
 import { Text } from '../Text/Text.js';
 
@@ -9,33 +10,26 @@ export type ButtonLinkProps = LinkBaseProps & {
 };
 
 /** Looks like a large `Button`, but goes to another page. */
-export function ButtonLink({ children, variant = 'soft', ...restProps }: ButtonLinkProps) {
-  const variantMap = {
-    default: `button.${variant}`,
-    hover: `button.${variant}-hover`,
-    active: `button.${variant}-active`
-  } as const;
-
+export function ButtonLink({ children, variant = 'default', ...restProps }: ButtonLinkProps) {
   return (
     <Link
       {...restProps}
+      {...variantStyles[variant]}
       alignItems='center'
-      backgroundColor={variantMap}
-      borderRadius='2x'
-      boxShadow={variantMap}
-      color={variantMap}
+      borderStyle='solid'
+      borderWidth='hairline'
       display='inline-flex'
-      fontSize='button.large'
-      height='button.large'
-      outlineColor='focus-ring'
+      height='control.large'
+      outlineColor='focus'
+      outlineOffset='focus'
       outlineStyle={{ default: 'none', focusVisible: 'solid' }}
-      outlineWidth='focus-ring'
+      outlineWidth='focus'
       paddingInline='4x'
       transitionDuration={{ default: 'short', active: 'click' }}
       transitionProperty='button-surface'
       transitionTimingFunction='ease-out'
     >
-      <Text tagName='span' variant='button.large' whiteSpace='nowrap'>
+      <Text tagName='span' variant='label' whiteSpace='nowrap'>
         {children}
       </Text>
     </Link>

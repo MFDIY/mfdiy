@@ -6,7 +6,7 @@ const meta = {
   title: 'Components / Button',
   component: Button,
   args: {
-    children: 'Lorem ipsum',
+    children: 'Apply',
     disabled: false
   }
 } satisfies Meta<typeof Button>;
@@ -14,13 +14,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** A hairline outline: most actions. */
 export const Default = {} satisfies Story;
 
-/** A transparent button used on elevated surfaces. */
-export const Transparent = { args: { variant: 'transparent' } } satisfies Story;
+/** Solid and inverted: the one action a screen is for, like Save. */
+export const Primary = { args: { children: 'Save', variant: 'primary' } } satisfies Story;
 
-/** A button visually indicating destructive actions. */
-export const Destructive = { args: { variant: 'destructive' } } satisfies Story;
+/** No outline, for toolbars and buttons inside other controls. */
+export const Quiet = { args: { variant: 'quiet' } } satisfies Story;
 
-/** A yellow button for actions requiring moderate attention. */
-export const Attention = { args: { variant: 'attention' } } satisfies Story;
+/** Destructive actions, like Delete. */
+export const Danger = { args: { children: 'Delete', variant: 'danger' } } satisfies Story;
+
+export const Disabled = { args: { disabled: true } } satisfies Story;

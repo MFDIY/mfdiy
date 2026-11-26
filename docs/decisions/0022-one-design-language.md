@@ -37,6 +37,14 @@ Everything in `packages/ui` that decides how things look (its token contract, it
 - The builder chrome still needs hover, pressed, focus, disabled, selected and destructive states, the editing overlay, spacing and control sizes. These are **private to `packages/ui`**, derived from the brand theme's primitives, and not part of the public contract.
 - The brand theme is **dark only** and is called **`mfdiy`**, so it's clearly the project's own theme and not one of the MFD themes it ships. There are no light and dark colour schemes.
 
+### How the chrome reads tokens
+
+- **Same names, separate variables.** The builder interface uses the shared names under its own prefix, `--ui-*`, never `--mfd-*`, so a user's theme can't reach it, not even the editing controls drawn on top of an MFD.
+- **Resolved at build time.** The `mfdiy` theme never changes, so each shared token is resolved once along its fallback chain (`resolveToken`) and the chrome gets plain values, with no `var()` chains.
+- **Private chrome tokens** sit in the same namespace: interaction states (hover, pressed, focus, disabled), danger tints, the editing overlay (blue; the canvas ghost, overlap and dot colours), the spacing scale, control heights (44 px on touch screens), a 1 px hairline, and square corners.
+- **Variants.** Button: `default` (hairline outline), `primary` (solid inverted), `quiet` (no outline) and `danger` (critical). Text: `label` (uppercase, tracked), `body`, `value` and `heading`, setting typography only; colour is a separate prop. More only when a screen needs them.
+- **Sprinkles** only multiply what's used: layout props respond to container widths, colour and interaction props to the pointer and element state, and type to nothing.
+
 ### Brand direction: Panel white
 
 The builder chrome follows the **Phosphor console** direction in its **Panel white** colouring (explored in the canvas linked below):
