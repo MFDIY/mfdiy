@@ -28,7 +28,8 @@
     "start": "npm run start -w @mfdiy/bridge --",
     "test": "npm test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test:stories": "npm run test:stories --workspaces --if-present"
+    "test:stories": "npm run test:stories --workspaces --if-present",
+    "test:stories:changed": "npm run test:stories --workspaces --if-present -- --changed --passWithNoTests"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.2",
