@@ -119,7 +119,9 @@ export function useWidgetLibrary({ catalogue, documentTokens, pageTokens }: Widg
     const data = searchChoices(
       manifests.flatMap(manifest => listChoices(manifest, catalogue) ?? []),
       query
-    ).map(choiceItem);
+    )
+      .sort((a, b) => a.label.localeCompare(b.label) || a.manifest.label.localeCompare(b.manifest.label))
+      .map(choiceItem);
 
     return [
       ...(widgets.length > 0 ? [{ label: 'Widgets', items: widgets }] : []),

@@ -172,3 +172,22 @@ export const HintAfterIdleClicks: Story = {
     await expect(await screen.findByText('Tap a cell, or drag a widget onto the page.')).toBeInTheDocument();
   }
 };
+
+/** Search results list data by name, then by the widget it would become, both alphabetically. */
+export const SearchSortsByDataThenWidget: Story = {
+  tags: ['!dev', '!visual'],
+  play: async ({ userEvent }) => {
+    await userEvent.type(screen.getByRole('combobox'), 'veh');
+
+    await screen.findAllByRole('option');
+
+    const rows = screen.getAllByRole('option').map(option => option.innerText.split('\n').filter(Boolean).slice(-2));
+    const sorted = rows.toSorted(
+      ([nameA = '', widgetA = ''], [nameB = '', widgetB = '']) =>
+        nameA.localeCompare(nameB) || widgetA.localeCompare(widgetB)
+    );
+
+    await expect(rows.map(([name]) => name)).toEqual(expect.arrayContaining(['Fuel', 'Gear', 'Landing gear']));
+    await expect(rows).toEqual(sorted);
+  }
+};
