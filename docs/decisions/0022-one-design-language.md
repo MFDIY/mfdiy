@@ -43,6 +43,8 @@ Everything in `packages/ui` that decides how things look (its token contract, it
 - **Resolved at build time.** The `mfdiy` theme never changes, so each shared token is resolved once along its fallback chain (`resolveToken`) and the chrome gets plain values, with no `var()` chains.
 - **Private chrome tokens** sit in the same namespace: interaction states (hover, pressed, focus, disabled), danger tints, the editing overlay (blue; the canvas ghost, overlap and dot colours), the spacing scale, the shared control height (44 px on touch screens), a 1 px hairline, and square corners.
 - **Focus.** Buttons and links show a hairline ring 2 px outside their border; fields show focus by brightening their border to white instead. Selected text inverts (white background, dark text), like the primary button.
+- **Numbers are right-aligned**, with their unit after them in a fixed place: numbers that change, like a live speed, or that get compared, like a column of values. A changing number then only grows or shrinks on the left, like an odometer, so its unit and last digit never move, and stacked numbers line up by place value. Text stays left-aligned. In the builder this covers NumberField, whose number sits next to its unit. The MFD's Readout and Bar follow when they're redesigned.
+- **Leading zeros on the MFD**: a number is padded with zeros to a fixed number of digits (`0999`), drawn in a dimmer colour than the digits that count, so even its left edge stays still. They can be turned off. Built with the Readout and Bar redesign.
 - **Lists are tight**: items sit flush against each other and the edges of their container, with no padding around or between them, and separators are hairlines directly between items. Each item keeps the control height, so it's still easy to hit.
 - **The active tab is underlined**, two hairlines thick in the accent colour, over a hairline under the whole row; the other tabs are dim until hovered. Not inverted: a solid white tab would compete with the one primary action on screen, such as Save. A button after the tabs (e.g. "+" to add a page) sits directly behind the last one. **Tabs never scroll sideways**, since nothing would show that more tabs are hidden: those that don't fit go into a menu whose button says how many ("+3"), and the active tab is always one of those shown.
 - **Floating layers sit on `surface.raised`**, one tone step lighter than the page: dialogs, sheets, and later menus and popovers. In a flat design, tone is what says something is on top; never a shadow. Only one step, because the next (`neutral.3`) is the hover fill and would hide hovered rows inside them.
@@ -79,6 +81,8 @@ The builder chrome follows the **Phosphor console** direction in its **Panel whi
 - **Later, in the theme editor:** a user gives a colour spread of four or five swatches and MFDIY generates each scale, which they can then hand-edit step by step. When a swatch sits close to an edge (e.g. `#f1f1f1`, whose lighter steps would all clip to `#fff`), the editor flags it. Out of scope for now, but role-named scales are chosen with it in mind.
 
 ## Open questions
+
+- **Leading zeros**: how many digits to pad to (likely from the signal's range, so a 0–1200 m/s speed always shows four), and whether turning them off is a theme token, like `label.case`, or a widget option.
 
 - **The token list**: the semantic and component tokens. Being drafted with the maintainer.
 - Design exploration: <https://claude.ai/artifact/UqUb5mJXkwssEwP9WpBNbQ> (private to the maintainer).

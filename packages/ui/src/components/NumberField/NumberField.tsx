@@ -19,21 +19,24 @@ const groupClass = (invalid: boolean, disabled: boolean) =>
     width: 'full'
   });
 
-const inputClass = designSystem({
-  backgroundColor: 'transparent',
-  borderStyle: 'hidden',
-  color: { default: 'text', disabled: 'text.faint' },
-  cursor: { default: 'text', disabled: 'not-allowed' },
-  flexGrow: '1',
-  fontFamily: 'inherit',
-  fontSize: 'body',
-  fontWeight: 'regular',
-  letterSpacing: 'none',
-  lineHeight: 'body',
-  minWidth: 'none',
-  outlineStyle: 'none',
-  paddingInline: '3x'
-});
+const inputClass = (hasUnit: boolean) =>
+  designSystem({
+    backgroundColor: 'transparent',
+    borderStyle: 'hidden',
+    color: { default: 'text', disabled: 'text.faint' },
+    cursor: { default: 'text', disabled: 'not-allowed' },
+    flexGrow: '1',
+    fontFamily: 'inherit',
+    fontSize: 'body',
+    fontWeight: 'regular',
+    letterSpacing: 'none',
+    lineHeight: 'body',
+    minWidth: 'none',
+    outlineStyle: 'none',
+    paddingLeft: '3x',
+    paddingRight: hasUnit ? '1x' : '3x',
+    textAlign: 'right'
+  });
 
 const stepClass = designSystem({
   alignItems: 'center',
@@ -75,7 +78,8 @@ export type NumberFieldProps = {
 
 /**
  * A labelled number with − and + buttons, built on Base UI's NumberField (0003): arrow keys step it,
- * and it stays between `min` and `max`. Controlled: the page owns the value.
+ * and it stays between `min` and `max`. The number is right-aligned, next to its unit (0022).
+ * Controlled: the page owns the value.
  */
 export function NumberField({
   description,
@@ -100,7 +104,7 @@ export function NumberField({
         value={value}
       >
         <BaseNumberField.Group className={groupClass(Boolean(error), disabled)}>
-          <BaseNumberField.Input className={inputClass} />
+          <BaseNumberField.Input className={inputClass(Boolean(unit))} />
           {unit ? (
             <Box alignSelf='center' paddingRight='3x'>
               <Text color='text.dim' variant='body'>
