@@ -10,25 +10,26 @@ import { ToastProvider, useToast, type ToastOptions } from './Toast.js';
 type ToastDemoProps = ToastOptions & {
   /** What the toast says. */
   title: string;
+  /** The story showing the toasts: their ids start with it, so no story updates another's toast. */
+  storyId?: string | undefined;
 };
 
 /** Toasts are shown from code with `useToast`, so the story is a button that shows one. */
-function ToastDemo({ title, ...options }: ToastDemoProps) {
+function ToastDemo({ storyId = 'toast', title, ...options }: ToastDemoProps) {
   const toast = useToast();
 
   return (
     <Inline spacing='3x'>
-      <Button onClick={() => toast.show(title, options)}>Show toast</Button>
-      <Button onClick={() => toast.show('Saved', { description: 'Displays keep showing the saved version.' })}>
+      <Button onClick={() => toast.show(title, { ...options, id: options.id ?? storyId })}>Show toast</Button>
+      <Button
+        onClick={() =>
+          toast.show('Saved', { description: 'Displays keep showing the saved version.', id: `${storyId} another` })
+        }
+      >
         Show another
       </Button>
     </Inline>
   );
-}
-
-/** Waits until toasts from an earlier story have gone: the provider dismisses them as a story starts. */
-async function cleared() {
-  await waitFor(() => expect(document.querySelector('[data-sonner-toast]')).toBeNull(), { timeout: 3000 });
 }
 
 /** Waits until every toast is in place and nothing moves any more. */
@@ -51,6 +52,7 @@ const meta = {
     description: { control: { type: 'text' } },
     dismissible: { control: { type: 'boolean' } },
     id: { control: false },
+    storyId: { table: { disable: true } },
     title: { control: { type: 'text' } }
   },
   args: {
@@ -60,9 +62,10 @@ const meta = {
     id: undefined,
     title: 'Tap a cell, or drag a widget onto the page.'
   },
+  render: (args, { id }) => <ToastDemo {...args} storyId={id} />,
   decorators: [
-    Story => (
-      <ToastProvider>
+    (Story, { id }) => (
+      <ToastProvider key={id}>
         <Story />
       </ToastProvider>
     )
@@ -77,7 +80,6 @@ export const Default = {} satisfies Story;
 
 export const Shown = {
   play: async () => {
-    await cleared();
     await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
     await settled();
   }
@@ -87,7 +89,6 @@ export const Shown = {
 export const Dismissible = {
   args: { autoDismiss: false, dismissible: true },
   play: async () => {
-    await cleared();
     await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
     await settled();
   }
@@ -98,7 +99,6 @@ export const Stacked = {
   // Sonner's stacking motion depends on timing, so this checks the stack rather than a screenshot.
   tags: ['!visual'],
   play: async () => {
-    await cleared();
     await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
     await userEvent.click(screen.getByRole('button', { name: 'Show another' }));
     await settled();
@@ -114,8 +114,6 @@ export const Stacked = {
 export const NoDuplicates = {
   tags: ['!dev', '!visual'],
   play: async () => {
-    await cleared();
-
     const button = screen.getByRole('button', { name: 'Show toast' });
 
     await userEvent.click(button);
@@ -136,7 +134,6 @@ export const DismissCloses = {
   tags: ['!dev', '!visual'],
   args: { autoDismiss: false, dismissible: true },
   play: async () => {
-    await cleared();
     await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Dismiss' }));
     // Closing means sonner lets it go: every toast with this text is leaving or gone.
@@ -154,7 +151,6 @@ export const DismissCloses = {
 export const SameWidth = {
   tags: ['!dev', '!visual'],
   play: async () => {
-    await cleared();
     await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
     await userEvent.click(screen.getByRole('button', { name: 'Show another' }));
     await settled();
@@ -166,5 +162,52 @@ export const SameWidth = {
 
     await expect(widths).toHaveLength(2);
     await expect(widths[0]).toBe(widths[1]);
+  }
+} satisfies Story;
+
+/** Swipes the newest toast sideways, as a finger would. */
+async function swipe() {
+  const toast = document.querySelector<HTMLElement>('[data-sonner-toast]:not([data-removed="true"])');
+
+  if (!toast) {
+    throw new Error('No toast to swipe');
+  }
+
+  const { left, top, height } = toast.getBoundingClientRect();
+  const at = (x: number) => ({ clientX: left + 40 + x, clientY: top + height / 2 });
+
+  await userEvent.pointer([
+    { keys: '[MouseLeft>]', target: toast, coords: at(0) },
+    { target: toast, coords: at(30) },
+    { target: toast, coords: at(90) },
+    { target: toast, coords: at(150) },
+    { keys: '[/MouseLeft]', target: toast, coords: at(150) }
+  ]);
+}
+
+/** A dismissible toast can be swiped away, down or to either side. */
+export const SwipeDismisses = {
+  tags: ['!dev', '!visual'],
+  args: { autoDismiss: false, dismissible: true },
+  play: async () => {
+    await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
+    await settled();
+    await swipe();
+    await waitFor(() => expect(document.querySelector('[data-sonner-toast]:not([data-removed="true"])')).toBeNull(), {
+      timeout: 3000
+    });
+  }
+} satisfies Story;
+
+/** One that isn't dismissible stays put. */
+export const SwipeIgnoredUnlessDismissible = {
+  tags: ['!dev', '!visual'],
+  args: { autoDismiss: false },
+  play: async () => {
+    await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
+    await settled();
+    await swipe();
+    await settled();
+    await expect(document.querySelector('[data-sonner-toast]:not([data-removed="true"])')).not.toBeNull();
   }
 } satisfies Story;

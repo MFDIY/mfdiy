@@ -1,10 +1,14 @@
-import { useEffect, type PropsWithChildren } from 'react';
+import { createContext, use, useId, useState, type PropsWithChildren } from 'react';
 import { toast as sonnerToast, Toaster } from 'sonner';
 
+import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Button } from '../Button/Button.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
+
+/** As wide as the list on wide screens; on phones, sonner's own width for toasts takes over. */
+const toastClass = designSystem({ width: 'full' });
 
 /** How long a toast stays when `autoDismiss` is `true`, in milliseconds. */
 const DEFAULT_DURATION = 5000;
@@ -12,7 +16,7 @@ const DEFAULT_DURATION = 5000;
 export type ToastOptions = {
   /** A second, dimmed line. */
   description?: string | undefined;
-  /** Shows a close button. */
+  /** Shows a close button, and lets the toast be swiped away. */
   dismissible?: boolean | undefined;
   /**
    * Hides the toast by itself: after 5 seconds when `true` (the default), or after this many
@@ -67,41 +71,53 @@ function ToastView({ description, dismissible = false, id, title }: ToastViewPro
   );
 }
 
+type ToastContextValue = {
+  toasterId: string;
+  /**
+   * Sonner's id for each toast on screen, by our id. Showing a toast that's on screen updates it; one
+   * that has gone, even if it's still sliding away, gets a fresh sonner id, or the new toast would
+   * leave with the old one.
+   */
+  showing: Map<string, string>;
+};
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+let created = 0;
+
 /**
  * Shows toasts, stacked at the bottom of the screen; put it once around the app. Built on sonner
- * (0003), which only stacks, moves and times them: the toast itself is ours, as in Bonsai.
+ * (0003), which only stacks, moves and times them: the toast itself is ours, as in Bonsai. Each
+ * provider shows only its own toasts.
  */
 export function ToastProvider({ children }: PropsWithChildren) {
-  // Sonner keeps toasts in one store for the whole page; a provider starts without any.
-  useEffect(() => {
-    sonnerToast.dismiss();
-    showing.clear();
-  }, []);
+  const toasterId = useId();
+  const [showing] = useState(() => new Map<string, string>());
 
   return (
-    <>
+    <ToastContext value={{ showing, toasterId }}>
       {children}
       <Toaster
+        id={toasterId}
         position='bottom-center'
-        // Unstyled, sonner leaves each toast as wide as its text; ours all take the list's width,
-        // which sonner sets for wide screens and phones alike.
-        toastOptions={{ style: { width: '100%' }, unstyled: true }}
+        swipeDirections={['bottom', 'left', 'right']}
+        toastOptions={{ className: toastClass, unstyled: true }}
         visibleToasts={3}
       />
-    </>
+    </ToastContext>
   );
 }
 
-/**
- * Sonner's id for each toast on screen, by our id. Showing a toast that's on screen updates it; one
- * that has gone, even if it's still sliding away, gets a fresh sonner id, or the new toast would leave
- * with the old one.
- */
-const showing = new Map<string, string>();
-let created = 0;
-
-/** Briefly tells the user something. */
+/** Briefly tells the user something. Needs a `ToastProvider` around it. */
 export function useToast() {
+  const context = use(ToastContext);
+
+  if (!context) {
+    throw new Error('useToast needs a ToastProvider around it');
+  }
+
+  const { showing, toasterId } = context;
+
   return {
     show: (title: string, { autoDismiss = true, description, dismissible = false, id = title }: ToastOptions = {}) => {
       const sonnerId = showing.get(id) ?? `${id} ${++created}`;
@@ -119,7 +135,8 @@ export function useToast() {
           duration: autoDismiss === true ? DEFAULT_DURATION : autoDismiss === false ? Infinity : autoDismiss,
           id: sonnerId,
           onAutoClose: forget,
-          onDismiss: forget
+          onDismiss: forget,
+          toasterId
         }
       );
     }
