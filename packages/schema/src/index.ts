@@ -17,3 +17,5 @@ export * from './signals.js';
 export * from './tokens.js';
 
 export * from './migrations.js';
+
+export * from './color.js';
