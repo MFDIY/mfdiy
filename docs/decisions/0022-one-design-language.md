@@ -57,7 +57,7 @@ The builder chrome follows the **Phosphor console** direction in its **Panel whi
 
 - `packages/ui`'s light and dark colour schemes and its component tokens go away, replaced by the shared semantic tokens and the single `mfdiy` theme.
 - The landing page moves from phosphor green to Panel white.
-- **Martian Mono is bundled** (`packages/ui/src/fonts`, SIL OFL), never left to the viewer's installed fonts. The bridge serves the app on the local network (0004), so fonts can't come from a CDN either.
+- **Fonts are bundled** (`packages/ui/src/fonts`), never left to the viewer's installed fonts, so an MFD looks the same on every screen. The bridge serves the app on the local network (0004), so fonts can't come from a CDN either. Themes, the brand's and MFD themes alike, will pick from a **limited set of bundled fonts**; the set starts with Martian Mono (SIL OFL).
 - **`style` or `className` on `Box` or another Bonsai component is a code smell** in the apps and packages: it means Bonsai is missing something or a value is off-scale. Raise it rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className` (0003), and values computed from the document (theme overrides, grid tracks, widget areas), which are wrapped in components (`LayoutGrid`, `LayoutArea`) so call sites don't carry them.
 - The theme format gets a new schema version. Documents already store token overrides (document, page and widget), so the bump comes with a migration from the current names.
 - **Status names change meaning.** In theme version 1, `warning` was red and `caution` amber. Now amber is `warning` and red is `critical`, chosen because "caution" and "warning" read as near-synonyms. The migration maps v1 `caution` → `warning` and v1 `warning` → `critical`.

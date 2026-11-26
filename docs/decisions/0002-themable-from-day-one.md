@@ -28,5 +28,5 @@ Adding theming later is expensive: every widget built before it would need rewor
 ## Open questions
 
 - **Raw custom CSS?** Allowing it gives power users full control, but shared themes would then contain arbitrary CSS. Decide whether to allow it, scope it (e.g. Shadow DOM or `@scope`), or restrict themes to tokens only.
-- How do user-supplied assets (fonts, images) get stored and shared alongside a theme?
+- How do user-supplied assets (fonts, images) get stored and shared alongside a theme? For fonts, the current direction is a limited set of bundled fonts to pick from (0022), starting with Martian Mono.
 - Should a theme include layout-level choices such as widget chrome and frame style, or only visual tokens?
