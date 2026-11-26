@@ -2,6 +2,7 @@ import type { TokenValues } from '@mfdiy/schema';
 import type { SearchListGroup, SearchListItem, SearchListProps } from '@mfdiy/ui/components';
 
 import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
+import { useCyclingPlaceholder } from '@mfdiy/ui/hooks';
 import { useState } from 'react';
 
 import { WidgetPreview } from './WidgetPreview.js';
@@ -37,11 +38,16 @@ export type WidgetLibrary = {
 
 const manifests = Object.values(widgetManifests).sort((a, b) => a.label.localeCompare(b.label));
 
-/** Up to `count` distinct examples, lower case: "shields or fuel". Prompts must fit a narrow panel. */
-function examples(values: readonly string[], count = 2): string | undefined {
-  const distinct = [...new Set(values.map(value => value.toLowerCase()))].slice(0, count);
+/** A few distinct names, lower case, to suggest what can be searched for. */
+function suggestions(names: readonly string[], count = 4): string[] {
+  return [...new Set(names.map(name => name.toLowerCase()))].slice(0, count);
+}
 
-  return distinct.length > 0 ? distinct.join(' or ') : undefined;
+/** Alternates two lists: data first, so the search reads as more than a list of widgets. */
+function interleave(first: readonly string[], second: readonly string[]): string[] {
+  return Array.from({ length: Math.max(first.length, second.length) }, (_, index) => [first[index], second[index]])
+    .flat()
+    .filter((term): term is string => term !== undefined);
 }
 
 /**
@@ -124,29 +130,34 @@ export function useWidgetLibrary({ catalogue, documentTokens, pageTokens }: Widg
 
   function prompts() {
     if (!picked) {
-      const example = examples(
-        catalogue.signals.map(signal => signal.group),
-        1
-      );
-
       return {
         label: 'Widgets and data',
-        placeholder: example ? `Widgets or data, e.g. ${example}` : 'Widgets or data'
+        terms: interleave(
+          suggestions(
+            catalogue.signals.map(signal => signal.label),
+            3
+          ),
+          suggestions(
+            manifests.map(manifest => manifest.label),
+            2
+          )
+        )
       };
     }
 
     const choices = listChoices(picked, catalogue) ?? [];
     const showsData = Object.keys(picked.inputs).length > 0;
-    const example = showsData
-      ? examples(choices.map(choice => choice.group))
-      : examples(choices.map(choice => choice.label));
-    const what = `What this ${picked.label.toLowerCase()} ${showsData ? 'shows' : 'does'}`;
 
-    return { label: what, placeholder: example ? `e.g. ${example}` : what };
+    return {
+      label: `What this ${picked.label.toLowerCase()} ${showsData ? 'shows' : 'does'}`,
+      terms: suggestions(choices.map(choice => choice.label))
+    };
   }
 
   const groups = listGroups();
-  const { label, placeholder } = prompts();
+  const { label, terms } = prompts();
+  const cycling = useCyclingPlaceholder(!searching, 'Search ', terms);
+  const placeholder = terms.length > 0 ? cycling : 'Search';
 
   return {
     listProps: {
