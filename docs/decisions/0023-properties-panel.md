@@ -63,5 +63,5 @@ The sheet's content scrolls, so everything is reachable while it's half-open; ha
 
 - `BindingSchema` gains optional thresholds (`low` and `high`, each with `warning` and `critical`); signal definitions gain default thresholds; `ResolvedInput` gains `state` and the thresholds.
 - Bar's `warningBelow` and `criticalBelow` options, stored as fractions of the range, are replaced by its binding's thresholds.
-- `OptionSpec` gains a choice type.
+- `OptionSpec` gains a choice type (a `SegmentedControl`) when an option first needs one; with Light's colour option gone, none does yet.
 - Light accepts number signals: off when normal, amber (`warning`) at its warning threshold, red (`critical`) at critical. On an on/off signal it lights in `primary`; its "colour when lit" option goes.

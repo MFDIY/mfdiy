@@ -1,6 +1,5 @@
-import type { SignalDefinition, TokenValues } from '@mfdiy/schema';
-
-import { applyTokens, mfdRoot, type ResolvedInput, type WidgetManifest } from '@mfdiy/instruments';
+import { applyTokens, mfdRoot, resolveInput, type ResolvedInput, type WidgetManifest } from '@mfdiy/instruments';
+import { bindingFor, type SignalDefinition, type TokenValues } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 
 import * as styles from './WidgetPreview.css.js';
@@ -44,7 +43,7 @@ export function WidgetPreview({ documentTokens, label, manifest, pageTokens, sig
   const inputs = Object.entries(manifest.inputs).map(([name, { accepts }]): [string, ResolvedInput] => {
     const shown: SignalDefinition = signal ?? (accepts.includes('number') ? sample : { ...sample, kind: 'boolean' });
 
-    return [name, { signal: shown, value: sampleValue(shown) }];
+    return [name, resolveInput(shown, sampleValue(shown), bindingFor(shown))];
   });
 
   return (

@@ -1,10 +1,10 @@
-import { Bar, type BarState } from '../primitives/Bar.js';
+import { Bar } from '../primitives/Bar.js';
 import { Button } from '../primitives/Button.js';
 import { Light, type LightState } from '../primitives/Light.js';
 import { Readout } from '../primitives/Readout.js';
 
 import { formatValue, normalise } from './format.js';
-import { readOption, type WidgetManifest, type WidgetProps } from './manifest.js';
+import { readOption, type ResolvedInput, type WidgetManifest, type WidgetProps } from './manifest.js';
 
 /*
  * Widgets connect pure primitives to data: they turn resolved inputs and options into primitive
@@ -15,11 +15,18 @@ function inputLabel(props: WidgetProps, input: string, fallback: string): string
   return readOption(props, 'label', '') || props.inputs[input]?.signal.label || fallback;
 }
 
+/** On an on/off signal, lit while it's on; on a number, off while normal and amber or red as it crosses its thresholds. */
+function lightState(input: ResolvedInput | undefined): LightState {
+  if (input?.signal.kind === 'number') {
+    return input.state === 'normal' ? 'off' : input.state;
+  }
+
+  return input?.value === true ? 'on' : 'off';
+}
+
 function LightWidget(props: WidgetProps) {
-  const lit = props.inputs['value']?.value;
-  const litState = readOption<string>(props, 'litState', 'on');
-  const state: LightState =
-    lit === true ? (litState === 'warning' || litState === 'critical' ? litState : 'on') : 'off';
+  const state = lightState(props.inputs['value']);
+
   return (
     <Light
       disabled={props.action ? !props.action.available : undefined}
@@ -32,17 +39,14 @@ function LightWidget(props: WidgetProps) {
 }
 
 function BarWidget(props: WidgetProps) {
-  const level = normalise(props.inputs['value']);
-  const warningBelow = readOption(props, 'warningBelow', 0.25);
-  const criticalBelow = readOption(props, 'criticalBelow', 0.1);
-  const state: BarState =
-    level === null ? 'normal' : level < criticalBelow ? 'critical' : level < warningBelow ? 'warning' : 'normal';
+  const input = props.inputs['value'];
+  const level = normalise(input);
 
   return (
     <Bar
       displayValue={level === null ? '—' : `${Math.round(level * 100)}%`}
       label={inputLabel(props, 'value', 'Bar')}
-      state={state}
+      state={input?.state ?? 'normal'}
       value={level}
     />
   );
@@ -55,6 +59,7 @@ function ReadoutWidget(props: WidgetProps) {
   return (
     <Readout
       label={inputLabel(props, 'value', 'Readout')}
+      state={input?.state ?? 'normal'}
       unit={unit}
       value={formatValue(input, readOption(props, 'decimals', 0))}
     />
@@ -79,12 +84,10 @@ const labelOption = { label: 'Label', type: 'string', default: '' } as const;
 export const lightManifest: WidgetManifest = {
   type: 'light',
   label: 'Light',
-  description: 'An annunciator light for an on/off signal. Can trigger an action when pressed.',
-  inputs: { value: { label: 'Lit when', accepts: ['boolean'], required: true } },
-  options: {
-    label: labelOption,
-    litState: { label: 'Colour when lit (on, warning, critical)', type: 'string', default: 'on' }
-  },
+  description:
+    'An annunciator light: lit by an on/off signal, or amber and red as a number crosses its thresholds. Can trigger an action when pressed.',
+  inputs: { value: { label: 'Lit by', accepts: ['boolean', 'number'], required: true } },
+  options: { label: labelOption },
   actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
@@ -107,11 +110,7 @@ export const barManifest: WidgetManifest = {
   label: 'Bar',
   description: 'A linear gauge for a number signal, with warning and critical thresholds.',
   inputs: { value: { label: 'Value', accepts: ['number'], required: true } },
-  options: {
-    label: labelOption,
-    warningBelow: { label: 'Warning below', type: 'number', default: 0.25, min: 0, max: 1 },
-    criticalBelow: { label: 'Critical below', type: 'number', default: 0.1, min: 0, max: 1 }
-  },
+  options: { label: labelOption },
   actionable: false,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
@@ -131,7 +130,7 @@ export const readoutManifest: WidgetManifest = {
   actionable: false,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['readout.label', 'readout.value', 'readout.unit'],
+  tokens: ['readout.label', 'readout.value', 'readout.unit', 'status.warning', 'status.critical'],
   Component: ReadoutWidget
 };
 

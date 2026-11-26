@@ -1,6 +1,16 @@
 import type { ButtonStatus } from '../primitives/Button.js';
-import type { SignalDefinition, SignalKind, SignalValue, TokenName } from '@mfdiy/schema';
 import type { ComponentType } from 'react';
+
+import {
+  thresholdState,
+  type Binding,
+  type SignalDefinition,
+  type SignalKind,
+  type SignalState,
+  type SignalValue,
+  type Thresholds,
+  type TokenName
+} from '@mfdiy/schema';
 
 /** A widget input that can be bound to a signal. */
 export type InputSpec = {
@@ -18,11 +28,26 @@ export type OptionSpec =
 
 export type OptionValue = string | number | boolean;
 
-/** A bound input as the widget receives it: the signal's definition and its current value. */
+/**
+ * A bound input as the widget receives it: the signal's definition, its current value, and how much
+ * attention that value needs by the binding's thresholds. Widgets colour themselves by `state` and
+ * never work it out; `thresholds` is there for those that mark them, like a gauge's red line (0023).
+ */
 export type ResolvedInput = {
   signal: SignalDefinition;
+  state: SignalState;
+  thresholds: Thresholds | undefined;
   value: SignalValue;
 };
+
+/** What a widget receives for a binding, given the signal it names and that signal's value. */
+export function resolveInput(
+  signal: SignalDefinition,
+  value: SignalValue,
+  binding: Binding | undefined
+): ResolvedInput {
+  return { signal, state: thresholdState(value, binding?.thresholds), thresholds: binding?.thresholds, value };
+}
 
 export type WidgetAction = {
   label: string;

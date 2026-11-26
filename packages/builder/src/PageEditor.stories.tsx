@@ -2,7 +2,7 @@ import type { Catalogue } from './palette/choices.js';
 import type { Page, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { builtInThemes, widgetManifests } from '@mfdiy/instruments';
+import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
 import { createBlankDocument } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
@@ -21,13 +21,14 @@ const catalogue: Catalogue = {
 
 function renderWidget(widget: WidgetInstance) {
   const manifest = widgetManifests[widget.type];
-  const signal = catalogue.signals.find(candidate => candidate.id === widget.bindings?.['value']?.signal);
+  const binding = widget.bindings?.['value'];
+  const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
   const action = catalogue.actions.find(candidate => candidate.id === widget.action);
 
   return manifest ? (
     <manifest.Component
       action={action && { available: true, label: action.label, status: 'idle', trigger: () => undefined }}
-      inputs={signal ? { value: { signal, value: signal.kind === 'boolean' ? true : 64 } } : {}}
+      inputs={signal ? { value: resolveInput(signal, signal.kind === 'boolean' ? true : 64, binding) } : {}}
       options={Object.fromEntries(Object.entries(manifest.options).map(([key, spec]) => [key, spec.default]))}
     />
   ) : null;
@@ -69,7 +70,7 @@ type Story = StoryObj<typeof meta>;
 /** An empty page: tap a cell, or drag a widget from the library onto it. */
 export const Default: Story = {};
 
-/** Widgets can't be added before the bridge has sent what they can be connected to. */
+/** Before the bridge has sent anything, widgets can still be added; their properties say there's nothing to connect them to. */
 export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], actions: [] } } };
 
 /** The canvas's grid, to press or drop on. */
@@ -101,7 +102,7 @@ export const MarkedCellWithBarHighlighted: Story = {
   }
 };
 
-/** Mark a cell, then pick a widget and what it shows: it's added there. */
+/** Mark a cell and pick a widget: it's added there, and its properties ask what it shows (0023). */
 export const AddByMarkingACell: Story = {
   tags: ['!dev', '!visual'],
   play: async ({ canvasElement, userEvent }) => {
@@ -109,52 +110,31 @@ export const AddByMarkingACell: Story = {
 
     await userEvent.pointer({ keys: '[MouseLeft]', target: grid, coords: at(0.3, 0.4) });
     await userEvent.click(screen.getByRole('option', { name: /^Light/ }));
+
+    await expect(within(canvasElement).getByRole('button', { name: 'Light' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lit by: none' }));
     await userEvent.click(await screen.findByRole('option', { name: /^Gear/ }));
 
-    await expect(within(canvasElement).getByRole('button', { name: /gear/i })).toBeInTheDocument();
+    await expect(within(canvasElement).getByRole('button', { name: 'Light gear' })).toBeInTheDocument();
   }
 };
 
-/** Drag a finished choice from the library onto the canvas: it's added where it's dropped. */
+/** Drag a widget from the library onto the canvas: it's added where it's dropped. */
 export const AddByDragging: Story = {
   tags: ['!dev', '!visual'],
   play: async ({ canvasElement, userEvent }) => {
     const { grid, at } = gridOf(canvasElement);
-
-    await userEvent.type(screen.getByRole('combobox'), 'fuel');
-
-    const fuel = await screen.findByRole('option', { name: /^Fuel\s*Bar/ });
+    const bar = screen.getByRole('option', { name: /^Bar/ });
 
     await userEvent.pointer([
-      { keys: '[MouseLeft>]', target: fuel },
+      { keys: '[MouseLeft>]', target: bar },
       { target: grid, coords: at(0.5, 0.5) },
       { target: grid, coords: at(0.6, 0.6) },
       { keys: '[/MouseLeft]', target: grid, coords: at(0.6, 0.6) }
     ]);
 
-    await expect(within(canvasElement).getByRole('button', { name: /fuel/i })).toBeInTheDocument();
-  }
-};
-
-/** Dropping a widget that still needs data marks the spot and moves on to its data (0006). */
-export const DropMarksTheSpot: Story = {
-  tags: ['!dev', '!visual'],
-  play: async ({ canvasElement, userEvent }) => {
-    const { grid, at } = gridOf(canvasElement);
-    const light = screen.getByRole('option', { name: /^Light/ });
-
-    await userEvent.pointer([
-      { keys: '[MouseLeft>]', target: light },
-      { target: grid, coords: at(0.5, 0.5) },
-      { target: grid, coords: at(0.6, 0.6) },
-      { keys: '[/MouseLeft]', target: grid, coords: at(0.6, 0.6) }
-    ]);
-
-    await expect(await screen.findByRole('button', { name: 'Back' })).toBeInTheDocument();
-    await expect(within(canvasElement).queryByRole('button', { name: /gear/i })).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('option', { name: /^Gear/ }));
-    await expect(within(canvasElement).getByRole('button', { name: /gear/i })).toBeInTheDocument();
+    await expect(within(canvasElement).getByRole('button', { name: 'Bar' })).toBeInTheDocument();
   }
 };
 
@@ -162,32 +142,22 @@ export const DropMarksTheSpot: Story = {
 export const HintAfterIdleClicks: Story = {
   tags: ['!dev', '!visual'],
   play: async ({ userEvent }) => {
-    await userEvent.type(screen.getByRole('combobox'), 'fuel');
+    const bar = screen.getByRole('option', { name: /^Bar/ });
 
-    const fuel = await screen.findByRole('option', { name: /^Fuel\s*Bar/ });
-
-    await userEvent.click(fuel);
-    await userEvent.click(fuel);
+    await userEvent.click(bar);
+    await userEvent.click(bar);
 
     await expect(await screen.findByText('Tap a cell, or drag a widget onto the page.')).toBeInTheDocument();
   }
 };
 
-/** Search results list data by name, then by the widget it would become, both alphabetically. */
-export const SearchSortsByDataThenWidget: Story = {
+/** The library lists widget types; searching narrows them down. */
+export const SearchFindsWidgets: Story = {
   tags: ['!dev', '!visual'],
   play: async ({ userEvent }) => {
-    await userEvent.type(screen.getByRole('combobox'), 'veh');
+    await userEvent.type(screen.getByRole('combobox'), 'rea');
 
-    await screen.findAllByRole('option');
-
-    const rows = screen.getAllByRole('option').map(option => option.innerText.split('\n').filter(Boolean).slice(-2));
-    const sorted = rows.toSorted(
-      ([nameA = '', widgetA = ''], [nameB = '', widgetB = '']) =>
-        nameA.localeCompare(nameB) || widgetA.localeCompare(widgetB)
-    );
-
-    await expect(rows.map(([name]) => name)).toEqual(expect.arrayContaining(['Fuel', 'Gear', 'Landing gear']));
-    await expect(rows).toEqual(sorted);
+    await expect(screen.getAllByRole('option')).toHaveLength(1);
+    await expect(screen.getByRole('option', { name: /^Readout/ })).toBeInTheDocument();
   }
 };

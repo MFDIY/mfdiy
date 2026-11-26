@@ -1,8 +1,8 @@
 import type { CanvasPointer, CanvasProps } from './canvas/Canvas.js';
-import type { Catalogue, NewWidget } from './palette/choices.js';
-import type { Area, GridPoint } from '@mfdiy/schema';
+import type { Catalogue } from './palette/choices.js';
+import type { Area, GridPoint, Page } from '@mfdiy/schema';
 
-import { widgetManifests } from '@mfdiy/instruments';
+import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
 import { addWidget, growArea, newWidgetId, placeArea } from '@mfdiy/schema';
 import {
   Box,
@@ -18,17 +18,22 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Canvas } from './canvas/Canvas.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { DragLabel } from './palette/DragLabel.js';
-import { useWidgetLibrary, type LibraryEntry } from './palette/useWidgetLibrary.js';
+import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
+import { PropertiesPanel } from './properties/PropertiesPanel.js';
 
-export type PageEditorProps = Omit<CanvasProps, 'ghost' | 'newWidgetArea' | 'onEmptyTap' | 'pointerRef'> & {
+export type PageEditorProps = Omit<
+  CanvasProps,
+  'ghost' | 'newWidgetArea' | 'onChange' | 'onEmptyTap' | 'pointerRef'
+> & {
   catalogue: Catalogue;
+  /** `merge` names a run of typing in one field; changes with the same one are one undo step (0023). */
+  onChange: (page: Page, merge?: string) => void;
 };
 
 /** A row being dragged out of the library. */
 type Drag = {
   pointerId: number;
-  entry: LibraryEntry;
-  label: string;
+  manifest: WidgetManifest;
   startX: number;
   startY: number;
   x: number;
@@ -51,10 +56,11 @@ const HINT = 'Tap a cell, or drag a widget onto the page.';
  * The canvas between the widget library and the properties panel (0006, 0008), laid out by
  * PanelLayout. A widget is added where a cell was marked, or where it's dropped; never somewhere
  * guessed. As sidebars, the library is there to drag from; as sheets, it opens when a cell is
- * tapped. The properties panel is empty for now. Use one per page, with the page's id as its key.
+ * tapped. The properties panel (0023) shows the selected widget, or the page. Use one per page, with
+ * the page's id as its key.
  */
 export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
-  const { page, layout, documentTokens, onChange, onSelect } = canvasProps;
+  const { page, layout, documentTokens, onChange, onSelect, selectedId } = canvasProps;
   const [marked, setMarked] = useState<GridPoint | null>(null);
   const [openSheet, setOpenSheet] = useState<PanelSide | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -65,7 +71,7 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
   const idleClicksRef = useRef(0);
 
   const toast = useToast();
-  const library = useWidgetLibrary({ catalogue, documentTokens, pageTokens: page.tokens });
+  const library = useWidgetLibrary({ documentTokens, pageTokens: page.tokens });
 
   /** What every widget covers at least, before one is picked: the smallest of their default sizes. */
   function smallestPlace(point: GridPoint): Area {
@@ -91,14 +97,12 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
       : smallest;
   }
 
-  function add(widget: NewWidget, point: GridPoint) {
-    const id = newWidgetId(page, widget.type);
+  /** Adds a widget of a type, without data yet (0006); its properties ask for that next. */
+  function add(type: string, point: GridPoint) {
+    const id = newWidgetId(page, type);
 
-    onChange(addWidget(page, layout, { id, ...widget }, place(widget.type, point)));
-    onSelect(id);
-    setMarked(null);
-    setOpenSheet(null);
-    library.reset();
+    onChange(addWidget(page, layout, { id, type }, place(type, point)));
+    handleSelect(id);
   }
 
   function setDragState(next: Drag | null) {
@@ -115,29 +119,25 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
     // Selecting a widget lets go of the marked cell; on a phone, its properties take the sheet's place.
     if (widgetId !== null) {
       setMarked(null);
-      setOpenSheet(null);
+      library.reset();
     }
+
+    setOpenSheet(widgetId === null ? null : 'end');
 
     onSelect(widgetId);
   }
 
   function handleLibrarySelect(id: string) {
-    const entry = library.entry(id);
+    const manifest = library.manifest(id);
 
-    if (justDraggedRef.current || !entry) {
+    if (justDraggedRef.current || !manifest) {
       justDraggedRef.current = false;
 
       return;
     }
 
-    if (!entry.widget) {
-      library.pick(entry.manifest);
-
-      return;
-    }
-
     if (marked) {
-      add(entry.widget, marked);
+      add(manifest.type, marked);
 
       return;
     }
@@ -151,18 +151,16 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
   }
 
   function handleItemPointerDown(id: string, event: PointerEvent<HTMLElement>) {
-    const entry = library.entry(id);
-    const label = library.listProps.groups.flatMap(group => group.items).find(item => item.id === id)?.label;
+    const manifest = library.manifest(id);
 
     // Fingers scroll the list; only a mouse or pen drags out of it (0008).
-    if (!entry || !label || event.pointerType === 'touch' || event.button !== 0) {
+    if (!manifest || event.pointerType === 'touch' || event.button !== 0) {
       return;
     }
 
     setDragState({
       pointerId: event.pointerId,
-      entry,
-      label: entry.widget ? label : entry.manifest.label,
+      manifest,
       startX: event.clientX,
       startY: event.clientY,
       x: event.clientX,
@@ -189,13 +187,7 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
       return;
     }
 
-    if (current.entry.widget) {
-      add(current.entry.widget, current.point);
-    } else {
-      // Not connected yet (0006): the drop marks the spot, and the library moves on to its data.
-      setMarked(current.point);
-      library.pick(current.entry.manifest);
-    }
+    add(current.manifest.type, current.point);
   }
 
   const dragPointerId = drag?.pointerId ?? null;
@@ -268,21 +260,28 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
     };
   }, [isDragging]);
 
-  const dropzone = drag?.dragging && drag.point ? place(drag.entry.manifest.type, drag.point) : null;
+  const dropzone = drag?.dragging && drag.point ? place(drag.manifest.type, drag.point) : null;
   const ghost =
     dropzone ??
-    (marked
-      ? library.highlightedType
-        ? place(library.highlightedType, marked)
-        : library.picked
-          ? place(library.picked.type, marked)
-          : smallestPlace(marked)
-      : null);
+    (marked ? (library.highlightedType ? place(library.highlightedType, marked) : smallestPlace(marked)) : null);
 
   return (
     <>
       <PanelLayout
-        end={{ content: null, title: 'Properties' }}
+        end={{
+          content: (
+            <PropertiesPanel
+              catalogue={catalogue}
+              documentTokens={documentTokens}
+              layout={layout}
+              onChange={onChange}
+              onSelect={handleSelect}
+              page={page}
+              selectedId={selectedId}
+            />
+          ),
+          title: 'Properties'
+        }}
         onSheetClose={() => {
           setOpenSheet(null);
           setMarked(null);
@@ -312,7 +311,7 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
           />
         </Box>
       </PanelLayout>
-      {drag?.dragging ? <DragLabel label={drag.label} x={drag.x} y={drag.y} /> : null}
+      {drag?.dragging ? <DragLabel label={drag.manifest.label} x={drag.x} y={drag.y} /> : null}
     </>
   );
 }

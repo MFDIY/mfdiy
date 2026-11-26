@@ -18,12 +18,33 @@ const SignalBaseSchema = {
   group: v.pipe(v.string(), v.minLength(1), v.maxLength(64))
 };
 
+/** Where a number turns amber and red, in the signal's unit. Either level may be left out. */
+export const ThresholdLevelsSchema = v.object({
+  critical: v.optional(v.number()),
+  warning: v.optional(v.number())
+});
+
+export type ThresholdLevels = v.InferOutput<typeof ThresholdLevelsSchema>;
+
+/**
+ * When a number needs attention: below the `low` levels, above the `high` ones, or both, as
+ * G-force does. A side that's left out is off (0023).
+ */
+export const ThresholdsSchema = v.object({
+  high: v.optional(ThresholdLevelsSchema),
+  low: v.optional(ThresholdLevelsSchema)
+});
+
+export type Thresholds = v.InferOutput<typeof ThresholdsSchema>;
+
 export const NumberSignalSchema = v.object({
   ...SignalBaseSchema,
   kind: v.literal('number'),
   min: v.number(),
   max: v.number(),
-  unit: v.optional(v.pipe(v.string(), v.maxLength(16)))
+  unit: v.optional(v.pipe(v.string(), v.maxLength(16))),
+  /** Copied into a binding when the signal is picked, so a new widget warns without setting up. */
+  thresholds: v.optional(ThresholdsSchema)
 });
 
 export const BooleanSignalSchema = v.object({

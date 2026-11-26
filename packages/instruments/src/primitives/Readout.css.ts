@@ -2,6 +2,8 @@ import { style } from '@vanilla-extract/css';
 
 import { fontFamily, token } from '../theme/token.js';
 
+import { transition } from './styleHelpers.js';
+
 export const readout = style({
   border: `${token('border.width')} solid ${token('line')}`,
   borderRadius: token('radius'),
@@ -19,7 +21,13 @@ export const value = style({
   // Bounded by width too, so long values shrink instead of truncating in narrow cells.
   fontSize: 'clamp(14px, min(32cqmin, 16cqi), 64px)',
   fontVariantNumeric: 'tabular-nums',
-  lineHeight: 1
+  lineHeight: 1,
+  transition: transition('color'),
+
+  selectors: {
+    [`${readout}[data-state="warning"] &`]: { color: token('status.warning') },
+    [`${readout}[data-state="critical"] &`]: { color: token('status.critical') }
+  }
 });
 
 export const unit = style({

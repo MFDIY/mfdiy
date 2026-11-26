@@ -7,6 +7,7 @@ import {
   addWidget,
   bringToFront,
   cellAt,
+  duplicateWidget,
   growArea,
   moveArea,
   newWidgetId,
@@ -289,6 +290,29 @@ describe('adding and removing widgets', () => {
     expect(next.widgets.at(-1)?.id).toBe('light-1');
     expect(next.layouts[0]?.areas['light-1']).toEqual(added);
     expect(v.safeParse(PageSchema, next).issues).toBeUndefined();
+  });
+
+  it('duplicates next to the original, with a copy of its settings', () => {
+    const configured: Page = {
+      ...page,
+      widgets: [
+        { id: 'bar-1', type: 'bar', bindings: { value: { signal: 'fuel', thresholds: { low: { warning: 25 } } } } }
+      ]
+    };
+    const next = duplicateWidget(configured, layout, 'bar-1');
+
+    expect(next.id).toBe('bar-2');
+    expect(next.page.widgets[1]).toEqual({ ...configured.widgets[0], id: 'bar-2' });
+    expect(next.page.widgets[1]?.bindings).not.toBe(configured.widgets[0]?.bindings);
+    expect(next.page.layouts[0]?.areas['bar-2']).toEqual(area(2, 1));
+    expect(v.safeParse(PageSchema, next.page).issues).toBeUndefined();
+  });
+
+  it('duplicates on top, offset by a cell, when there is no room', () => {
+    const full: Layout = layoutOf({ 'bar-1': area(1, 1, 6, 4) });
+    const next = duplicateWidget({ ...page, layouts: [full] }, full, 'bar-1');
+
+    expect(next.page.layouts[0]?.areas['bar-2']).toEqual(area(1, 1, 6, 4));
   });
 
   it('removes from every layout', () => {
