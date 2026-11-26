@@ -17,7 +17,7 @@ export type TextFieldProps = {
   value: string;
 };
 
-/** A labelled, single-line text field with the shared control height and Button's focus ring. */
+/** A labelled, single-line text field with the shared control height. Its border brightens while focused. */
 export function TextField({ disabled, error, label, maxLength, onChange, placeholder, value }: TextFieldProps) {
   const id = useId();
   const errorId = useId();
@@ -32,7 +32,9 @@ export function TextField({ disabled, error, label, maxLength, onChange, placeho
         aria-invalid={error ? true : undefined}
         autoComplete='off'
         backgroundColor='transparent'
-        borderColor={error ? 'status.critical' : { default: 'line', hover: 'line.strong', disabled: 'line' }}
+        borderColor={
+          error ? 'status.critical' : { default: 'line', hover: 'line.strong', focusVisible: 'focus', disabled: 'line' }
+        }
         borderStyle={disabled ? 'dashed' : 'solid'}
         borderWidth='hairline'
         color={{ default: 'text', placeholder: 'text.faint', disabled: 'text.faint' }}
@@ -47,10 +49,7 @@ export function TextField({ disabled, error, label, maxLength, onChange, placeho
         maxLength={maxLength}
         onChange={event => onChange(event.target.value)}
         onFocus={event => event.target.select()}
-        outlineColor='focus'
-        outlineOffset='focus'
-        outlineStyle={{ default: 'none', focusVisible: 'solid' }}
-        outlineWidth='focus'
+        outlineStyle='none'
         paddingInline='3x'
         placeholder={placeholder}
         tagName='input'

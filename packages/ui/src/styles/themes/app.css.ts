@@ -7,6 +7,12 @@ import { chromeTokens, coarsePointerTokens } from './chrome.js';
 /** The `mfdiy` theme on the whole page. Dark only; there are no colour schemes (0022). */
 createGlobalTheme(':root', uiVars, chromeTokens);
 
+/** Selected text inverts, like the primary button. */
+globalStyle('::selection', {
+  backgroundColor: uiVars['accent'],
+  color: uiVars['accent.text']
+});
+
 globalStyle(':root', {
   backgroundColor: uiVars['surface'],
   color: uiVars['text'],

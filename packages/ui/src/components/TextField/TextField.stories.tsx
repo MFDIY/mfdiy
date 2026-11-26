@@ -31,7 +31,7 @@ export const Filled = {} satisfies Story;
 
 export const Empty = { args: { placeholder: 'Untitled profile', value: '' } } satisfies Story;
 
-/** The same focus ring as Button: a hairline outside the border. */
+/** The border brightens while the field has focus. */
 export const Focused = {
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByRole('textbox');

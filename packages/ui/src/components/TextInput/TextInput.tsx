@@ -28,7 +28,7 @@ export type TextInputProps = StyleProps &
     elevation?: Elevation | undefined;
     /** Displays an error focus ring around the text input. */
     error?: boolean | undefined;
-    /** Hides the focus ring when the text input is focused. */
+    /** Keeps the border from brightening fully while focused, for a field that always has focus. */
     hideFocusRing?: boolean | undefined;
     /** Displays a clear button on the text input that calls the handler passed to this prop. */
     onClear?: (() => void) | undefined;
@@ -97,7 +97,11 @@ export function TextInput({
         aria-labelledby={typeof ariaLabel === 'undefined' ? ariaLabelledBy : undefined}
         backgroundColor='transparent'
         borderColor={
-          error ? 'status.critical' : elevation === 'base' ? { default: 'line', hover: 'line.strong' } : 'transparent'
+          error
+            ? 'status.critical'
+            : elevation === 'base'
+              ? { default: 'line', hover: 'line.strong', focusVisible: hideFocusRing ? 'line.strong' : 'focus' }
+              : 'transparent'
         }
         borderStyle='solid'
         borderWidth='hairline'
@@ -110,10 +114,7 @@ export function TextInput({
         height='control'
         id={id}
         onChange={handleChange}
-        outlineColor='focus'
-        outlineOffset='focus'
-        outlineStyle={hideFocusRing ? 'none' : { default: 'none', focusVisible: 'solid' }}
-        outlineWidth='focus'
+        outlineStyle='none'
         paddingLeft='3x'
         paddingRight={typeof onClear === 'undefined' ? '3x' : '6x'}
         ref={mergedRef}
