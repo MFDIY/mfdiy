@@ -326,6 +326,7 @@ export function Canvas({
       containerType='size'
       display='flex'
       height='full'
+      isolation='isolate'
       justifyContent='center'
       minHeight='none'
       minWidth='none'

@@ -48,6 +48,7 @@ export const layoutStyleProps = [
   'contain',
   'containerType',
   'inset',
+  'isolation',
   'left',
   'listStyleType',
   'overflow',

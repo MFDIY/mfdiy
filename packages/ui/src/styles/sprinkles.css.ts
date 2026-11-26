@@ -146,6 +146,7 @@ export const unconditionalProperties = defineProperties({
     fontFamily: properties.fontFamily,
     fontSize: properties.fontSize,
     fontWeight: properties.fontWeight,
+    isolation: properties.isolation,
     left: properties.inset,
     letterSpacing: properties.letterSpacing,
     lineHeight: properties.lineHeight,

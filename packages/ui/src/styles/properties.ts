@@ -272,6 +272,8 @@ export const paddingBlock = {
   unset: 'unset'
 } as const;
 
+export const isolation = ['auto', 'isolate'] as const;
+
 export const pointerEvents = ['auto', 'none'] as const;
 
 export const position = ['absolute', 'fixed', 'relative', 'static', 'sticky'] as const;
