@@ -75,17 +75,42 @@ export const Options = {
   )
 } satisfies Story;
 
-/** Pressing the switch, or its label, or Space while it's focused, toggles it. */
+/**
+ * Pressing anywhere on the row toggles it: the switch, its label, the space between them, its
+ * description. So does Space while it's focused.
+ */
 export const Toggling = {
   tags: ['!dev', '!visual'],
-  args: { label: 'Show label' },
+  args: { description: 'Shown above the value.', label: 'Show label' },
   play: async () => {
     const control = screen.getByRole('switch', { name: 'Show label' });
+    const label = screen.getByText('Show label');
+
+    /** Presses whatever the browser finds at this point, as a finger or a mouse would. */
+    async function pressAt(clientX: number, clientY: number) {
+      const target = document.elementFromPoint(clientX, clientY);
+
+      if (!(target instanceof HTMLElement)) {
+        throw new Error('Nothing to press there');
+      }
+
+      await userEvent.pointer({ keys: '[MouseLeft]', target, coords: { clientX, clientY } });
+    }
 
     await userEvent.click(control);
     await expect(control).toBeChecked();
 
-    await userEvent.click(screen.getByText('Show label'));
+    await userEvent.click(label);
+    await expect(control).not.toBeChecked();
+
+    const { right, top, height } = label.getBoundingClientRect();
+
+    await pressAt(right + 40, top + height / 2);
+    await expect(control).toBeChecked();
+
+    const description = screen.getByText('Shown above the value.').getBoundingClientRect();
+
+    await pressAt(description.left + description.width / 2, description.top + description.height / 2);
     await expect(control).not.toBeChecked();
 
     await userEvent.keyboard(' ');
