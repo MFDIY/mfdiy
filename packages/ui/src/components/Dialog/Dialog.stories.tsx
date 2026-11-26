@@ -9,6 +9,7 @@ import { Text } from '../Text/Text.js';
 import { TextField } from '../TextField/TextField.js';
 
 import { Dialog } from './Dialog.js';
+import { DialogPresentationContext } from './DialogPresentation.js';
 
 const meta = {
   title: 'Components / Dialog',
@@ -17,7 +18,10 @@ const meta = {
     // Content, not settings: each story provides its own.
     actions: { control: false },
     children: { control: false },
-    dismissible: { control: { type: 'boolean' }, table: { defaultValue: { summary: 'false' } } },
+    dismissible: {
+      control: { type: 'boolean' },
+      table: { defaultValue: { summary: 'false' }, type: { summary: 'boolean' } }
+    },
     title: { control: { type: 'text' } }
   },
   args: {
@@ -25,10 +29,14 @@ const meta = {
     title: 'Save changes to “Fighter”?',
     onClose: () => undefined
   },
-  parameters: {
-    // Each dialog is modal, so on the docs page every story gets its own frame instead of stacking.
-    docs: { story: { inline: false, height: '420px' } }
-  }
+  decorators: [
+    // On the docs page, dialogs are drawn in place: modals would stack and block the page's controls.
+    (Story, context) => (
+      <DialogPresentationContext value={context.viewMode === 'docs' ? 'inline' : 'modal'}>
+        <Story />
+      </DialogPresentationContext>
+    )
+  ]
 } satisfies Meta<typeof Dialog>;
 
 export default meta;
