@@ -21,7 +21,7 @@ Adding theming later is expensive: every widget built before it would need rewor
 - **Sim-pit features to plan for:**
   - Custom fonts (including user-supplied), backgrounds and colour palettes.
   - **Physical bezel alignment**: put on-screen button labels exactly next to the buttons of a physical MFD bezel (e.g. bezels that clip around a screen), with adjustable offsets.
-  - Calibration of safe areas, margins and screen insets for screens mounted behind a frame.
+  - Calibration of safe areas, margins and screen insets for screens mounted behind a frame. This is a per-screen setting, not part of a theme (0022); the spacing between widgets is a theme token.
   - Night or low-brightness modes for dark sim rooms.
 - Ship a few distinctive built-in themes so the customisation is visible on first launch.
 

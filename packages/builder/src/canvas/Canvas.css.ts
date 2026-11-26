@@ -1,17 +1,16 @@
 import { token } from '@mfdiy/instruments';
 import { globalVars } from '@mfdiy/ui';
-import { createVar, style, styleVariants } from '@vanilla-extract/css';
+import { style, styleVariants } from '@vanilla-extract/css';
 
 /*
  * Only what Bonsai's style props can't express: geometry computed from the canvas, and MFD tokens.
  * Everything else is a style prop.
  */
 
-const gap = createVar();
+/** The theme's spacing, relative to the canvas instead of the viewport (the frame is a container). */
+const gap = token('gap');
 
-/** Same proportions as the display, but relative to the canvas instead of the viewport. */
 export const page = style({
-  vars: { [gap]: 'clamp(4px, 1.5cqmin, 16px)' },
   padding: gap,
   WebkitTouchCallout: 'none',
   WebkitUserSelect: 'none'

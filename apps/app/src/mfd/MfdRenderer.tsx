@@ -1,6 +1,6 @@
 import type { Area, MfdDocument, WidgetInstance } from '@mfdiy/schema';
 
-import { applyTokens, mfdRoot, pressHandlers } from '@mfdiy/instruments';
+import { applyTokens, LayoutArea, LayoutGrid, mfdRoot, pressHandlers } from '@mfdiy/instruments';
 import { selectLayout } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useMatchesMediaQuery } from '@mfdiy/ui/hooks';
@@ -29,25 +29,16 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
   const layout = selectLayout(page, portrait ? 'portrait' : 'landscape');
 
   return (
-    <Box className={[mfdRoot, styles.screen]} display='grid' height='full' style={applyTokens(document.tokens)}>
-      <Box
-        className={styles.page}
-        display='grid'
-        minHeight='none'
-        style={{
-          ...applyTokens(page.tokens),
-          gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${layout.grid.rows}, minmax(0, 1fr))`
-        }}
-      >
+    <Box className={[mfdRoot, styles.screen]} cssVariables={applyTokens(document.tokens)} display='grid' height='full'>
+      <LayoutGrid className={styles.page} cssVariables={applyTokens(page.tokens)} grid={layout.grid} minHeight='none'>
         {page.widgets.map(widget => {
           const area = layout.areas[widget.id];
 
           return area ? <WidgetSlot area={area} key={widget.id} widget={widget} /> : null;
         })}
-      </Box>
+      </LayoutGrid>
       {document.pages.length > 1 ? (
-        <Box className={styles.tabs} display='flex' style={applyTokens(page.tokens)} tagName='nav'>
+        <Box className={styles.tabs} cssVariables={applyTokens(page.tokens)} display='flex' tagName='nav'>
           {document.pages.map(candidate => (
             <Box
               {...pressHandlers(() => onPageChange(candidate.id))}
@@ -74,16 +65,8 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
 
 function WidgetSlot({ area, widget }: { area: Area; widget: WidgetInstance }) {
   return (
-    <Box
-      minHeight='none'
-      minWidth='none'
-      style={{
-        ...applyTokens(widget.tokens),
-        gridColumn: `${area.column} / span ${area.columnSpan}`,
-        gridRow: `${area.row} / span ${area.rowSpan}`
-      }}
-    >
+    <LayoutArea area={area} cssVariables={applyTokens(widget.tokens)} minHeight='none' minWidth='none'>
       <MfdWidget widget={widget} />
-    </Box>
+    </LayoutArea>
   );
 }

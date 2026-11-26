@@ -83,9 +83,9 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 ## Code rules
 
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
-- In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). Before using `className`, check `packages/ui/src/styles/properties.ts`: if a style is missing, consider adding it there. In MFD primitives, looks come from `--mfd-*` tokens through `className`.
+- In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). `className` or `style` on a Bonsai component is a code smell (0022): check `packages/ui/src/styles/properties.ts`, and if a style or scale value is missing, raise it with the maintainer rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className`, and values computed from the document, wrapped in components such as `LayoutGrid` and `LayoutArea`.
 - Pressable MFD elements use `pressHandlers` from `@mfdiy/instruments`, so they fire on touch (0010).
-- In MFD styles, always read tokens through `token()` from `@mfdiy/instruments`, never `vars` directly; it resolves the base → semantic → component fallback chain at the point of use.
+- In MFD styles, always read tokens through `token()` (from `@mfdiy/schema`, re-exported by `@mfdiy/instruments`), never `vars` directly; it resolves the primitive → semantic → component fallback chain at the point of use.
 - Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.
 - `useEffect` is for synchronising with external systems only; derive values during render.
 - Keep components driven by props, so every state worth checking can be a story; stories are the UI tests (0021).

@@ -66,6 +66,8 @@ export const mfdiy: Record<PrimitiveTokenName, string> = {
   'font.numeric': '"Martian Mono", ui-monospace, monospace',
   'label.case': 'uppercase',
   'label.tracking': '0.14em',
+  // MFD spacing; the interface has its own spacing scale.
+  gap: '1.5cqmin',
   radius: '0',
   'border.width': '1px',
   glow: '10px',

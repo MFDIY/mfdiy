@@ -4,6 +4,8 @@ export { Light, lightStates, type LightProps, type LightState } from './primitiv
 export { pressHandlers } from './primitives/pressHandlers.js';
 export { Readout, type ReadoutProps } from './primitives/Readout.js';
 
+export { LayoutArea, LayoutGrid } from './layout/Layout.js';
+
 export { applyTokens } from './theme/applyTokens.js';
 export { vars } from './theme/contract.css.js';
 export { root as mfdRoot } from './theme/root.css.js';

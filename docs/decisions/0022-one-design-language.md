@@ -14,6 +14,8 @@ Everything in `packages/ui` that decides how things look (its token contract, it
 - The builder chrome and the MFDs use the **same token tiers and the same semantic names** (`surface`, `text`, `accent`, `status.caution`, …), so the product speaks one design language.
 - **The brand is fixed.** The builder chrome and the marketing pages (`site/`) are MFDIY's branding. They always use MFDIY's own theme and never change when a user switches MFD themes. User themes reach only the MFD, so 0003's rule that a user's theme can never break the editor still holds.
 - **Shared:** colour, typography, borders, radius, glow and motion. **Not shared:** spacing and sizing. MFD sizes scale with their cell (`cqmin`); the chrome uses rem/px and touch-sized targets (0001). The chrome's spacing and sizing tokens are private to `packages/ui`.
+- **The spacing between widgets is a theme token** (`gap`), so users can control it like any other part of the look. Bonsai's spacing scale can't express it anyway: it scales with the display.
+- **The safe zone is not a theme concern.** Insets for a screen mounted behind a frame or bezel belong to that screen, not to a look that's shared between screens (0002).
 
 ### Tiers
 
@@ -55,6 +57,8 @@ The builder chrome follows the **Phosphor console** direction in its **Panel whi
 
 - `packages/ui`'s light and dark colour schemes and its component tokens go away, replaced by the shared semantic tokens and the single `mfdiy` theme.
 - The landing page moves from phosphor green to Panel white.
+- **Martian Mono is bundled** (`packages/ui/src/fonts`, SIL OFL), never left to the viewer's installed fonts. The bridge serves the app on the local network (0004), so fonts can't come from a CDN either.
+- **`style` or `className` on `Box` or another Bonsai component is a code smell** in the apps and packages: it means Bonsai is missing something or a value is off-scale. Raise it rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className` (0003), and values computed from the document (theme overrides, grid tracks, widget areas), which are wrapped in components (`LayoutGrid`, `LayoutArea`) so call sites don't carry them.
 - The theme format gets a new schema version. Documents already store token overrides (document, page and widget), so the bump comes with a migration from the current names.
 - **Status names change meaning.** In theme version 1, `warning` was red and `caution` amber. Now amber is `warning` and red is `critical`, chosen because "caution" and "warning" read as near-synonyms. The migration maps v1 `caution` → `warning` and v1 `warning` → `critical`.
 - **Later, in the theme editor:** a user gives a colour spread of four or five swatches and MFDIY generates each scale, which they can then hand-edit step by step. When a swatch sits close to an edge (e.g. `#f1f1f1`, whose lighter steps would all clip to `#fff`), the editor flags it. Out of scope for now, but role-named scales are chosen with it in mind.

@@ -88,6 +88,11 @@ export const tokens = {
     description: 'Letter case of labels: `uppercase`, or `none` to show them as typed.'
   },
   'label.tracking': { tier: 'primitive', type: 'length', description: 'Letter spacing of labels.' },
+  gap: {
+    tier: 'primitive',
+    type: 'length',
+    description: 'Space between widgets, and around them. Relative units (`cqmin`) scale it with the display.'
+  },
   radius: { tier: 'primitive', type: 'length', description: 'Corner radius of frames and lights.' },
   'border.width': { tier: 'primitive', type: 'length', description: 'Width of outlines.' },
   glow: {

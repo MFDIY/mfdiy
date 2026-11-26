@@ -63,6 +63,7 @@ export const phosphor: PrimitiveTokenValues = {
   'font.numeric': 'ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace',
   'label.case': 'uppercase',
   'label.tracking': '0.12em',
+  gap: '1.5cqmin',
   radius: '0.5cqmin',
   'border.width': '1px',
   glow: '1.5cqmin',

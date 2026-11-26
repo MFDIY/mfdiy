@@ -49,8 +49,8 @@ export function WidgetPreview({ documentTokens, label, manifest, pageTokens, sig
 
   return (
     // Page tokens on top of the document's, as on the canvas.
-    <Box className={mfdRoot} height='full' style={applyTokens(documentTokens)}>
-      <Box className={styles.surface} height='full' style={applyTokens(pageTokens)}>
+    <Box className={mfdRoot} cssVariables={applyTokens(documentTokens)} height='full'>
+      <Box className={styles.surface} cssVariables={applyTokens(pageTokens)} height='full'>
         <manifest.Component
           action={
             inputs.length === 0

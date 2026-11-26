@@ -1,6 +1,6 @@
 import type { Area, GridPoint, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
-import { applyTokens, mfdRoot } from '@mfdiy/instruments';
+import { applyTokens, LayoutArea, LayoutGrid, mfdRoot } from '@mfdiy/instruments';
 import {
   areasEqual,
   areasOverlap,
@@ -305,10 +305,10 @@ export function Canvas({
       <Box
         className={mfdRoot}
         containerType='size'
+        cssVariables={applyTokens(documentTokens)}
         data-canvas='frame'
         flexShrink='0'
         style={{
-          ...applyTokens(documentTokens),
           height: aspectRatio ? `min(100cqh, ${100 / aspectRatio}cqw)` : '100%',
           width: aspectRatio ? `min(100cqw, ${100 * aspectRatio}cqh)` : '100%'
         }}
@@ -316,6 +316,7 @@ export function Canvas({
         <Box
           aria-label={`Canvas, page ${page.name}`}
           className={styles.page}
+          cssVariables={applyTokens(page.tokens)}
           height='full'
           onContextMenu={event => {
             // A long press must not open a menu halfway through a drag.
@@ -329,24 +330,19 @@ export function Canvas({
           overscrollBehavior='none'
           position='relative'
           role='group'
-          style={applyTokens(page.tokens)}
           touchAction='none'
           userSelect='none'
         >
-          <Box
+          <LayoutGrid
             className={styles.grid}
             cursor={invitation ? 'pointer' : 'default'}
-            display='grid'
+            grid={layout.grid}
             height='full'
             onClick={handleEmptyClick}
             onPointerDown={handleEmptyPointerDown}
             onPointerLeave={() => setHovered(null)}
             onPointerMove={handleHover}
             position='relative'
-            style={{
-              gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${layout.grid.rows}, minmax(0, 1fr))`
-            }}
           >
             <Box
               backgroundImage='canvas.dots'
@@ -386,7 +382,8 @@ export function Canvas({
             {marked ? <Plus area={marked} /> : null}
             {overlaps.map(({ widgetIds, area }) => (
               // Striped and dashed as well as red, so it doesn't rely on colour alone.
-              <Box
+              <LayoutArea
+                area={area}
                 backgroundImage='canvas.overlap'
                 borderColor='canvas.overlap'
                 borderRadius='1x'
@@ -397,14 +394,10 @@ export function Canvas({
                 key={widgetIds.join(' ')}
                 pointerEvents='none'
                 position='relative'
-                style={{
-                  gridColumn: `${area.column} / span ${area.columnSpan}`,
-                  gridRow: `${area.row} / span ${area.rowSpan}`
-                }}
                 zIndex='3'
               />
             ))}
-          </Box>
+          </LayoutGrid>
           {onEmptyTap && page.widgets.length === 0 && !marked ? (
             <Box
               alignItems='center'
@@ -433,7 +426,8 @@ type GhostProps = {
 
 function Ghost({ area, quiet = false }: GhostProps) {
   return (
-    <Box
+    <LayoutArea
+      area={area}
       backgroundColor={quiet ? 'transparent' : 'canvas.ghost'}
       borderColor='canvas.ghost'
       borderRadius='1x'
@@ -443,10 +437,6 @@ function Ghost({ area, quiet = false }: GhostProps) {
       data-canvas='ghost'
       pointerEvents='none'
       position='relative'
-      style={{
-        gridColumn: `${area.column} / span ${area.columnSpan}`,
-        gridRow: `${area.row} / span ${area.rowSpan}`
-      }}
       // Above a lifted widget, which would otherwise hide it.
       zIndex='3'
     />
@@ -456,17 +446,14 @@ function Ghost({ area, quiet = false }: GhostProps) {
 /** In the middle of an area, shrinking with it. */
 function Plus({ area }: { area: Area }) {
   return (
-    <Box
+    <LayoutArea
       alignItems='center'
+      area={area}
       containerType='size'
       display='flex'
       justifyContent='center'
       pointerEvents='none'
       position='relative'
-      style={{
-        gridColumn: `${area.column} / span ${area.columnSpan}`,
-        gridRow: `${area.row} / span ${area.rowSpan}`
-      }}
       zIndex='3'
     >
       <Box
@@ -479,7 +466,7 @@ function Plus({ area }: { area: Area }) {
       >
         <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='2' tagName='path' />
       </Box>
-    </Box>
+    </LayoutArea>
   );
 }
 
