@@ -49,6 +49,12 @@ export { Tabs, type TabsItem, type TabsProps } from './Tabs/Tabs.js';
 
 export { Text, tagNames as textTagNames, variants as textVariants, type TextProps } from './Text/Text.js';
 
+export {
+  SegmentedControl,
+  type SegmentedControlItem,
+  type SegmentedControlProps
+} from './SegmentedControl/SegmentedControl.js';
+
 export { Select, type SelectItem, type SelectProps } from './Select/Select.js';
 
 export { Sheet, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
