@@ -10,6 +10,8 @@ export { Dialog, type DialogProps } from './Dialog/Dialog.js';
 
 export { Divider, type DividerProps } from './Divider/Divider.js';
 
+export { Field, type FieldProps } from './Field/Field.js';
+
 export { Icon, iconNames, type IconName, type IconProps } from './Icon/Icon.js';
 
 export { IconButton, type IconButtonProps } from './IconButton/IconButton.js';

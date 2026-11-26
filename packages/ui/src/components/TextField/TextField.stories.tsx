@@ -25,6 +25,7 @@ const meta = {
   title: 'Components / TextField',
   component: TextField,
   argTypes: {
+    description: { control: { type: 'text' } },
     disabled: { control: { type: 'boolean' } },
     error: { control: { type: 'text' } },
     label: { control: { type: 'text' } },
@@ -32,6 +33,7 @@ const meta = {
     value: { control: { type: 'text' } }
   },
   args: {
+    description: undefined,
     disabled: false,
     error: undefined,
     label: 'Label',
