@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useState } from 'react';
+import { expect, screen } from 'storybook/test';
 
 import { Button } from '../Button/Button.js';
-import { Inline } from '../Inline/Inline.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 import { TextField } from '../TextField/TextField.js';
@@ -14,6 +14,7 @@ const meta = {
   title: 'Components / Dialog',
   component: Dialog,
   argTypes: {
+    dismissible: { control: { type: 'boolean' }, table: { defaultValue: { summary: 'false' } } },
     title: { control: { type: 'text' } }
   },
   args: {
@@ -29,73 +30,79 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** A decision with one obvious answer. */
+/** A decision that has to be made: no close button, and Escape or a press outside does nothing. */
 export const Confirm = {
   args: {
-    children: (
-      <Stack spacing='5x'>
-        <Text variant='body'>Displays keep showing the saved version.</Text>
-        <Inline spacing='3x'>
-          <Button variant='primary'>Save</Button>
-          <Button>Keep editing</Button>
-        </Inline>
-      </Stack>
+    children: <Text variant='body'>Displays keep showing the saved version.</Text>,
+    actions: (
+      <>
+        <Button variant='primary'>Save</Button>
+        <Button>Keep editing</Button>
+      </>
     )
+  },
+  play: async () => {
+    // Focus starts on the dialog, never on a button.
+    await expect(screen.getByRole('alertdialog')).toHaveFocus();
   }
 } satisfies Story;
 
-/** Something that can't be undone. */
+/** Something that can't be undone, started by the user, so they may also walk away from it. */
 export const Destructive = {
   args: {
+    dismissible: true,
     title: 'Delete “Fighter”?',
-    children: (
-      <Stack spacing='5x'>
-        <Text variant='body'>Displays showing this profile go back to the profile list.</Text>
-        <Inline spacing='3x'>
-          <Button variant='danger'>Delete</Button>
-          <Button>Cancel</Button>
-        </Inline>
-      </Stack>
+    children: <Text variant='body'>Displays showing this profile go back to the profile list.</Text>,
+    actions: (
+      <>
+        <Button variant='danger'>Delete</Button>
+        <Button>Cancel</Button>
+      </>
     )
+  },
+  play: async () => {
+    await expect(screen.getByRole('button', { name: 'Delete' })).not.toHaveFocus();
   }
 } satisfies Story;
 
-function NameForm() {
+function NameField() {
   const [name, setName] = useState('Fighter (copy)');
 
-  return (
-    <Stack spacing='5x'>
-      <TextField label='Name' onChange={setName} value={name} />
-      <Inline spacing='3x'>
-        <Button variant='primary'>Save</Button>
-        <Button>Cancel</Button>
-      </Inline>
-    </Stack>
-  );
+  return <TextField label='Name' onChange={setName} value={name} />;
 }
 
-/** A small form: naming a new or copied profile. */
+/** A small form: focus starts in its field. */
 export const Form = {
   args: {
+    dismissible: true,
     title: 'Save as new profile',
-    children: <NameForm />
+    children: <NameField />,
+    actions: (
+      <>
+        <Button variant='primary'>Save</Button>
+        <Button>Cancel</Button>
+      </>
+    )
+  },
+  play: async () => {
+    await expect(screen.getByRole('textbox')).toHaveFocus();
   }
 } satisfies Story;
 
 /** Three ways out, as when leaving with unsaved changes. They wrap on a narrow screen. */
 export const ThreeActions = {
   args: {
-    children: (
-      <Inline spacing='3x'>
+    actions: (
+      <>
         <Button variant='primary'>Save</Button>
         <Button variant='danger'>Discard</Button>
         <Button>Keep editing</Button>
-      </Inline>
+      </>
     )
   }
 } satisfies Story;
 
-/** More than fits: the dialog scrolls inside, never the page (0007). */
+/** More than fits: only the content scrolls; the title and actions stay in view (0007). */
 export const LongContent = {
   args: {
     title: '“Fighter” was changed on another device',
@@ -107,11 +114,13 @@ export const LongContent = {
             version from the other device.
           </Text>
         ))}
-        <Inline spacing='3x'>
-          <Button variant='primary'>Save as new</Button>
-          <Button>Keep editing</Button>
-        </Inline>
       </Stack>
+    ),
+    actions: (
+      <>
+        <Button variant='primary'>Save as new</Button>
+        <Button>Keep editing</Button>
+      </>
     )
   }
 } satisfies Story;

@@ -1,7 +1,7 @@
 import type { DocumentOutcome } from './DocumentStore.js';
 import type { DocumentSummary } from '@mfdiy/schema';
 
-import { Button, Dialog, Inline, Stack, Text } from '@mfdiy/ui/components';
+import { Button, Dialog, Stack, Text } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { useDocumentRequest } from './DocumentsProvider.js';
@@ -56,11 +56,9 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
 
   if (step !== 'menu') {
     return (
-      <Dialog onClose={onClose} title={`Delete “${profile.name}”?`}>
-        <Stack spacing='5x'>
-          <Text variant='body'>It’s removed for every device, and can’t be brought back.</Text>
-          {failure}
-          <Inline spacing='3x'>
+      <Dialog
+        actions={
+          <>
             <Button
               disabled={busy}
               onClick={() =>
@@ -71,14 +69,22 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
               Delete
             </Button>
             <Button onClick={onClose}>Keep</Button>
-          </Inline>
+          </>
+        }
+        dismissible
+        onClose={onClose}
+        title={`Delete “${profile.name}”?`}
+      >
+        <Stack spacing='5x'>
+          <Text variant='body'>It’s removed for every device, and can’t be brought back.</Text>
+          {failure}
         </Stack>
       </Dialog>
     );
   }
 
   return (
-    <Dialog onClose={onClose} title={profile.name}>
+    <Dialog dismissible onClose={onClose} title={profile.name}>
       <Stack spacing='3x'>
         {failure}
         <Button onClick={() => setStep('rename')} width='full'>

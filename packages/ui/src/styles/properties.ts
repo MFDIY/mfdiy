@@ -169,11 +169,6 @@ export const alignSelf = ['center', 'flex-end', 'flex-start', 'stretch'] as cons
 
 export const appearance = ['auto', 'none', 'unset'] as const;
 
-export const backdropFilter = {
-  blur: 'blur(3px)',
-  none: 'none'
-};
-
 export const contain = ['layout', 'none'] as const;
 
 export const containerType = ['inline-size', 'normal', 'size'] as const;
@@ -311,7 +306,7 @@ export const transitionProperty = {
   colors: 'background-color, border-color, color',
   opacity: 'opacity',
   'opacity-and-transform': 'opacity, transform',
-  overlay: 'background-color, backdrop-filter',
+  overlay: 'background-color',
   transform: 'transform'
 } as const;
 

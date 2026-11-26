@@ -5,7 +5,7 @@ import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { PageEditor } from '@mfdiy/builder';
 import { removeWidget } from '@mfdiy/schema';
-import { Box, Button, Dialog, Inline, Stack, Text, TextLink } from '@mfdiy/ui/components';
+import { Box, Button, Dialog, Inline, Text, TextLink } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
 
@@ -242,31 +242,27 @@ function Editor({ id }: { id: string }) {
       </Box>
 
       {blocker.state === 'blocked' ? (
-        <Dialog onClose={() => blocker.reset()} title={`Save changes to “${document.name}”?`}>
-          <Inline spacing='3x'>
-            <Button disabled={saving} onClick={() => void saveAndLeave()} variant='primary'>
-              Save
-            </Button>
-            <Button onClick={() => blocker.proceed()} variant='danger'>
-              Discard
-            </Button>
-            <Button onClick={() => blocker.reset()}>Keep editing</Button>
-          </Inline>
-        </Dialog>
+        <Dialog
+          actions={
+            <>
+              <Button disabled={saving} onClick={() => void saveAndLeave()} variant='primary'>
+                Save
+              </Button>
+              <Button onClick={() => blocker.proceed()} variant='danger'>
+                Discard
+              </Button>
+              <Button onClick={() => blocker.reset()}>Keep editing</Button>
+            </>
+          }
+          onClose={() => blocker.reset()}
+          title={`Save changes to “${document.name}”?`}
+        />
       ) : null}
 
       {dialog === 'conflict' ? (
         <Dialog
-          onClose={() => setDialog(null)}
-          title={
-            watched.status === 'missing'
-              ? `“${document.name}” has been deleted`
-              : `“${document.name}” was changed on another device`
-          }
-        >
-          <Stack spacing='5x'>
-            <Text variant='body'>Your changes aren’t saved, but they’re still here.</Text>
-            <Inline spacing='3x'>
+          actions={
+            <>
               <Button onClick={() => setDialog('save-as-new')} variant='primary'>
                 Save as new
               </Button>
@@ -283,8 +279,16 @@ function Editor({ id }: { id: string }) {
                 </Button>
               ) : null}
               <Button onClick={() => setDialog(null)}>Keep editing</Button>
-            </Inline>
-          </Stack>
+            </>
+          }
+          onClose={() => setDialog(null)}
+          title={
+            watched.status === 'missing'
+              ? `“${document.name}” has been deleted`
+              : `“${document.name}” was changed on another device`
+          }
+        >
+          <Text variant='body'>Your changes aren’t saved, but they’re still here.</Text>
         </Dialog>
       ) : null}
 

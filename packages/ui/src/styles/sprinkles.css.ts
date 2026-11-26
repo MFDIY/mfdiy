@@ -88,7 +88,6 @@ export const mediaAndPseudoConditionalProperties = defineProperties({
   },
   defaultCondition: 'default',
   properties: {
-    backdropFilter: properties.backdropFilter,
     backgroundColor: properties.backgroundColor,
     borderBottomColor: properties.borderColor,
     borderLeftColor: properties.borderColor,

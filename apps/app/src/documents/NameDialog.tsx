@@ -1,8 +1,8 @@
 import type { DocumentOutcome } from './DocumentStore.js';
 
 import { MAX_DOCUMENT_NAME_LENGTH } from '@mfdiy/schema';
-import { Box, Button, Dialog, Inline, Stack, Text, TextField } from '@mfdiy/ui/components';
-import { useState, type FormEvent } from 'react';
+import { Box, Button, Dialog, Stack, Text, TextField } from '@mfdiy/ui/components';
+import { useId, useState, type FormEvent } from 'react';
 
 import { failureText } from './documentText.js';
 
@@ -46,9 +46,24 @@ export function NameDialog({ initialName = '', onClose, onDone, onSubmit, submit
     }
   }
 
+  const formId = useId();
+
   return (
-    <Dialog onClose={onClose} title={title}>
-      <Box onSubmit={event => void handleSubmit(event)} tagName='form'>
+    <Dialog
+      actions={
+        <>
+          {/* Outside the form, so it names the form it submits. */}
+          <Button disabled={busy || trimmed === ''} form={formId} type='submit' variant='primary'>
+            {submitLabel}
+          </Button>
+          <Button onClick={onClose}>Cancel</Button>
+        </>
+      }
+      dismissible
+      onClose={onClose}
+      title={title}
+    >
+      <Box id={formId} onSubmit={event => void handleSubmit(event)} tagName='form'>
         <Stack spacing='5x'>
           <TextField label='Name' maxLength={MAX_DOCUMENT_NAME_LENGTH} onChange={setName} value={name} />
           {error ? (
@@ -56,12 +71,6 @@ export function NameDialog({ initialName = '', onClose, onDone, onSubmit, submit
               {error}
             </Text>
           ) : null}
-          <Inline spacing='3x'>
-            <Button disabled={busy || trimmed === ''} type='submit' variant='primary'>
-              {submitLabel}
-            </Button>
-            <Button onClick={onClose}>Cancel</Button>
-          </Inline>
         </Stack>
       </Box>
     </Dialog>

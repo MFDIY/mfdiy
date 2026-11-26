@@ -1,23 +1,34 @@
-import { useEffect, useRef, type CSSProperties, type PropsWithChildren } from 'react';
+import { useEffect, useRef, type PropsWithChildren } from 'react';
 
 import { Box } from '../Box/Box.js';
 
 type ModalProps = PropsWithChildren<{
   className: string;
-  /** Fires when the user dismisses it: Escape, or a press outside it. */
+  /** Lets Escape or a press outside close it. Otherwise only the modal's own actions can. */
+  dismissible: boolean;
+  /** Fires when the user dismisses it. */
   onClose: () => void;
-  style?: CSSProperties | undefined;
   titleId: string;
 }>;
 
-/** The native modal element behind dialogs and popovers, open for as long as it's rendered. */
-export function Modal({ children, className, onClose, style, titleId }: ModalProps) {
+/** Never a button, so Enter or Space right after opening can't trigger an action by accident. */
+function focusStart(dialog: HTMLDialogElement) {
+  const field = dialog.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea');
+
+  (field ?? dialog).focus();
+}
+
+/** The native modal element behind dialogs, open for as long as it's rendered. */
+export function Modal({ children, className, dismissible, onClose, titleId }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
   // Only `showModal` makes a dialog modal; there is no attribute for it.
   useEffect(() => {
-    if (ref.current && !ref.current.open) {
-      ref.current.showModal();
+    const dialog = ref.current;
+
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+      focusStart(dialog);
     }
   }, []);
 
@@ -30,19 +41,28 @@ export function Modal({ children, className, onClose, style, titleId }: ModalPro
       borderWidth='hairline'
       className={className}
       color='text'
-      onClose={onClose}
-      // The contents cover the modal, so a press on the modal itself is on its backdrop.
-      onPointerDown={event => {
-        if (event.target === event.currentTarget) {
+      onCancel={event => {
+        // Escape. Always handled here, so the dialog only closes when its owner stops rendering it.
+        event.preventDefault();
+
+        if (dismissible) {
           onClose();
         }
       }}
-      overflowX='hidden'
-      overflowY='auto'
+      // The contents cover the modal, so a press on the modal itself is on its backdrop.
+      onPointerDown={event => {
+        if (dismissible && event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      outlineStyle='none'
+      overflow='hidden'
       overscrollBehavior='none'
       padding='none'
       ref={ref}
-      style={style}
+      // A decision that must be made, rather than something to look at and close.
+      role={dismissible ? 'dialog' : 'alertdialog'}
+      tabIndex={-1}
       tagName='dialog'
     >
       {children}

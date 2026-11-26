@@ -146,7 +146,6 @@ export function CommandPalette({
     styles.transitionDuration,
     designSystem({
       alignItems: 'center',
-      backdropFilter: status === 'open' ? 'blur' : 'none',
       backgroundColor: status === 'open' ? 'backdrop' : 'transparent',
       containerType: 'size',
       display: 'flex',
