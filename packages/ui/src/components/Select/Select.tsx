@@ -10,11 +10,11 @@ import { Text } from '../Text/Text.js';
 
 import * as styles from './Select.css.js';
 
-/** The part that opens the list; the field box around it draws the border. */
+/** The part that opens the list, filled on hover like the buttons beside it; the field box draws the border. */
 const triggerClass = designSystem({
   alignItems: 'center',
   appearance: 'none',
-  backgroundColor: 'transparent',
+  backgroundColor: { default: 'transparent', hover: 'hover', active: 'pressed', disabled: 'transparent' },
   borderStyle: 'hidden',
   color: { default: 'text', disabled: 'text.faint' },
   cursor: { default: 'default', disabled: 'not-allowed' },
