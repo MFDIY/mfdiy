@@ -10,14 +10,14 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 ### Wide screens (desktop, tablet landscape)
 
 - **Top toolbar** (slim): profile name, page tabs, Save and Save as new (0019), undo / redo, remove, preview shape, zoom, preview toggle.
-- **Properties panel** on the right for the selected widget: bindings, options, action, theme overrides, position and size.
+- **Properties panel** on the right for the selected widget, or the page when nothing is selected (0023).
 - **Canvas** fills the rest, centred and fitted to the preview shape.
-- **Widget library** on the left, **always visible**: widgets and data to add, searchable. Tapping or clicking an empty cell marks the spot, and picking from the library adds the widget there (see "Add" in 0006).
+- **Widget library** on the left, **always visible**: widget types to add, searchable. Tapping or clicking an empty cell marks the spot, and picking from the library adds the widget there (see "Add" in 0006).
 
 ### Narrow screens (phones)
 
 - The canvas takes almost the whole screen, under a thin toolbar.
-- Selecting a widget opens a **bottom sheet** with its properties. Half-open it shows the essentials and keeps the selected widget visible above it, zooming to it if needed; dragged up it shows the full panel.
+- Selecting a widget opens a **bottom sheet** with its properties. Its content scrolls, so everything is reachable while it's half-open; half-open only keeps the selected widget visible above it, zooming to it if needed. Dragged up, more fits at once.
 - Tapping an empty cell opens the **widget library in a bottom sheet**, half-open so the marked cell stays visible above it, and draggable to full height. One sheet at a time: selecting a widget swaps it for the properties sheet.
 - Opened **by touch**, its search field isn't focused, so no on-screen keyboard covers the list until it's tapped.
 
@@ -27,7 +27,7 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### In between
 
-Both panels switch between sidebar and sheet together, in one place (`PanelLayout` in `packages/ui`): they're sidebars with a mouse or pen and room for them, sheets otherwise, so on a phone everything but the canvas and a thin toolbar lives in sheets, one at a time. The properties sidebar stays in place when nothing is selected, so the canvas doesn't change size with the selection; what it shows then is decided with the properties panel. Sidebars have a fixed width; resizing or collapsing them can come later.
+Both panels switch between sidebar and sheet together, in one place (`PanelLayout` in `packages/ui`): they're sidebars with a mouse or pen and room for them, sheets otherwise, so on a phone everything but the canvas and a thin toolbar lives in sheets, one at a time. The properties sidebar stays in place when nothing is selected, so the canvas doesn't change size with the selection: it then shows the page's properties (0023). Sidebars have a fixed width; resizing or collapsing them can come later.
 
 A side task inside a panel, like choosing a widget's data, replaces the panel's contents and offers Back, in both forms. Base UI's Drawer can stack sheets like Vaul, which would suit such side tasks on a phone, but a sidebar can't stack, so one pattern is used for now; stacked sheets can be added later without changing the panels.
 

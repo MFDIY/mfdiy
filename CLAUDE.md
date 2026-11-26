@@ -28,6 +28,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0020: What the first public beta contains](docs/decisions/0020-launch-mvp.md)
 - [0021: Testing and visual regression](docs/decisions/0021-testing.md)
 - [0022: One design language for the brand and the MFDs](docs/decisions/0022-one-design-language.md)
+- [0023: The properties panel](docs/decisions/0023-properties-panel.md)
 
 ## Working with the maintainer
 
@@ -42,9 +43,9 @@ Built: monorepo scaffold, schemas, theme contract v2 (0022), four MFD primitives
 Next: **the first public beta (0020)**. Its scope, order and gates are agreed; don't reopen them without new information.
 
 1. **Connect the bridge to the game** (critical path). The schema can be generated from the installed game; a real frame is still needed for units and the order of shield faces. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
-2. **Editor** (0006–0008), limited to what 0020 lists. The primitives it needs are built; next is **designing the properties panel with the maintainer** (label, data, action, thresholds), in the empty end panel of `PageEditor`'s PanelLayout. Then duplicating widgets, pages (Tabs with "+"), and the header. Until properties exist, a placed widget can't be changed and a Light can't be given an action.
+2. **Editor** (0006–0008), limited to what 0020 lists. The primitives it needs are built; next is **building the properties panel** as designed in 0023, in the empty end panel of `PageEditor`'s PanelLayout, Storybook first. Its visual details are still to be worked out together; the widgets themselves are developer art, so don't polish them. Then duplicating widgets, pages (Tabs with "+"), and the header. Until properties exist, a placed widget can't be changed and a Light can't be given an action.
    - When properties exist: on a phone, selecting a widget swaps the library sheet for the properties sheet (0008); today it only closes the library sheet.
-   - Open questions on the header, proposed but not yet answered: Remove and Duplicate in the header for the beta or next to the selection; actions on a page (rename, duplicate, delete) in a menu on its tab, now or with pages; on phones, a dot on Save instead of the save status text; less common profile actions (Save as new) in a `⋯` Menu.
+   - Open questions on the header, proposed but not yet answered: actions on a page (rename, duplicate, delete) in a menu on its tab, now or with pages; on phones, a dot on Save instead of the save status text; less common profile actions (Save as new) in a `⋯` Menu.
    - Not built yet from 0008: a keyboard shortcut that focuses the library's search; dragging from the library on touch (long-press); stacked sheets for side tasks (Back is used instead, for now).
 3. **Windows download, QR code, tap-to-engage and keep-awake.**
 4. **Starter profiles and built-in themes.** Where the choice of theme is kept is still open (0020).

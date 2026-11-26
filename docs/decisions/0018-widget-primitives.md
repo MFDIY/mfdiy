@@ -11,12 +11,12 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 
 ### Version 1
 
-- **Light:** on/off annunciator. _Exists._
+- **Light:** annunciator. On an on/off signal it lights in `primary`; on a number signal it's off when normal, amber at its warning threshold and red at critical (0023). _Exists_; number signals still to do.
 - **Lit button:** a Light that is also a button, showing its signal's state (gear, ESP, decoupled). _Exists_ as Light with an action.
 - **Button:** one action, with **hold for _n_ ms** and **guard** as options, not separate primitives (0010). _Exists_; the options are still to do.
 - **Page button:** switches the MFD page. A Button with a page-change action.
 - **Readout:** a value as text, with a unit. _Exists._
-- **Bar:** linear gauge with caution and warning thresholds. _Exists_; needs **vertical** and **segmented** options (counts like missiles or countermeasures).
+- **Bar:** linear gauge, coloured by its binding's thresholds (0023). _Exists_; needs **vertical** and **segmented** options (counts like missiles or countermeasures).
 - **Dial:** arc or round gauge (speed, G-force, temperature).
 - **Label:** static text.
 
