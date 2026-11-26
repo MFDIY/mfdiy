@@ -52,22 +52,36 @@ export function Sheet({ children, defaultStop = 'half', onClose, open, title }: 
       open={open}
       snapPoint={snapPoints[stop]}
       snapPoints={[snapPoints.half, snapPoints.full]}
+      // A flick moves one stop at a time (full to half, half to closed), like a map's sheet.
+      snapToSequentialPoints
     >
       <Drawer.Portal>
         <Drawer.Viewport className={styles.viewport}>
           <Drawer.Popup className={styles.popup} initialFocus={popupRef} ref={popupRef}>
+            {/* Not a button: a drag can't start on one with a mouse. The chevron moves between the stops instead. */}
             <Box className={styles.header}>
-              <Box
-                aria-label={stop === 'half' ? 'Expand' : 'Collapse'}
-                className={styles.handle}
-                onClick={() => setStop(stop === 'half' ? 'full' : 'half')}
-                tagName='button'
-                type='button'
-              >
-                <Box className={styles.grabBar} tagName='span' />
+              <Box className={styles.handle}>
+                <Box className={styles.grabBar} />
               </Box>
-              <Box alignItems='center' display='flex' gap='4x' justifyContent='space-between' paddingInline='5x'>
-                <Drawer.Title render={<Text tagName='h2' variant='heading' />}>{title}</Drawer.Title>
+              <Box alignItems='center' display='flex' gap='2x' paddingInline='5x'>
+                <Box flexGrow='1' minWidth='none'>
+                  <Drawer.Title render={<Text tagName='h2' truncate variant='heading' />}>{title}</Drawer.Title>
+                </Box>
+                <Button
+                  aria-label={stop === 'half' ? 'Expand' : 'Collapse'}
+                  onClick={() => setStop(stop === 'half' ? 'full' : 'half')}
+                  variant='quiet'
+                >
+                  <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
+                    <Box
+                      d={stop === 'half' ? 'M2 8l4-4 4 4' : 'M2 4l4 4 4-4'}
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth='1.5'
+                      tagName='path'
+                    />
+                  </Box>
+                </Button>
                 <Button aria-label='Close' onClick={onClose} variant='quiet'>
                   <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
                     <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />

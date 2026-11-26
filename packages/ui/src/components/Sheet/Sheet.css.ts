@@ -60,24 +60,12 @@ export const header = style({
   userSelect: 'none'
 });
 
-/** A wide, low button over the grab bar: tapping it, or Enter, moves between the stops. */
+/** Shows where to grab the sheet; the whole header drags. */
 export const handle = style({
-  appearance: 'none',
-  backgroundColor: 'transparent',
-  border: 0,
   cursor: 'grab',
   display: 'flex',
   justifyContent: 'center',
-  outline: 'none',
-  paddingBlock: uiVars['spacing.3x'],
-  width: '100%',
-
-  selectors: {
-    '&:focus-visible': {
-      outline: `${uiVars['focus.width']} solid ${uiVars['focus']}`,
-      outlineOffset: `calc(-1 * ${uiVars['focus.width']})`
-    }
-  }
+  paddingBlock: uiVars['spacing.3x']
 });
 
 export const grabBar = style({
