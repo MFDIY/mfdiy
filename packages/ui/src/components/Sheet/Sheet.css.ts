@@ -18,7 +18,8 @@ export const viewport = style({
 });
 
 export const popup = style({
-  backgroundColor: uiVars['surface'],
+  // A step lighter than the page: in a flat design, tone is what says it's on top (0022).
+  backgroundColor: uiVars['surface.raised'],
   borderTop: `${uiVars['border.hairline']} solid ${uiVars['line.strong']}`,
   boxSizing: 'border-box',
   color: uiVars['text'],
