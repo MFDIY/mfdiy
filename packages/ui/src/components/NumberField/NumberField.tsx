@@ -40,7 +40,7 @@ const stepClass = designSystem({
   appearance: 'none',
   backgroundColor: { default: 'transparent', hover: 'hover', active: 'pressed', disabled: 'transparent' },
   borderBottomStyle: 'hidden',
-  borderLeftColor: 'line',
+  borderLeftColor: 'inherit',
   borderLeftStyle: 'solid',
   borderLeftWidth: 'hairline',
   borderRightStyle: 'hidden',

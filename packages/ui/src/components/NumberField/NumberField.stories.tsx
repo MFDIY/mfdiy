@@ -69,6 +69,15 @@ export const WithUnit = {
   args: { label: 'Warning below', max: 100, min: 0, unit: '%', value: 25 }
 } satisfies Story;
 
+/** Focused: the border and the hairlines between the buttons brighten together. */
+export const Focused = {
+  tags: ['!dev'],
+  args: { label: 'Warning below', max: 100, min: 0, unit: '%', value: 25 },
+  play: async () => {
+    await userEvent.click(screen.getByRole('textbox', { name: 'Warning below' }));
+  }
+} satisfies Story;
+
 export const WithError = {
   args: { error: 'Warning must be above critical.', label: 'Warning below', unit: '%', value: 5 }
 } satisfies Story;
@@ -91,5 +100,28 @@ export const Stepping = {
 
     await userEvent.click(screen.getByRole('button', { name: 'Decrease' }));
     await expect(field).toHaveValue('26');
+  }
+} satisfies Story;
+
+/** The hairlines between the buttons always take the colour of the border around them. */
+export const HairlinesFollowTheBorder = {
+  tags: ['!dev', '!visual'],
+  args: { error: 'Warning must be above critical.', label: 'Warning below', unit: '%', value: 5 },
+  play: async () => {
+    const increase = screen.getByRole('button', { name: 'Increase' });
+    const group = increase.parentElement;
+
+    if (!group) {
+      throw new Error('No group around the buttons');
+    }
+
+    const matches = () =>
+      [increase, screen.getByRole('button', { name: 'Decrease' })].every(
+        button => getComputedStyle(button).borderLeftColor === getComputedStyle(group).borderTopColor
+      );
+
+    await expect(matches()).toBe(true);
+    await userEvent.click(screen.getByRole('textbox', { name: 'Warning below' }));
+    await expect(matches()).toBe(true);
   }
 } satisfies Story;

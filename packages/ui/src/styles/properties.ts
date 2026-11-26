@@ -70,6 +70,7 @@ export const borderColor = {
   'status.critical': v['status.critical'],
   'canvas.edit': v['canvas.edit'],
   'canvas.overlap': v['canvas.overlap'],
+  inherit: 'inherit',
   transparent: 'transparent'
 } as const;
 
