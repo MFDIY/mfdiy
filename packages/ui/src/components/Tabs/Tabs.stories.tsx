@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { useState, type ComponentProps } from 'react';
-import { expect, screen, userEvent } from 'storybook/test';
+import { useState, type ComponentProps, type ReactNode } from 'react';
+import { expect, screen, userEvent, waitFor } from 'storybook/test';
 
 import { IconButton } from '../IconButton/IconButton.js';
 
@@ -72,9 +72,61 @@ const manyPages = ['Flight', 'Combat', 'Power', 'Shields', 'Quantum', 'Mining', 
   value: label.toLowerCase()
 }));
 
-/** More tabs than fit: the rest go into a menu that says how many there are. */
+/** A container to resize by dragging its bottom-right corner. */
+function Resizable({ children }: { children: ReactNode }) {
+  return (
+    <div
+      data-resizable
+      style={{
+        maxWidth: '100vw',
+        minWidth: '120px',
+        outline: '1px dashed #9996',
+        overflow: 'hidden',
+        paddingBottom: '16px',
+        resize: 'horizontal',
+        width: '480px'
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * More tabs than fit: the rest go into a menu that says how many there are. Drag the container's
+ * bottom-right corner to resize it and watch tabs move in and out of the menu.
+ */
 export const ManyTabs = {
-  args: { after: <IconButton icon='add' label='Add page' />, items: manyPages }
+  args: { after: <IconButton icon='add' label='Add page' />, items: manyPages },
+  decorators: [
+    Story => (
+      <Resizable>
+        <Story />
+      </Resizable>
+    )
+  ]
+} satisfies Story;
+
+/** Narrower, more tabs go into the menu; wide enough, the menu goes away. */
+export const ResizingRefits = {
+  ...ManyTabs,
+  tags: ['!dev', '!visual'],
+  play: async ({ canvasElement }) => {
+    const container = canvasElement.querySelector<HTMLElement>('[data-resizable]');
+
+    if (!container) {
+      throw new Error('No container to resize');
+    }
+
+    await expect(await screen.findByRole('button', { name: '2 more' })).toBeInTheDocument();
+
+    container.style.width = '300px';
+    await expect(await screen.findByRole('button', { name: '5 more' })).toBeInTheDocument();
+
+    container.style.width = '900px';
+    await waitFor(() => expect(screen.queryByRole('button', { name: /more$/ })).not.toBeInTheDocument());
+    await expect(screen.getAllByRole('tab')).toHaveLength(manyPages.length);
+  }
 } satisfies Story;
 
 /** The active tab is always shown, even when it's one of the last. */
