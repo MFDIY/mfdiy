@@ -37,3 +37,4 @@ A toggle hides all builder controls and shows the layout full-screen with live d
 - **Properties are written once** and presented as either a side panel or a bottom sheet depending on available width (container queries, not device detection).
 - The builder needs a bottom-sheet component in `packages/ui` that works with touch, mouse and keyboard and respects 0007 (no page scrolling; the sheet's own content may scroll, as it's builder UI, not MFD content).
 - The canvas, properties and palette must not depend on the surrounding builder page, so they can be reused for in-place editing (0009).
+- **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. A **segmented single-choice control** (e.g. a Light's colour when lit) is designed when the properties panel needs it; Bonsai's SegmentedControl was removed (0022).
