@@ -3,11 +3,11 @@ import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from 'rea
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { fieldBoxClass, fieldButtonClass } from '../Field/fieldStyles.js';
 import { Icon } from '../Icon/Icon.js';
 import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
+import { TextInput } from '../TextInput/TextInput.js';
 
 export type SearchListItem = {
   /** A second, dimmed line: what the item does, or what it belongs to. */
@@ -56,20 +56,6 @@ type Group = { value: string; items: SearchListItem[] };
  * Base UI's parts are styled with the design system's classes (`designSystem`), so they reuse
  * Sprinkles' CSS instead of generating their own.
  */
-
-const inputClass = designSystem({
-  appearance: 'none',
-  backgroundColor: 'transparent',
-  borderStyle: 'hidden',
-  color: { default: 'text', placeholder: 'text.faint' },
-  flexGrow: '1',
-  fontFamily: 'inherit',
-  fontSize: 'body',
-  lineHeight: 'body',
-  minWidth: 'none',
-  outlineStyle: 'none',
-  paddingInline: '3x'
-});
 
 /** Scrolls on its own, below the search field. */
 const listClass = designSystem({
@@ -155,18 +141,13 @@ export function SearchList({
                 </Text>
               </Box>
             ) : null}
-            <Box className={fieldBoxClass({ disabled: false, invalid: false, open: false })}>
-              <Autocomplete.Input
-                aria-describedby={back ? headingId : undefined}
-                aria-label={label}
-                className={inputClass}
-                placeholder={placeholder}
-                ref={inputRef}
-              />
-              <Autocomplete.Clear aria-label='Clear search' className={fieldButtonClass}>
-                <Icon name='close' />
-              </Autocomplete.Clear>
-            </Box>
+            <Autocomplete.Input
+              aria-describedby={back ? headingId : undefined}
+              aria-label={label}
+              placeholder={placeholder}
+              ref={inputRef}
+              render={<TextInput clearLabel='Clear search' onClear={() => onQueryChange('')} />}
+            />
           </Stack>
         </Box>
         <Autocomplete.Empty>

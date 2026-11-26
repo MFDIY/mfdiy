@@ -1,16 +1,6 @@
 import { style } from '@vanilla-extract/css';
 
-const square = style({
-  aspectRatio: '1 / 1'
-});
-
-const trim = style({
-  paddingBlock: '1px',
-  paddingRight: '1px'
-});
-
-export const clearButton = style([square, trim]);
-
+/** Only what the design system's classes can't express: a search input's own clear and decoration. */
 export const removeNativeDecoration = style({
   selectors: {
     '&::-webkit-search-cancel-button': {

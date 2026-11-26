@@ -1,28 +1,7 @@
 import { Field as BaseField } from '@base-ui/react/field';
 
-import { designSystem } from '../../styles/design-system.js';
 import { Field } from '../Field/Field.js';
-
-const inputClass = (invalid: boolean, disabled: boolean) =>
-  designSystem({
-    backgroundColor: 'transparent',
-    borderColor: invalid
-      ? 'status.critical'
-      : { default: 'line', hover: 'line.strong', active: 'focus', focusVisible: 'focus', disabled: 'line' },
-    borderStyle: disabled ? 'dashed' : 'solid',
-    borderWidth: 'hairline',
-    color: { default: 'text', placeholder: 'text.faint', disabled: 'text.faint' },
-    cursor: { default: 'text', disabled: 'not-allowed' },
-    fontFamily: 'inherit',
-    fontSize: 'body',
-    fontWeight: 'regular',
-    height: 'control',
-    letterSpacing: 'none',
-    lineHeight: 'body',
-    outlineStyle: 'none',
-    paddingInline: '3x',
-    width: 'full'
-  });
+import { TextInput } from '../TextInput/TextInput.js';
 
 export type TextFieldProps = {
   /** Explains the field, under it. */
@@ -39,7 +18,7 @@ export type TextFieldProps = {
   value: string;
 };
 
-/** A labelled, single-line text field with the shared control height. Its border brightens while focused. */
+/** A labelled, single-line text field: a `TextInput` in a `Field`. Its border brightens while focused. */
 export function TextField({
   description,
   disabled = false,
@@ -53,12 +32,11 @@ export function TextField({
   return (
     <Field description={description} disabled={disabled} error={error} label={label}>
       <BaseField.Control
-        autoComplete='off'
-        className={inputClass(Boolean(error), disabled)}
         maxLength={maxLength}
         onFocus={event => event.target.select()}
         onValueChange={next => onChange(next)}
         placeholder={placeholder}
+        render={<TextInput disabled={disabled} error={Boolean(error)} />}
         value={value}
       />
     </Field>
