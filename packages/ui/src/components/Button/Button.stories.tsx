@@ -1,10 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from './Button.js';
+import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
+import { containerSizeConditionalProperties } from '../../styles/sprinkles.css.js';
+
+import { Button, sizes, variants, widths } from './Button.js';
 
 const meta = {
   title: 'Components / Button',
   component: Button,
+  argTypes: {
+    children: {
+      description: 'The label.',
+      control: { type: 'text' },
+      table: { type: { summary: 'ReactNode' } }
+    },
+    disabled: {
+      description: 'Disables the button.',
+      control: { type: 'boolean' },
+      table: { type: { summary: 'boolean' } }
+    },
+    size: createArgTypeFromConditionalStyleProp(sizes, undefined, 'standard'),
+    variant: createArgTypeFromConditionalStyleProp(variants, undefined, 'default'),
+    width: createArgTypeFromConditionalStyleProp(widths, containerSizeConditionalProperties.conditions, 'fit-content')
+  },
   args: {
     children: 'Apply',
     disabled: false
