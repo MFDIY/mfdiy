@@ -1,19 +1,18 @@
 import type { Type } from './props/Type.js';
 import type { DesignSystem } from '../../styles/design-system.js';
-import type { Elevation } from '../Surface/props/Elevation.js';
 
 import { useMergeRefs } from '@floating-ui/react';
 import { useRef, useState, type ChangeEvent, type Ref } from 'react';
 
 import { useRestProps } from '../../hooks/useRestProps/useRestProps.js';
+import { designSystem } from '../../styles/design-system.js';
 import { Box, type IntrinsicProps as BoxIntrinsicProps } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
-import { Surface } from '../Surface/Surface.js';
+import { fieldBoxClass, fieldButtonClass } from '../Field/fieldStyles.js';
+import { Icon } from '../Icon/Icon.js';
 import * as textStyles from '../Text/Text.css.js';
 
 import * as styles from './TextInput.css.js';
 
-export { elevations } from '../Surface/Surface.js';
 export { types } from './props/Type.js';
 
 export const supportedStyleProps = ['textAlign'] as const satisfies (keyof DesignSystem)[];
@@ -22,21 +21,37 @@ type SupportedStyleProp = (typeof supportedStyleProps)[number];
 
 type StyleProps = Pick<DesignSystem, SupportedStyleProp>;
 
+const inputClass = designSystem({
+  appearance: 'none',
+  backgroundColor: 'transparent',
+  borderStyle: 'hidden',
+  color: { default: 'text', placeholder: 'text.faint', disabled: 'text.faint' },
+  cursor: { default: 'text', disabled: 'not-allowed' },
+  flexGrow: '1',
+  fontFamily: 'regular',
+  minWidth: 'none',
+  outlineStyle: 'none',
+  paddingInline: '3x',
+  textOverflow: 'ellipsis'
+});
+
 export type TextInputProps = StyleProps &
   Omit<BoxIntrinsicProps<'input'>, 'children' | 'size' | 'type'> & {
-    /** Sets the elevation of the text input. */
-    elevation?: Elevation | undefined;
-    /** Displays an error focus ring around the text input. */
+    /** Names the clear button for assistive technology. */
+    clearLabel?: string | undefined;
+    /** Turns the border red. Explain the problem with a `Field` or next to the input. */
     error?: boolean | undefined;
-    /** Keeps the border from brightening fully while focused, for a field that always has focus. */
-    hideFocusRing?: boolean | undefined;
-    /** Displays a clear button on the text input that calls the handler passed to this prop. */
+    /** Shows a button that clears the input while it has text, and calls this. */
     onClear?: (() => void) | undefined;
     ref?: Ref<HTMLInputElement> | undefined;
     /** The `type` of the `input` element. */
     type?: Type | undefined;
   };
 
+/**
+ * A bare text input, without a label of its own; give it an `aria-label`. Its clear button sits in
+ * the same box, like NumberField's buttons. Use `TextField` for a labelled field.
+ */
 export function TextInput({
   'aria-describedby': ariaDescribedBy,
   'aria-label': ariaLabel,
@@ -45,10 +60,10 @@ export function TextInput({
   autoComplete,
   autoCorrect,
   className,
+  clearLabel = 'Clear',
   defaultValue,
-  elevation = 'base',
+  disabled = false,
   error = false,
-  hideFocusRing = false,
   id,
   onClear,
   onChange,
@@ -65,6 +80,7 @@ export function TextInput({
       autoComplete: autoComplete ?? 'off',
       autoCorrect: autoCorrect ?? 'off',
       defaultValue,
+      disabled,
       type,
       value
     }
@@ -82,67 +98,48 @@ export function TextInput({
   }
 
   function handleClear() {
+    if (inputRef.current && value === undefined) {
+      inputRef.current.value = '';
+    }
+
     inputRef.current?.focus();
     setQuery('');
     onClear?.();
   }
 
   return (
-    <Surface elevation={elevation} position='relative'>
+    <Box className={fieldBoxClass({ disabled, invalid: error, open: false })}>
       <Box
         {...nativeProps}
-        appearance='none'
         aria-describedby={ariaDescribedBy}
+        aria-invalid={error || undefined}
         aria-label={ariaLabel}
         aria-labelledby={typeof ariaLabel === 'undefined' ? ariaLabelledBy : undefined}
-        backgroundColor='transparent'
-        borderColor={
-          error
-            ? 'status.critical'
-            : elevation === 'base'
-              ? {
-                  default: 'line',
-                  hover: 'line.strong',
-                  // Pressing a field focuses it; without this the border dims until the button is released.
-                  active: hideFocusRing ? 'line.strong' : 'focus',
-                  focusVisible: hideFocusRing ? 'line.strong' : 'focus'
-                }
-              : 'transparent'
-        }
-        borderStyle='solid'
-        borderWidth='hairline'
-        className={[textStyles.variants['body'], styles.removeNativeDecoration, designSystemClassNames, className]}
-        color={{
-          default: 'text',
-          placeholder: 'text.faint'
-        }}
-        fontFamily='regular'
-        height='control'
+        className={[
+          textStyles.variants['body'],
+          styles.removeNativeDecoration,
+          inputClass,
+          designSystemClassNames,
+          className
+        ]}
         id={id}
         onChange={handleChange}
-        outlineStyle='none'
-        paddingLeft='3x'
-        paddingRight={typeof onClear === 'undefined' ? '3x' : '6x'}
         ref={mergedRef}
         tagName='input'
-        textOverflow='ellipsis'
-        type={type}
-        width='full'
       />
-      {typeof onClear !== 'undefined' && !isEmpty && (
-        <Box className={styles.clearButton} display='flex' insetY='none' position='absolute' right='none'>
-          <Button
-            aria-label='Clear'
-            onClick={handleClear}
-            onMouseDown={event => event.preventDefault()}
-            tabIndex={-1}
-            variant='quiet'
-            width='full'
-          >
-            ✕
-          </Button>
+      {typeof onClear !== 'undefined' && !isEmpty && !disabled ? (
+        <Box
+          aria-label={clearLabel}
+          className={fieldButtonClass}
+          onClick={handleClear}
+          onMouseDown={event => event.preventDefault()}
+          tabIndex={-1}
+          tagName='button'
+          type='button'
+        >
+          <Icon name='close' />
         </Box>
-      )}
-    </Surface>
+      ) : null}
+    </Box>
   );
 }

@@ -25,6 +25,8 @@ const meta = {
   title: 'Components / TextField',
   component: TextField,
   argTypes: {
+    clearable: { control: { type: 'boolean' } },
+    description: { control: { type: 'text' } },
     disabled: { control: { type: 'boolean' } },
     error: { control: { type: 'text' } },
     label: { control: { type: 'text' } },
@@ -32,6 +34,8 @@ const meta = {
     value: { control: { type: 'text' } }
   },
   args: {
+    clearable: false,
+    description: undefined,
     disabled: false,
     error: undefined,
     label: 'Label',
@@ -72,6 +76,9 @@ export const Focused = {
   }
 } satisfies Story;
 
+/** With a button that empties the field, while it has text. */
+export const Clearable = { args: { clearable: true, label: 'Name', value: 'Fighter' } } satisfies Story;
+
 export const WithError = {
   args: { error: 'A profile with this name already exists.', label: 'Name', value: 'Fighter' }
 } satisfies Story;
@@ -88,5 +95,21 @@ export const Typing = {
     await userEvent.clear(input);
     await userEvent.type(input, 'Hornet');
     await expect(input).toHaveValue('Hornet');
+  }
+} satisfies Story;
+
+/** Clearing empties the field and leaves focus in it. */
+export const ClearEmpties = {
+  tags: ['!dev', '!visual'],
+  args: { clearable: true, label: 'Name', value: 'Fighter' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const field = canvas.getByRole('textbox', { name: 'Name' });
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+
+    await expect(field).toHaveValue('');
+    await expect(field).toHaveFocus();
+    await expect(canvas.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
   }
 } satisfies Story;

@@ -3,49 +3,51 @@ import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from 'rea
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
+import { Icon } from '../Icon/Icon.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
+import { TextInput } from '../TextInput/TextInput.js';
 
 export type SearchListItem = {
-  id: string;
-  label: string;
   /** A second, dimmed line: what the item does, or what it belongs to. */
   description?: string | undefined;
-  /** A small picture before the label. */
-  preview?: ReactNode | undefined;
+  id: string;
+  label: string;
   /** Choosing it opens more choices rather than finishing. */
   opens?: boolean | undefined;
+  /** A small picture before the label. */
+  preview?: ReactNode | undefined;
 };
 
 export type SearchListGroup = {
+  items: readonly SearchListItem[];
   /** Shown above the group's items; leave out for a single, unnamed group. */
   label?: string | undefined;
-  items: readonly SearchListItem[];
 };
 
 export type SearchListProps = {
+  /** A way back, e.g. after choosing an item that opened more. */
+  back?: { label: string; onBack: () => void } | undefined;
+  /** Shows that rows can be dragged out of the list (the `grab` cursor). */
+  draggable?: boolean | undefined;
+  /** Shown when there's nothing to list. */
+  emptyText: string;
+  /** Focuses the search field when the list appears. */
+  focusSearch?: boolean | undefined;
+  /** What to list: already searched, as the list never filters on its own. */
+  groups: readonly SearchListGroup[];
   /** Names the search field and the list for assistive technology. */
   label: string;
+  /** The item under the pointer or picked with the arrow keys, or null. */
+  onHighlight?: ((id: string | null) => void) | undefined;
+  /** Lets a row be dragged out of the list, e.g. onto the canvas. */
+  onItemPointerDown?: ((id: string, event: PointerEvent<HTMLElement>) => void) | undefined;
+  onQueryChange: (query: string) => void;
+  onSelect: (id: string) => void;
   /** Says what can be searched for. */
   placeholder: string;
   query: string;
-  onQueryChange: (query: string) => void;
-  /** What to list: already searched, as the list never filters on its own. */
-  groups: readonly SearchListGroup[];
-  onSelect: (id: string) => void;
-  /** The item under the pointer or picked with the arrow keys, or null. */
-  onHighlight?: ((id: string | null) => void) | undefined;
-  /** Shown when there's nothing to list. */
-  emptyText: string;
-  /** A way back, e.g. after choosing an item that opened more. */
-  back?: { label: string; onBack: () => void } | undefined;
-  /** Focuses the search field when the list appears. */
-  focusSearch?: boolean | undefined;
-  /** Shows that rows can be dragged out of the list (the `grab` cursor). */
-  draggable?: boolean | undefined;
-  /** Lets a row be dragged out of the list, e.g. onto the canvas. */
-  onItemPointerDown?: ((id: string, event: PointerEvent<HTMLElement>) => void) | undefined;
 };
 
 type Group = { value: string; items: SearchListItem[] };
@@ -54,41 +56,6 @@ type Group = { value: string; items: SearchListItem[] };
  * Base UI's parts are styled with the design system's classes (`designSystem`), so they reuse
  * Sprinkles' CSS instead of generating their own.
  */
-
-const inputClass = designSystem({
-  appearance: 'none',
-  backgroundColor: 'transparent',
-  // Like TextField: the border brightens while focused, and while pressed so it doesn't flicker.
-  borderColor: { default: 'line', hover: 'line.strong', active: 'focus', focusVisible: 'focus' },
-  borderStyle: 'solid',
-  borderWidth: 'hairline',
-  color: { default: 'text', placeholder: 'text.faint' },
-  fontFamily: 'inherit',
-  fontSize: 'body',
-  height: 'control',
-  lineHeight: 'body',
-  outlineStyle: 'none',
-  paddingLeft: '3x',
-  paddingRight: '6x',
-  width: 'full'
-});
-
-const clearClass = designSystem({
-  alignItems: 'center',
-  appearance: 'none',
-  backgroundColor: 'transparent',
-  borderStyle: 'hidden',
-  color: { default: 'text.dim', hover: 'text' },
-  cursor: 'pointer',
-  display: 'flex',
-  height: 'control',
-  justifyContent: 'center',
-  outlineStyle: 'none',
-  position: 'absolute',
-  right: 'none',
-  top: 'none',
-  width: 'control'
-});
 
 /** Scrolls on its own, below the search field. */
 const listClass = designSystem({
@@ -168,30 +135,19 @@ export function SearchList({
           <Stack spacing='3x'>
             {back ? (
               <Box alignItems='center' display='flex' gap='2x'>
-                <Button aria-label='Back' onClick={back.onBack} variant='quiet'>
-                  <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                    <Box d='M8 2L4 6l4 4' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-                  </Box>
-                </Button>
+                <IconButton icon='chevron_left' label='Back' onClick={back.onBack} />
                 <Text color='text.dim' id={headingId} variant='label'>
                   {back.label}
                 </Text>
               </Box>
             ) : null}
-            <Box position='relative'>
-              <Autocomplete.Input
-                aria-describedby={back ? headingId : undefined}
-                aria-label={label}
-                className={inputClass}
-                placeholder={placeholder}
-                ref={inputRef}
-              />
-              <Autocomplete.Clear aria-label='Clear search' className={clearClass}>
-                <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                  <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-                </Box>
-              </Autocomplete.Clear>
-            </Box>
+            <Autocomplete.Input
+              aria-describedby={back ? headingId : undefined}
+              aria-label={label}
+              placeholder={placeholder}
+              ref={inputRef}
+              render={<TextInput clearLabel='Clear search' onClear={() => onQueryChange('')} />}
+            />
           </Stack>
         </Box>
         <Autocomplete.Empty>
@@ -245,17 +201,8 @@ export function SearchList({
                       </Stack>
                     </Box>
                     {item.opens ? (
-                      <Box
-                        aria-hidden
-                        color='text.dim'
-                        display='block'
-                        flexShrink='0'
-                        height='4x'
-                        tagName='svg'
-                        viewBox='0 0 12 12'
-                        width='4x'
-                      >
-                        <Box d='M4 2l4 4-4 4' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
+                      <Box color='text.dim' flexShrink='0'>
+                        <Icon name='chevron_right' />
                       </Box>
                     ) : null}
                   </Autocomplete.Item>

@@ -1,0 +1,123 @@
+import { createContext, use, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+
+import { useMatchesMediaQuery } from '../../hooks/useMatchesMediaQuery/useMatchesMediaQuery.js';
+import { Box } from '../Box/Box.js';
+import { Sheet } from '../Sheet/Sheet.js';
+
+export const panelForms = ['sidebars', 'sheets'] as const;
+
+/** How the panels show: docked beside the main content, or as sheets over it. */
+export type PanelForm = (typeof panelForms)[number];
+
+export const panelSides = ['start', 'end'] as const;
+
+export type PanelSide = (typeof panelSides)[number];
+
+export type Panel = {
+  content: ReactNode;
+  /** The sheet's title. */
+  title: string;
+};
+
+/** The room the panels need to dock beside the main content, in pixels: both, and a usable canvas. */
+const SIDEBARS_MIN_WIDTH = 1100;
+
+const PanelFormContext = createContext<PanelForm>('sidebars');
+
+/** Whether the panels around this are sidebars or sheets, e.g. to only allow dragging out of a sidebar. */
+export function usePanelForm(): PanelForm {
+  return use(PanelFormContext);
+}
+
+export type PanelLayoutProps = {
+  /** The main content, e.g. the canvas. */
+  children: ReactNode;
+  /** The panel after the main content, e.g. a widget's properties. */
+  end?: Panel | undefined;
+  /** Fires when the open sheet is closed: its close button, Escape, or swiping it down. */
+  onSheetClose: () => void;
+  /** Which panel shows as a sheet, when they are sheets; only one at a time. Sidebars ignore it. */
+  openSheet: PanelSide | null;
+  /** The panel before the main content, e.g. the widget library. */
+  start?: Panel | undefined;
+};
+
+/**
+ * Main content with a panel on either side, written once and shown in the form that suits the
+ * screen (0008): sidebars with a mouse or pen and room for them, sheets otherwise, both switching
+ * together. Sidebars have a fixed width and a hairline towards the main content. As sheets, the page
+ * decides which one is open, so there's only ever one.
+ */
+export function PanelLayout({ children, end, onSheetClose, openSheet, start }: PanelLayoutProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState<number | null>(null);
+  const hasFinePointer = useMatchesMediaQuery('(any-pointer: fine)');
+
+  useLayoutEffect(() => {
+    setWidth(rootRef.current?.getBoundingClientRect().width ?? null);
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+
+    if (!root) {
+      return;
+    }
+
+    const observer = new ResizeObserver(([entry]) => setWidth(entry?.contentRect.width ?? null));
+
+    observer.observe(root);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const form: PanelForm = hasFinePointer && width !== null && width >= SIDEBARS_MIN_WIDTH ? 'sidebars' : 'sheets';
+
+  return (
+    <PanelFormContext value={form}>
+      <Box display='flex' gap='4x' height='full' minWidth='none' ref={rootRef} width='full'>
+        {form === 'sidebars' && start ? <Sidebar side='start'>{start.content}</Sidebar> : null}
+        <Box flexGrow='1' height='full' minWidth='none'>
+          {children}
+        </Box>
+        {form === 'sidebars' && end ? <Sidebar side='end'>{end.content}</Sidebar> : null}
+        {form === 'sheets'
+          ? (
+              [
+                ['start', start],
+                ['end', end]
+              ] as const
+            ).map(([side, panel]) =>
+              panel ? (
+                <Sheet key={side} onClose={onSheetClose} open={openSheet === side} title={panel.title}>
+                  {panel.content}
+                </Sheet>
+              ) : null
+            )
+          : null}
+      </Box>
+    </PanelFormContext>
+  );
+}
+
+function Sidebar({ children, side }: { children: ReactNode; side: PanelSide }) {
+  return (
+    <Box
+      borderLeftColor={side === 'end' ? 'line' : undefined}
+      borderLeftStyle={side === 'end' ? 'solid' : undefined}
+      borderLeftWidth={side === 'end' ? 'hairline' : undefined}
+      borderRightColor={side === 'start' ? 'line' : undefined}
+      borderRightStyle={side === 'start' ? 'solid' : undefined}
+      borderRightWidth={side === 'start' ? 'hairline' : undefined}
+      flexShrink='0'
+      height='full'
+      minHeight='none'
+      paddingLeft={side === 'end' ? '4x' : undefined}
+      paddingRight={side === 'start' ? '4x' : undefined}
+      tagName='aside'
+      width='panel'
+    >
+      {children}
+    </Box>
+  );
+}

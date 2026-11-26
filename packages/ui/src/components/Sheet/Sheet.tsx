@@ -5,7 +5,7 @@ import { useRef, useState, type PropsWithChildren } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './Sheet.css.js';
@@ -109,26 +109,12 @@ export function Sheet({ children, defaultStop = 'half', onClose, open, title }: 
                 <Box flexGrow='1' minWidth='none'>
                   <Drawer.Title render={<Text tagName='h2' truncate variant='heading' />}>{title}</Drawer.Title>
                 </Box>
-                <Button
-                  aria-label={stop === 'half' ? 'Expand' : 'Collapse'}
+                <IconButton
+                  icon={stop === 'half' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                  label={stop === 'half' ? 'Expand' : 'Collapse'}
                   onClick={() => setStop(stop === 'half' ? 'full' : 'half')}
-                  variant='quiet'
-                >
-                  <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                    <Box
-                      d={stop === 'half' ? 'M2 8l4-4 4 4' : 'M2 4l4 4 4-4'}
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='1.5'
-                      tagName='path'
-                    />
-                  </Box>
-                </Button>
-                <Button aria-label='Close' onClick={onClose} variant='quiet'>
-                  <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                    <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-                  </Box>
-                </Button>
+                />
+                <IconButton icon='close' label='Close' onClick={onClose} />
               </Box>
             </Box>
             <Drawer.Content className={contentClass}>

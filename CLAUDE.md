@@ -37,12 +37,15 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 ## Current state
 
-Built: monorepo scaffold, schemas, theme contract, four primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder that adds, moves, resizes and removes widgets, with undo and saving. Not built yet: the rest of the builder, the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
+Built: monorepo scaffold, schemas, theme contract v2 (0022), four MFD primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder that adds, moves, resizes and removes widgets, with undo and saving. The builder chrome is rebuilt on the `mfdiy` brand theme (Panel white, 0022), with these components in `packages/ui`, all on Base UI where it has a part: Button (with icons), IconButton, Icon (Material Symbols), Tooltip, Menu, Tabs (overflow into a "+N" menu), Field, TextInput, TextField, NumberField, Switch, Select, SegmentedControl, SearchList, Sheet, Dialog, Toast and PanelLayout. The widget library (0006, 0008) is a sidebar or a sheet through PanelLayout, with an **empty Properties panel** opposite it. Not built yet: the properties panel's contents, the builder header (pages as Tabs, actions in a Menu), the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
 
 Next: **the first public beta (0020)**. Its scope, order and gates are agreed; don't reopen them without new information.
 
 1. **Connect the bridge to the game** (critical path). The schema can be generated from the installed game; a real frame is still needed for units and the order of shield faces. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
-2. **Editor** (0006–0008), limited to what 0020 lists. Still to do: the properties panel (label, data, action, thresholds; design it with the maintainer), duplicating widgets, and pages. Until properties exist, a placed widget can't be changed and a Light can't be given an action.
+2. **Editor** (0006–0008), limited to what 0020 lists. The primitives it needs are built; next is **designing the properties panel with the maintainer** (label, data, action, thresholds), in the empty end panel of `PageEditor`'s PanelLayout. Then duplicating widgets, pages (Tabs with "+"), and the header. Until properties exist, a placed widget can't be changed and a Light can't be given an action.
+   - When properties exist: on a phone, selecting a widget swaps the library sheet for the properties sheet (0008); today it only closes the library sheet.
+   - Open questions on the header, proposed but not yet answered: Remove and Duplicate in the header for the beta or next to the selection; actions on a page (rename, duplicate, delete) in a menu on its tab, now or with pages; on phones, a dot on Save instead of the save status text; less common profile actions (Save as new) in a `⋯` Menu.
+   - Not built yet from 0008: a keyboard shortcut that focuses the library's search; dragging from the library on touch (long-press); stacked sheets for side tasks (Back is used instead, for now).
 3. **Windows download, QR code, tap-to-engage and keep-awake.**
 4. **Starter profiles and built-in themes.** Where the choice of theme is kept is still open (0020).
 
@@ -50,7 +53,7 @@ The repository is public in the `MFDIY` org, and the landing page is live at htt
 
 Waiting on the maintainer: generate the schema on the gaming PC (PTU and LIVE) and put both files where a session can read them; confirm PTU access; read the game developer's terms before charging for anything, and its fan-content and posting rules before announcing the beta.
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup still produces about 177 kB of builder CSS (20.5 kB gzipped), down from 656 kB before the chrome rebuild (0022); a cold type check of a package that imports `@mfdiy/ui` takes ~15 s.
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup still produces about 177 kB of builder CSS (20.5 kB gzipped), down from 656 kB before the chrome rebuild (0022); a cold type check of a package that imports `@mfdiy/ui` takes ~15 s; TextInput still uses `useMergeRefs` from `@floating-ui/react`, left over from Bonsai; Select's Keyboard Chooses story failed once under a full run (it waits for each highlight now).
 
 ## Commands
 
@@ -65,6 +68,7 @@ Root (npm workspaces monorepo, Node 24):
 - `npm run test:stories`: every story of ui, instruments and builder in Chromium, compared with its baseline screenshot (0021); `-w <workspace> -- --update` accepts intended changes
 - `npm run test:stories:changed`: only the stories affected by uncommitted changes; the `verify` skill lists the other ways to run fewer tests
 - `npm run dev -w @mfdiy/ui` / `-w @mfdiy/instruments` / `-w @mfdiy/builder`: Storybook (ports 6006 / 6007 / 6008)
+- `npm run icons -w @mfdiy/ui`: regenerate the icon paths after adding a Material Symbols name to `packages/ui/scripts/generate-icons.ts` (Sharp, weight 300; 0022)
 - Update Storybook and add its addons only with its own commands, never by editing versions: `npx storybook@<version> upgrade --yes -c packages/ui/.storybook packages/instruments/.storybook packages/builder/.storybook`, and `npx storybook@<version> add <addon> --yes -c <config dir>`. Review what they change (0021).
 
 Before committing, follow the `verify` skill (`.claude/skills/verify`).
@@ -76,7 +80,7 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 - `packages/schema`: Valibot schemas for every public format: signals, bridge protocol, theme tokens, documents.
 - `packages/instruments`: MFD primitives (pure), widgets and manifests (data-aware), the `--mfd-*` theme contract.
 - `packages/builder`: the builder's canvas and palette (`PageEditor`), independent of the page hosting them. Develop it in Storybook first.
-- `packages/ui`: builder design system: Bonsai's styling contract (tokens, Sprinkles, `Box`), with interactive components built on Base UI (0003, 0022).
+- `packages/ui`: builder design system: Bonsai's styling contract (tokens, Sprinkles, `Box`), with interactive components built on Base UI (0003, 0022). Chrome colours are private tokens in `src/styles/themes/chrome.ts`, resolved from the `mfdiy` theme; style props expose them by role (`line`, `line.strong`, `line.bright`, `hover`, …), never primitive steps.
 - `packages/adapter-star-citizen`: Star Citizen signal and action catalogue, and the starter documents a new library gets.
 - `packages/config`: shared TypeScript config.
 
@@ -85,6 +89,11 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
 - In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). `className` or `style` on a Bonsai component is a code smell (0022): check `packages/ui/src/styles/properties.ts`, and if a style or scale value is missing, raise it with the maintainer rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className`, and values computed from the document, wrapped in components such as `LayoutGrid` and `LayoutArea`.
 - Style Base UI's parts (inside `packages/ui` only) with `className={designSystem({ … })}`, or a function of the part's state (`state => designSystem({ backgroundColor: state.highlighted ? 'hover' : 'transparent' })`), so they reuse Sprinkles' classes. A `.css.ts` is only for what Sprinkles can't express, such as Base UI's CSS variables and `data-*` transition attributes.
+- A style prop with a `hover` value also needs an `active` value (usually the same): Sprinkles' `hover` and `focusWithin` don't apply while an element is pressed, so without one the colour falls back to its default on mousedown and flickers until release.
+- Base UI is imported only inside `packages/ui` (lint enforces it), wrapped in our components (0003). When a component starts using a new Base UI part, add it to `optimizeDeps.include` in `packages/config/vitest.ts`, or Vite reloads mid-run and story tests fail at random.
+- Parts of a field (an input and its buttons, a select and its ×) sit in one box from `Field/fieldStyles.ts`: `fieldBoxClass` brightens with hover, focus and press; `fieldButtonClass` is a square button behind a hairline that inherits the box's border colour. A group of options (SegmentedControl) keeps a fixed frame instead (0022).
+- Keep the properties of props types (and similar type definitions) in alphabetical order.
+- Comment only what the code can't say: doc comments on exported components, hooks and props, with decision references. No inline comments explaining small implementation details.
 - Pressable MFD elements use `pressHandlers` from `@mfdiy/instruments`, so they fire on touch (0010).
 - In MFD styles, always read tokens through `token()` (from `@mfdiy/schema`, re-exported by `@mfdiy/instruments`), never `vars` directly; it resolves the primitive → semantic → component fallback chain at the point of use.
 - Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.

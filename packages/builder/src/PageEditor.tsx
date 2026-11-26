@@ -4,8 +4,15 @@ import type { Area, GridPoint } from '@mfdiy/schema';
 
 import { widgetManifests } from '@mfdiy/instruments';
 import { addWidget, growArea, newWidgetId, placeArea } from '@mfdiy/schema';
-import { Box, SearchList, Sheet, useToast } from '@mfdiy/ui/components';
-import { useMatchesMediaQuery } from '@mfdiy/ui/hooks';
+import {
+  Box,
+  PanelLayout,
+  SearchList,
+  usePanelForm,
+  useToast,
+  type PanelSide,
+  type SearchListProps
+} from '@mfdiy/ui/components';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 
 import { Canvas } from './canvas/Canvas.js';
@@ -41,15 +48,15 @@ const CLICKS_BEFORE_HINT = 2;
 const HINT = 'Tap a cell, or drag a widget onto the page.';
 
 /**
- * The canvas and the widget library (0006, 0008). A widget is added where a cell was marked, or where
- * it's dropped; never somewhere guessed. With a mouse or pen on a wide screen the library is a
- * sidebar to drag from; otherwise it's a sheet that opens when a cell is tapped. Use one per page,
- * with the page's id as its key.
+ * The canvas between the widget library and the properties panel (0006, 0008), laid out by
+ * PanelLayout. A widget is added where a cell was marked, or where it's dropped; never somewhere
+ * guessed. As sidebars, the library is there to drag from; as sheets, it opens when a cell is
+ * tapped. The properties panel is empty for now. Use one per page, with the page's id as its key.
  */
 export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
   const { page, layout, documentTokens, onChange, onSelect } = canvasProps;
   const [marked, setMarked] = useState<GridPoint | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [openSheet, setOpenSheet] = useState<PanelSide | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const dragRef = useRef<Drag | null>(null);
   const canvasRef = useRef<CanvasPointer>(null);
@@ -59,9 +66,6 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
 
   const toast = useToast();
   const library = useWidgetLibrary({ catalogue, documentTokens, pageTokens: page.tokens });
-  const hasFinePointer = useMatchesMediaQuery('(any-pointer: fine)');
-  const isWide = useMatchesMediaQuery('(min-width: 900px)');
-  const sidebar = hasFinePointer && isWide;
 
   /** What every widget covers at least, before one is picked: the smallest of their default sizes. */
   function smallestPlace(point: GridPoint): Area {
@@ -93,7 +97,7 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
     onChange(addWidget(page, layout, { id, ...widget }, place(widget.type, point)));
     onSelect(id);
     setMarked(null);
-    setSheetOpen(false);
+    setOpenSheet(null);
     library.reset();
   }
 
@@ -104,14 +108,14 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
 
   function handleEmptyTap(point: GridPoint) {
     setMarked(point);
-    setSheetOpen(true);
+    setOpenSheet('start');
   }
 
   function handleSelect(widgetId: string | null) {
     // Selecting a widget lets go of the marked cell; on a phone, its properties take the sheet's place.
     if (widgetId !== null) {
       setMarked(null);
-      setSheetOpen(false);
+      setOpenSheet(null);
     }
 
     onSelect(widgetId);
@@ -275,56 +279,53 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
           : smallestPlace(marked)
       : null);
 
-  const libraryList = (
-    <SearchList
-      {...library.listProps}
-      draggable={sidebar && !marked}
-      onItemPointerDown={sidebar ? handleItemPointerDown : undefined}
-      onSelect={handleLibrarySelect}
-    />
+  return (
+    <>
+      <PanelLayout
+        end={{ content: null, title: 'Properties' }}
+        onSheetClose={() => {
+          setOpenSheet(null);
+          setMarked(null);
+          library.reset();
+        }}
+        openSheet={openSheet}
+        start={{
+          content: (
+            <LibraryList
+              {...library.listProps}
+              draggable={!marked}
+              onItemPointerDown={handleItemPointerDown}
+              onSelect={handleLibrarySelect}
+            />
+          ),
+          title: 'Add a widget'
+        }}
+      >
+        <Box containerType='size' height='full' width='full'>
+          <Canvas
+            {...canvasProps}
+            ghost={ghost}
+            newWidgetArea={smallestPlace}
+            onEmptyTap={handleEmptyTap}
+            onSelect={handleSelect}
+            pointerRef={canvasRef}
+          />
+        </Box>
+      </PanelLayout>
+      {drag?.dragging ? <DragLabel label={drag.label} x={drag.x} y={drag.y} /> : null}
+    </>
   );
+}
+
+/** The library's list; rows only drag out of a sidebar, never a sheet (0008). */
+function LibraryList({ draggable, onItemPointerDown, ...restProps }: SearchListProps) {
+  const sidebar = usePanelForm() === 'sidebars';
 
   return (
-    <Box display='flex' gap='4x' height='full' width='full'>
-      {sidebar ? (
-        <Box
-          borderRightColor='line'
-          borderRightStyle='solid'
-          borderRightWidth='hairline'
-          flexShrink='0'
-          height='full'
-          minHeight='none'
-          paddingRight='4x'
-          tagName='aside'
-          width='panel'
-        >
-          {libraryList}
-        </Box>
-      ) : null}
-      <Box containerType='size' flexGrow='1' height='full' minWidth='none'>
-        <Canvas
-          {...canvasProps}
-          ghost={ghost}
-          newWidgetArea={smallestPlace}
-          onEmptyTap={handleEmptyTap}
-          onSelect={handleSelect}
-          pointerRef={canvasRef}
-        />
-      </Box>
-      {sidebar ? null : (
-        <Sheet
-          onClose={() => {
-            setSheetOpen(false);
-            setMarked(null);
-            library.reset();
-          }}
-          open={sheetOpen}
-          title='Add a widget'
-        >
-          {libraryList}
-        </Sheet>
-      )}
-      {drag?.dragging ? <DragLabel label={drag.label} x={drag.x} y={drag.y} /> : null}
-    </Box>
+    <SearchList
+      {...restProps}
+      draggable={sidebar && draggable}
+      onItemPointerDown={sidebar ? onItemPointerDown : undefined}
+    />
   );
 }

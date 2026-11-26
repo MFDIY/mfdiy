@@ -42,6 +42,7 @@ export const chromeTokens = {
   backdrop: alpha(mfdiy['neutral.1'], 'cc'),
   'text.faint': mfdiy['neutral.6'],
   'line.strong': mfdiy['neutral.5'],
+  'line.bright': mfdiy['neutral.6'],
   'accent.hover': mfdiy['primary.9'],
   'accent.pressed': mfdiy['neutral.8'],
   hover: alpha(mfdiy['primary.8'], '14'),

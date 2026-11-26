@@ -27,7 +27,9 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### In between
 
-As the screen narrows, panels move into sheets one at a time, until on a phone everything but the canvas and a thin toolbar lives in sheets. Which panel moves first, and at what width, is decided when the layout is built, by container width, not device detection.
+Both panels switch between sidebar and sheet together, in one place (`PanelLayout` in `packages/ui`): they're sidebars with a mouse or pen and room for them, sheets otherwise, so on a phone everything but the canvas and a thin toolbar lives in sheets, one at a time. The properties sidebar stays in place when nothing is selected, so the canvas doesn't change size with the selection; what it shows then is decided with the properties panel. Sidebars have a fixed width; resizing or collapsing them can come later.
+
+A side task inside a panel, like choosing a widget's data, replaces the panel's contents and offers Back, in both forms. Base UI's Drawer can stack sheets like Vaul, which would suit such side tasks on a phone, but a sidebar can't stack, so one pattern is used for now; stacked sheets can be added later without changing the panels.
 
 ### Preview mode
 
@@ -46,4 +48,4 @@ A toggle hides all builder controls and shows the layout full-screen with live d
 - The builder needs a bottom-sheet component in `packages/ui`, built on Base UI's Drawer (0003): non-modal so the canvas stays usable above it, with a half-open and a full-height stop, working with touch, mouse and keyboard, and respecting 0007 (no page scrolling; the sheet's own content may scroll, as it's builder UI, not MFD content).
 - **The library and properties are each written once** and presented as a side panel or a sheet. The command palette is removed once the library replaces it; a keyboard shortcut focuses the library's search instead.
 - The canvas, properties and library must not depend on the surrounding builder page, so they can be reused for in-place editing (0009).
-- **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. A **segmented single-choice control** (e.g. a Light's colour when lit) is designed when the properties panel needs it; Bonsai's SegmentedControl was removed (0022).
+- **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. A **segmented single-choice control** (e.g. a Light's colour when lit) is `SegmentedControl`: a few options in a fixed frame, the chosen one tinted (0022); it replaced Bonsai's.

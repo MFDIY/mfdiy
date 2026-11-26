@@ -1,7 +1,7 @@
 import { useId, type PropsWithChildren, type ReactNode } from 'react';
 
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Inline } from '../Inline/Inline.js';
 import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
 import { Text } from '../Text/Text.js';
@@ -37,13 +37,7 @@ export function Dialog({ actions, children, dismissible = false, onClose, title 
           <Text id={titleId} tagName='h2' variant='heading'>
             {title}
           </Text>
-          {dismissible ? (
-            <Button aria-label='Close' onClick={onClose} variant='quiet'>
-              <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-              </Box>
-            </Button>
-          ) : null}
+          {dismissible ? <IconButton icon='close' label='Close' onClick={onClose} /> : null}
         </Box>
         {children ? (
           <ScrollContainer>

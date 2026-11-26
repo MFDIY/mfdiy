@@ -3,7 +3,7 @@ import { toast as sonnerToast, Toaster } from 'sonner';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 
@@ -14,15 +14,15 @@ const toastClass = designSystem({ width: 'full' });
 const DEFAULT_DURATION = 5000;
 
 export type ToastOptions = {
-  /** A second, dimmed line. */
-  description?: string | undefined;
-  /** Shows a close button, and lets the toast be swiped away. */
-  dismissible?: boolean | undefined;
   /**
    * Hides the toast by itself: after 5 seconds when `true` (the default), or after this many
    * milliseconds. `false` keeps it until it's dismissed, so only use that with `dismissible`.
    */
   autoDismiss?: boolean | number | undefined;
+  /** A second, dimmed line. */
+  description?: string | undefined;
+  /** Shows a close button, and lets the toast be swiped away. */
+  dismissible?: boolean | undefined;
   /** Identifies the toast; showing one with the same id updates it. Defaults to the title. */
   id?: string | undefined;
 };
@@ -60,13 +60,7 @@ function ToastView({ description, dismissible = false, id, title }: ToastViewPro
           ) : null}
         </Stack>
       </Box>
-      {dismissible ? (
-        <Button aria-label='Dismiss' onClick={() => sonnerToast.dismiss(id)} variant='quiet'>
-          <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-            <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-          </Box>
-        </Button>
-      ) : null}
+      {dismissible ? <IconButton icon='close' label='Dismiss' onClick={() => sonnerToast.dismiss(id)} /> : null}
     </Box>
   );
 }
