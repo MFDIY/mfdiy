@@ -72,7 +72,17 @@ Vitest.
   `vitest list` shows it) matches on its own.
 - `--update` can be combined with any of these, to accept only the baselines you meant to change.
 
-## 3. Storybook dependencies
+## 3. Dependencies
+
+Change dependencies with npm (`npm install -D <pkg> -w <workspace>`, `npm uninstall`), not by
+editing a `package.json`. If you do edit one, run `npm install` afterwards. The pre-commit hook
+re-syncs `package-lock.json` whenever a `package.json` is staged, so the committed lockfile is
+what the maintainer's `npm install` produces; don't fight it.
+
+A workspace's `peerDependencies` count as production dependencies in the lockfile. Use
+`devDependencies` for tooling, including in `@mfdiy/config`.
+
+### Storybook
 
 Never edit Storybook versions by hand. Use its commands, which also run its migrations:
 
