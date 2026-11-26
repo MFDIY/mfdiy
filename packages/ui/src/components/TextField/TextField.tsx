@@ -33,7 +33,9 @@ export function TextField({ disabled, error, label, maxLength, onChange, placeho
         autoComplete='off'
         backgroundColor='transparent'
         borderColor={
-          error ? 'status.critical' : { default: 'line', hover: 'line.strong', focusVisible: 'focus', disabled: 'line' }
+          error
+            ? 'status.critical'
+            : { default: 'line', hover: 'line.strong', active: 'focus', focusVisible: 'focus', disabled: 'line' }
         }
         borderStyle={disabled ? 'dashed' : 'solid'}
         borderWidth='hairline'

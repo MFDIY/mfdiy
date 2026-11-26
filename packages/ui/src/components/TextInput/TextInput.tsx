@@ -100,7 +100,13 @@ export function TextInput({
           error
             ? 'status.critical'
             : elevation === 'base'
-              ? { default: 'line', hover: 'line.strong', focusVisible: hideFocusRing ? 'line.strong' : 'focus' }
+              ? {
+                  default: 'line',
+                  hover: 'line.strong',
+                  // Pressing a field focuses it; without this the border dims until the button is released.
+                  active: hideFocusRing ? 'line.strong' : 'focus',
+                  focusVisible: hideFocusRing ? 'line.strong' : 'focus'
+                }
               : 'transparent'
         }
         borderStyle='solid'
