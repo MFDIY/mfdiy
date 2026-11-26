@@ -1,37 +1,32 @@
 import { Select as BaseSelect } from '@base-ui/react/select';
+import { useRef, useState } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Field } from '../Field/Field.js';
+import { fieldBoxClass, fieldButtonClass } from '../Field/fieldStyles.js';
 import { Icon } from '../Icon/Icon.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './Select.css.js';
 
-/** Like a text field; open, its border stays bright, as while it's focused. */
-const triggerClass = ({ disabled, invalid, open }: { disabled: boolean; invalid: boolean; open: boolean }) =>
-  designSystem({
-    alignItems: 'center',
-    appearance: 'none',
-    backgroundColor: 'transparent',
-    borderColor: invalid
-      ? 'status.critical'
-      : open
-        ? 'focus'
-        : { default: 'line', hover: 'line.strong', active: 'focus', focusVisible: 'focus', disabled: 'line' },
-    borderStyle: disabled ? 'dashed' : 'solid',
-    borderWidth: 'hairline',
-    color: { default: 'text', disabled: 'text.faint' },
-    cursor: disabled ? 'not-allowed' : 'default',
-    display: 'flex',
-    fontFamily: 'inherit',
-    gap: '2x',
-    height: 'control',
-    outlineStyle: 'none',
-    paddingLeft: '3x',
-    paddingRight: '2x',
-    width: 'full'
-  });
+/** The part that opens the list; the field box around it draws the border. */
+const triggerClass = designSystem({
+  alignItems: 'center',
+  appearance: 'none',
+  backgroundColor: 'transparent',
+  borderStyle: 'hidden',
+  color: { default: 'text', disabled: 'text.faint' },
+  cursor: { default: 'default', disabled: 'not-allowed' },
+  display: 'flex',
+  flexGrow: '1',
+  fontFamily: 'inherit',
+  gap: '2x',
+  minWidth: 'none',
+  outlineStyle: 'none',
+  paddingLeft: '3x',
+  paddingRight: '2x'
+});
 
 /** A floating layer, so on the raised surface (0022); its items sit flush. */
 const popupClass = [
@@ -71,6 +66,8 @@ export type SelectItem = {
 };
 
 export type SelectProps = {
+  /** Shows a button that clears the choice while there is one. */
+  clearable?: boolean | undefined;
   /** Explains the field, under it. */
   description?: string | undefined;
   disabled?: boolean | undefined;
@@ -78,8 +75,8 @@ export type SelectProps = {
   error?: string | undefined;
   items: readonly SelectItem[];
   label: string;
-  /** Fires with the chosen item's value. */
-  onChange: (value: string) => void;
+  /** Fires with the chosen item's value, or `null` when the choice is cleared. */
+  onChange: (value: string | null) => void;
   /** Shown while nothing is chosen. */
   placeholder?: string | undefined;
   /** The chosen item's value, or `null` for none. */
@@ -89,9 +86,11 @@ export type SelectProps = {
 /**
  * A labelled choice from a short, fixed list, built on Base UI's Select (0003). Closed, it looks like
  * a text field; open, its list drops below it like a menu, the chosen item ticked. Arrow keys move,
- * typing jumps to an item. Controlled: the page owns the value.
+ * typing jumps to an item. Clearable, a button beside it empties the choice. Controlled: the page
+ * owns the value.
  */
 export function Select({
+  clearable = false,
   description,
   disabled = false,
   error,
@@ -101,11 +100,16 @@ export function Select({
   placeholder,
   value
 }: SelectProps) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
   return (
     <Field description={description} disabled={disabled} error={error} label={label}>
       <BaseSelect.Root
         disabled={disabled}
         items={items}
+        onOpenChange={setOpen}
         onValueChange={next => {
           if (typeof next === 'string') {
             onChange(next);
@@ -113,23 +117,37 @@ export function Select({
         }}
         value={value}
       >
-        <BaseSelect.Trigger
-          className={state => triggerClass({ disabled: state.disabled, invalid: Boolean(error), open: state.open })}
-        >
-          <Box flexGrow='1' minWidth='none' textAlign='left'>
-            <BaseSelect.Value
-              placeholder={placeholder}
-              render={(props, state) => (
-                <Text {...props} color={state.placeholder ? 'text.faint' : 'inherit'} truncate variant='body' />
-              )}
-            />
-          </Box>
-          <BaseSelect.Icon render={<Box color='text.dim' display='flex' />}>
-            <Icon name='unfold_more' />
-          </BaseSelect.Icon>
-        </BaseSelect.Trigger>
+        <Box className={fieldBoxClass({ disabled, invalid: Boolean(error), open })} ref={boxRef}>
+          <BaseSelect.Trigger className={triggerClass} ref={triggerRef}>
+            <Box flexGrow='1' minWidth='none' textAlign='left'>
+              <BaseSelect.Value
+                placeholder={placeholder}
+                render={(props, state) => (
+                  <Text {...props} color={state.placeholder ? 'text.faint' : 'inherit'} truncate variant='body' />
+                )}
+              />
+            </Box>
+            <BaseSelect.Icon render={<Box color='text.dim' display='flex' />}>
+              <Icon name='unfold_more' />
+            </BaseSelect.Icon>
+          </BaseSelect.Trigger>
+          {clearable && value !== null && !disabled ? (
+            <Box
+              aria-label='Clear'
+              className={fieldButtonClass}
+              onClick={() => {
+                onChange(null);
+                triggerRef.current?.focus();
+              }}
+              tagName='button'
+              type='button'
+            >
+              <Icon name='close' />
+            </Box>
+          ) : null}
+        </Box>
         <BaseSelect.Portal>
-          <BaseSelect.Positioner alignItemWithTrigger={false} sideOffset={OFFSET}>
+          <BaseSelect.Positioner alignItemWithTrigger={false} anchor={boxRef} sideOffset={OFFSET}>
             <BaseSelect.Popup className={popupClass}>
               <BaseSelect.List>
                 {items.map(item => (

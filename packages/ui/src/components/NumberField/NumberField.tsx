@@ -3,21 +3,9 @@ import { NumberField as BaseNumberField } from '@base-ui/react/number-field';
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Field } from '../Field/Field.js';
+import { fieldBoxClass, fieldButtonClass } from '../Field/fieldStyles.js';
 import { Icon } from '../Icon/Icon.js';
 import { Text } from '../Text/Text.js';
-
-const groupClass = (invalid: boolean, disabled: boolean) =>
-  designSystem({
-    alignItems: 'stretch',
-    borderColor: invalid
-      ? 'status.critical'
-      : { default: 'line', hover: 'line.strong', active: 'focus', focusWithin: 'focus', disabled: 'line' },
-    borderStyle: disabled ? 'dashed' : 'solid',
-    borderWidth: 'hairline',
-    display: 'flex',
-    height: 'control',
-    width: 'full'
-  });
 
 const inputClass = (hasUnit: boolean) =>
   designSystem({
@@ -37,26 +25,6 @@ const inputClass = (hasUnit: boolean) =>
     paddingRight: hasUnit ? '1x' : '3x',
     textAlign: 'right'
   });
-
-const stepClass = designSystem({
-  alignItems: 'center',
-  appearance: 'none',
-  backgroundColor: { default: 'transparent', hover: 'hover', active: 'pressed', disabled: 'transparent' },
-  borderBottomStyle: 'hidden',
-  borderLeftColor: 'inherit',
-  borderLeftStyle: 'solid',
-  borderLeftWidth: 'hairline',
-  borderRightStyle: 'hidden',
-  borderTopStyle: 'hidden',
-  color: { default: 'text', disabled: 'text.faint' },
-  cursor: { default: 'default', disabled: 'not-allowed' },
-  display: 'flex',
-  flexShrink: '0',
-  justifyContent: 'center',
-  outlineStyle: 'none',
-  padding: 'none',
-  width: 'control'
-});
 
 export type NumberFieldProps = {
   /** Explains the field, under it. */
@@ -103,7 +71,7 @@ export function NumberField({
         step={step}
         value={value}
       >
-        <BaseNumberField.Group className={groupClass(Boolean(error), disabled)}>
+        <BaseNumberField.Group className={fieldBoxClass({ disabled, invalid: Boolean(error), open: false })}>
           <BaseNumberField.Input className={inputClass(Boolean(unit))} />
           {unit ? (
             <Box alignSelf='center' paddingRight='3x'>
@@ -112,10 +80,10 @@ export function NumberField({
               </Text>
             </Box>
           ) : null}
-          <BaseNumberField.Decrement aria-label='Decrease' className={stepClass}>
+          <BaseNumberField.Decrement aria-label='Decrease' className={fieldButtonClass}>
             <Icon name='remove' />
           </BaseNumberField.Decrement>
-          <BaseNumberField.Increment aria-label='Increase' className={stepClass}>
+          <BaseNumberField.Increment aria-label='Increase' className={fieldButtonClass}>
             <Icon name='add' />
           </BaseNumberField.Increment>
         </BaseNumberField.Group>

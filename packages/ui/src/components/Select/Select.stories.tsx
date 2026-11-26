@@ -32,6 +32,7 @@ const meta = {
   title: 'Components / Select',
   component: Select,
   argTypes: {
+    clearable: { control: { type: 'boolean' } },
     description: { control: { type: 'text' } },
     disabled: { control: { type: 'boolean' } },
     error: { control: { type: 'text' } },
@@ -41,6 +42,7 @@ const meta = {
     value: { control: { type: 'select' }, options: [null, ...colours.map(colour => colour.value)] }
   },
   args: {
+    clearable: false,
     description: undefined,
     disabled: false,
     error: undefined,
@@ -83,6 +85,11 @@ export const Open = {
   }
 } satisfies Story;
 
+/** Clearable: a button beside the field empties the choice, while there is one. */
+export const Clearable = {
+  args: { clearable: true, label: 'Colour when lit', placeholder: 'Theme default', value: 'warning' }
+} satisfies Story;
+
 export const WithError = {
   args: { error: 'Choose a colour the theme has.', label: 'Colour when lit', value: 'secondary' }
 } satisfies Story;
@@ -119,5 +126,20 @@ export const KeyboardChooses = {
     await userEvent.keyboard('{Enter}');
 
     await waitFor(() => expect(field).toHaveTextContent('Secondary'));
+  }
+} satisfies Story;
+
+/** Clearing empties the choice, shows the placeholder again, and leaves focus on the field. */
+export const ClearEmpties = {
+  tags: ['!dev', '!visual'],
+  args: { clearable: true, label: 'Colour when lit', placeholder: 'Theme default', value: 'warning' },
+  play: async () => {
+    const field = screen.getByRole('combobox', { name: 'Colour when lit' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+
+    await expect(field).toHaveTextContent('Theme default');
+    await expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+    await expect(field).toHaveFocus();
   }
 } satisfies Story;

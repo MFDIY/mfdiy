@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from 'rea
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
+import { fieldBoxClass, fieldButtonClass } from '../Field/fieldStyles.js';
 import { Icon } from '../Icon/Icon.js';
 import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
@@ -59,36 +60,15 @@ type Group = { value: string; items: SearchListItem[] };
 const inputClass = designSystem({
   appearance: 'none',
   backgroundColor: 'transparent',
-  // Like TextField: the border brightens while focused, and while pressed so it doesn't flicker.
-  borderColor: { default: 'line', hover: 'line.strong', active: 'focus', focusVisible: 'focus' },
-  borderStyle: 'solid',
-  borderWidth: 'hairline',
+  borderStyle: 'hidden',
   color: { default: 'text', placeholder: 'text.faint' },
+  flexGrow: '1',
   fontFamily: 'inherit',
   fontSize: 'body',
-  height: 'control',
   lineHeight: 'body',
+  minWidth: 'none',
   outlineStyle: 'none',
-  paddingLeft: '3x',
-  paddingRight: '6x',
-  width: 'full'
-});
-
-const clearClass = designSystem({
-  alignItems: 'center',
-  appearance: 'none',
-  backgroundColor: 'transparent',
-  borderStyle: 'hidden',
-  color: { default: 'text.dim', hover: 'text' },
-  cursor: 'pointer',
-  display: 'flex',
-  height: 'control',
-  justifyContent: 'center',
-  outlineStyle: 'none',
-  position: 'absolute',
-  right: 'none',
-  top: 'none',
-  width: 'control'
+  paddingInline: '3x'
 });
 
 /** Scrolls on its own, below the search field. */
@@ -175,7 +155,7 @@ export function SearchList({
                 </Text>
               </Box>
             ) : null}
-            <Box position='relative'>
+            <Box className={fieldBoxClass({ disabled: false, invalid: false, open: false })}>
               <Autocomplete.Input
                 aria-describedby={back ? headingId : undefined}
                 aria-label={label}
@@ -183,7 +163,7 @@ export function SearchList({
                 placeholder={placeholder}
                 ref={inputRef}
               />
-              <Autocomplete.Clear aria-label='Clear search' className={clearClass}>
+              <Autocomplete.Clear aria-label='Clear search' className={fieldButtonClass}>
                 <Icon name='close' />
               </Autocomplete.Clear>
             </Box>

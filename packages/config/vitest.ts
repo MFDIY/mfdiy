@@ -19,7 +19,10 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
       extends: true,
       test: {
         name: 'unit',
-        include: ['src/**/*.test.{ts,tsx}']
+        include: ['src/**/*.test.{ts,tsx}'],
+        // Vitest keys its module cache on each file alone, but a .css.ts is evaluated with what it
+        // imports, so a change to the styles' values would leave tests running on stale ones.
+        fsModuleCache: false
       }
     },
     {
@@ -44,6 +47,7 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
       },
       test: {
         name: 'storybook',
+        fsModuleCache: false,
         setupFiles: [join(import.meta.dirname, 'storybook.setup.ts')],
         browser: {
           enabled: true,
