@@ -3,10 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ComponentProps } from 'react';
 import { expect, screen, userEvent } from 'storybook/test';
 
-import { Stack } from '../Stack/Stack.js';
-import { Text } from '../Text/Text.js';
-
-import { appearances, SegmentedControl } from './SegmentedControl.js';
+import { SegmentedControl } from './SegmentedControl.js';
 
 /** SegmentedControl is controlled; in a story, something has to hold the choice, like a page would. */
 function ChoosableSegmentedControl({
@@ -38,7 +35,6 @@ const meta = {
   title: 'Components / SegmentedControl',
   component: SegmentedControl,
   argTypes: {
-    appearance: { control: { type: 'select' }, options: appearances },
     description: { control: { type: 'text' } },
     disabled: { control: { type: 'boolean' } },
     error: { control: { type: 'text' } },
@@ -47,7 +43,6 @@ const meta = {
     value: { control: { type: 'select' }, options: [null, ...colours.map(colour => colour.value)] }
   },
   args: {
-    appearance: undefined,
     description: undefined,
     disabled: false,
     error: undefined,
@@ -75,23 +70,6 @@ export const Default = {} satisfies Story;
 
 export const Chosen = { args: { label: 'Colour when lit', value: 'warning' } } satisfies Story;
 
-/** The three ways the chosen segment can stand out, to choose between. */
-export const Compare = {
-  args: { label: 'Colour when lit', value: 'warning' },
-  render: args => (
-    <Stack spacing='6x'>
-      {appearances.map(appearance => (
-        <Stack key={appearance} spacing='2x'>
-          <Text color='text.dim' variant='label'>
-            {appearance}
-          </Text>
-          <ChoosableSegmentedControl {...args} appearance={appearance} />
-        </Stack>
-      ))}
-    </Stack>
-  )
-} satisfies Story;
-
 export const WithError = {
   args: { error: 'Choose a colour the theme has.', label: 'Colour when lit', value: 'critical' }
 } satisfies Story;
@@ -108,14 +86,16 @@ export const ClickChooses = {
   }
 } satisfies Story;
 
-/** The group is named by its label; arrow keys move the choice. */
+/** The group is named by its label; arrow keys move the choice; the frame stays as it is. */
 export const KeyboardChooses = {
   tags: ['!dev', '!visual'],
   args: { label: 'Colour when lit', value: 'warning' },
   play: async () => {
-    await expect(screen.getByRole('radiogroup', { name: 'Colour when lit' })).toBeInTheDocument();
+    const group = screen.getByRole('radiogroup', { name: 'Colour when lit' });
+    const resting = getComputedStyle(group).borderTopColor;
 
     await userEvent.tab();
+    await expect(getComputedStyle(group).borderTopColor).toBe(resting);
     await userEvent.keyboard('{ArrowRight}');
     await expect(screen.getByRole('radio', { name: 'Critical' })).toBeChecked();
   }
