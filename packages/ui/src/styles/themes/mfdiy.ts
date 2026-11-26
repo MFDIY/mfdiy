@@ -61,7 +61,7 @@ export const mfdiy: Record<PrimitiveTokenName, string> = {
   'critical.8': '#ff5f4a',
   'critical.9': '#ffd9d3',
 
-  // Martian Mono isn't bundled yet; it arrives with the rebuilt interface.
+  // Bundled (`fonts.css.ts`); the fallbacks only show while it loads.
   'font.text': '"Martian Mono", ui-monospace, monospace',
   'font.numeric': '"Martian Mono", ui-monospace, monospace',
   'label.case': 'uppercase',
