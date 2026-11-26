@@ -11,7 +11,7 @@ const groupClass = (invalid: boolean, disabled: boolean) =>
     alignItems: 'stretch',
     borderColor: invalid
       ? 'status.critical'
-      : { default: 'line', hover: 'line.strong', focusWithin: 'focus', disabled: 'line' },
+      : { default: 'line', hover: 'line.strong', active: 'focus', focusWithin: 'focus', disabled: 'line' },
     borderStyle: disabled ? 'dashed' : 'solid',
     borderWidth: 'hairline',
     display: 'flex',
