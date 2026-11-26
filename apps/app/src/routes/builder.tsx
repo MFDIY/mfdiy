@@ -5,7 +5,7 @@ import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { PageEditor } from '@mfdiy/builder';
 import { removeWidget } from '@mfdiy/schema';
-import { Box, Button, Dialog, Inline, SegmentedControl, Stack, Text, TextLink } from '@mfdiy/ui/components';
+import { Box, Button, Dialog, Inline, Stack, Text, TextLink } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
 
@@ -157,11 +157,19 @@ function Editor({ id }: { id: string }) {
               {document.name}
             </Text>
             {page && document.pages.length > 1 ? (
-              <SegmentedControl
-                onChange={handlePageChange}
-                options={document.pages.map(candidate => ({ label: candidate.name, value: candidate.id }))}
-                value={page.id}
-              />
+              // Plain buttons until page tabs get their own Tabs component.
+              <Inline aria-label='Pages' spacing='1x' tagName='nav'>
+                {document.pages.map(candidate => (
+                  <Button
+                    aria-current={candidate.id === page.id ? 'page' : undefined}
+                    key={candidate.id}
+                    onClick={() => handlePageChange(candidate.id)}
+                    variant={candidate.id === page.id ? 'primary' : 'quiet'}
+                  >
+                    {candidate.name}
+                  </Button>
+                ))}
+              </Inline>
             ) : null}
           </Inline>
           <Inline alignItems='center' spacing='3x'>

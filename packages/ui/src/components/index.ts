@@ -4,8 +4,6 @@ export { Button, type ButtonProps } from './Button/Button.js';
 
 export { ButtonLink, type ButtonLinkProps } from './ButtonLink/ButtonLink.js';
 
-export { ButtonGroup } from './ButtonGroup/ButtonGroup.js';
-
 export { Columns, order as columnsOrder, tagNames as columnsTagNames, type ColumnsProps } from './Columns/Columns.js';
 
 export type { Command } from './CommandPalette/Command.js';
@@ -22,8 +20,6 @@ export { Link, type LinkBaseProps } from './Link/Link.js';
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
-
-export { SegmentedControl, type SegmentedControlOptionProps } from './SegmentedControl/SegmentedControl.js';
 
 export { Stack, order as stackOrder, tagNames as stackTagNames, type StackProps } from './Stack/Stack.js';
 
