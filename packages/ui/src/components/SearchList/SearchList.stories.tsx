@@ -144,3 +144,15 @@ export const TypingSearches = {
     await expect(screen.queryByRole('option', { name: 'Front' })).not.toBeInTheDocument();
   }
 } satisfies Story;
+
+/** The × empties the search and lists everything again. */
+export const ClearEmptiesSearch = {
+  tags: ['!dev', '!visual'],
+  args: { groups: data, query: 'quan' },
+  play: async () => {
+    await userEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+    await expect(screen.getByRole('combobox')).toHaveValue('');
+    await expect(screen.getByRole('option', { name: 'Front' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument());
+  }
+} satisfies Story;

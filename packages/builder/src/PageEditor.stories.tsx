@@ -123,7 +123,7 @@ export const AddByDragging: Story = {
 
     await userEvent.type(screen.getByRole('combobox'), 'fuel');
 
-    const fuel = await screen.findByRole('option', { name: /Fuel · Bar/ });
+    const fuel = await screen.findByRole('option', { name: /^Fuel\s*Bar/ });
 
     await userEvent.pointer([
       { keys: '[MouseLeft>]', target: fuel },
@@ -164,7 +164,7 @@ export const HintAfterIdleClicks: Story = {
   play: async ({ userEvent }) => {
     await userEvent.type(screen.getByRole('combobox'), 'fuel');
 
-    const fuel = await screen.findByRole('option', { name: /Fuel · Bar/ });
+    const fuel = await screen.findByRole('option', { name: /^Fuel\s*Bar/ });
 
     await userEvent.click(fuel);
     await userEvent.click(fuel);

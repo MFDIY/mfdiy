@@ -10,10 +10,8 @@ import { Text } from '../Text/Text.js';
 export type SearchListItem = {
   id: string;
   label: string;
-  /** A second, dimmed line. */
+  /** A second, dimmed line: what the item does, or what it belongs to. */
   description?: string | undefined;
-  /** Dimmed, after the label: what the item belongs to, e.g. the widget for a piece of data. */
-  detail?: string | undefined;
   /** A small picture before the label. */
   preview?: ReactNode | undefined;
   /** Choosing it opens more choices rather than finishing. */
@@ -70,8 +68,26 @@ const inputClass = designSystem({
   height: 'control',
   lineHeight: 'body',
   outlineStyle: 'none',
-  paddingInline: '3x',
+  paddingLeft: '3x',
+  paddingRight: '6x',
   width: 'full'
+});
+
+const clearClass = designSystem({
+  alignItems: 'center',
+  appearance: 'none',
+  backgroundColor: 'transparent',
+  borderStyle: 'hidden',
+  color: { default: 'text.dim', hover: 'text' },
+  cursor: 'pointer',
+  display: 'flex',
+  height: 'control',
+  justifyContent: 'center',
+  outlineStyle: 'none',
+  position: 'absolute',
+  right: 'none',
+  top: 'none',
+  width: 'control'
 });
 
 /** Scrolls on its own, below the search field. */
@@ -162,13 +178,20 @@ export function SearchList({
                 </Text>
               </Box>
             ) : null}
-            <Autocomplete.Input
-              aria-describedby={back ? headingId : undefined}
-              aria-label={label}
-              className={inputClass}
-              placeholder={placeholder}
-              ref={inputRef}
-            />
+            <Box position='relative'>
+              <Autocomplete.Input
+                aria-describedby={back ? headingId : undefined}
+                aria-label={label}
+                className={inputClass}
+                placeholder={placeholder}
+                ref={inputRef}
+              />
+              <Autocomplete.Clear aria-label='Clear search' className={clearClass}>
+                <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
+                  <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
+                </Box>
+              </Autocomplete.Clear>
+            </Box>
           </Stack>
         </Box>
         <Autocomplete.Empty>
@@ -213,17 +236,7 @@ export function SearchList({
                     ) : null}
                     <Box flexGrow='1' minWidth='none'>
                       <Stack spacing='2x'>
-                        <Text truncate variant='body'>
-                          {item.label}
-                          {item.detail ? (
-                            <>
-                              {' · '}
-                              <Text color='text.dim' tagName='span'>
-                                {item.detail}
-                              </Text>
-                            </>
-                          ) : null}
-                        </Text>
+                        <Text variant='body'>{item.label}</Text>
                         {item.description ? (
                           <Text color='text.dim' variant='body'>
                             {item.description}

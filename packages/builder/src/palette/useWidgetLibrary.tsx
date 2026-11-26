@@ -91,8 +91,7 @@ export function useWidgetLibrary({ catalogue, documentTokens, pageTokens }: Widg
     return {
       id,
       label,
-      // Within one widget's data, its name says nothing new.
-      detail: picked ? undefined : manifest.label,
+      description: picked ? undefined : manifest.label,
       preview: <WidgetPreview {...tokens} label={label} manifest={manifest} signal={signal} />
     };
   }

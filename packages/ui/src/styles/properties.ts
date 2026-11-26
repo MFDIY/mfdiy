@@ -331,6 +331,7 @@ export const wordBreak = ['break-word', 'break-all', 'normal'] as const;
 export const width = {
   ...spacing,
   auto: 'auto',
+  control: v['size.control'],
   panel: v['size.panel'],
   'canvas.handle': v['size.canvas.handle'],
   'fit-content': 'fit-content',
