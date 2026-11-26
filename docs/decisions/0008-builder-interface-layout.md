@@ -12,7 +12,7 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 - **Top toolbar** (slim): profile name, page tabs, Save and Save as new (0019), undo / redo, remove, preview shape, zoom, preview toggle.
 - **Properties panel** on the right for the selected widget: bindings, options, action, theme overrides, position and size.
 - **Canvas** fills the rest, centred and fitted to the preview shape.
-- **No permanent widget palette.** Tapping or clicking an empty cell opens the command palette (see "Add" in 0006). It's centred on the screen, and **dims but doesn't blur** what's behind it.
+- **No permanent widget palette.** Tapping or clicking an empty cell opens the command palette (see "Add" in 0006). It's centred on the screen, and **blurs** what's behind it, as in Bonsai.
 
 ### Narrow screens (phones)
 

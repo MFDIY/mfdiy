@@ -61,8 +61,6 @@ export const backgroundColor = {
   'elevation.depressed': colorSchemeVars['color.surface.elevation.depressed'],
   'elevation.floating': colorSchemeVars['color.surface.elevation.floating'],
   'elevation.raised': colorSchemeVars['color.surface.elevation.raised'],
-  /** Dims what's behind a modal, leaving it readable. */
-  overlay: `color-mix(in srgb, ${colorSchemeVars['color.surface.page']} 50%, transparent)`,
   page: colorSchemeVars['color.surface.page'],
   'page-transparent': `color-mix(${colorSchemeVars['color.surface.page']} 85%, transparent)`,
   panel: colorSchemeVars['color.surface.panel'],

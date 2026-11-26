@@ -100,6 +100,24 @@ export const Selected: Story = { args: { initialSelectedId: 'speed' } };
 /** Handles must leave room to drag a one-cell widget. */
 export const SmallestWidgetSelected: Story = { args: { aspectRatio: 9 / 19, initialSelectedId: 'doors' } };
 
+/** Every widget at the size it starts at: a sixth by a quarter of the page, 4 × 4 cells here (0006). */
+export const DefaultSizes: Story = {
+  tags: ['!dev'],
+  args: {
+    aspectRatio: 16 / 10,
+    initialLayout: {
+      ...layout,
+      areas: {
+        speed: { column: 1, row: 1, columnSpan: 4, rowSpan: 4 },
+        fuel: { column: 6, row: 1, columnSpan: 4, rowSpan: 4 },
+        gear: { column: 11, row: 1, columnSpan: 4, rowSpan: 4 },
+        doors: { column: 16, row: 1, columnSpan: 4, rowSpan: 4 }
+      }
+    },
+    widgets: widgets.filter(widget => ['speed', 'fuel', 'gear', 'doors'].includes(widget.id))
+  }
+};
+
 export const Empty: Story = { args: { initialLayout: { ...layout, areas: {} }, widgets: [] } };
 
 /** No free cells: widgets can still be moved, overlapping others meanwhile. */
