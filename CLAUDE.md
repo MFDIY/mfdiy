@@ -27,6 +27,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0019: Saving profiles](docs/decisions/0019-saving-profiles.md)
 - [0020: What the first public beta contains](docs/decisions/0020-launch-mvp.md)
 - [0021: Testing and visual regression](docs/decisions/0021-testing.md)
+- [0022: One design language for the brand and the MFDs](docs/decisions/0022-one-design-language.md)
 
 ## Working with the maintainer
 
