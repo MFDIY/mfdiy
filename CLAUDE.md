@@ -89,6 +89,7 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 - Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.
 - `useEffect` is for synchronising with external systems only; derive values during render.
 - Keep components driven by props, so every state worth checking can be a story; stories are the UI tests (0021).
+- In stories, every prop with a fixed set of values (variant, size, width, …) is picked from a list. Export the values from the component (e.g. `variants` in `props/Variant.ts`) and build the control with `createArgTypeFromConditionalStyleProp` from `packages/ui/.storybook/`, so Storybook can't drift from the code.
 
 ## Planned architecture
 
