@@ -42,7 +42,7 @@ export function Modal({ children, className, dismissible, onClose, titleId }: Mo
   return (
     <Box
       aria-labelledby={titleId}
-      backgroundColor='surface'
+      backgroundColor='surface.raised'
       borderColor='line.strong'
       borderStyle='solid'
       borderWidth='hairline'

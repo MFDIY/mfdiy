@@ -170,7 +170,7 @@ export function CommandPalette({
           <Box
             {...getFloatingProps({ onKeyDown: handleKeyDown })}
             aria-label={label}
-            backgroundColor='surface'
+            backgroundColor='surface.raised'
             borderColor='line.strong'
             borderStyle='solid'
             className={clsx(styles.container, styles.transitionDuration)}
