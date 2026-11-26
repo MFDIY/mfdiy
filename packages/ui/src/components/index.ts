@@ -24,6 +24,17 @@ export { Menu, MenuItem, MenuSeparator, type MenuItemProps, type MenuProps } fro
 
 export { NumberField, type NumberFieldProps } from './NumberField/NumberField.js';
 
+export {
+  PanelLayout,
+  panelForms,
+  panelSides,
+  usePanelForm,
+  type Panel,
+  type PanelForm,
+  type PanelLayoutProps,
+  type PanelSide
+} from './PanelLayout/PanelLayout.js';
+
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
