@@ -47,7 +47,6 @@ export const chromeTokens = {
   hover: alpha(mfdiy['primary.8'], '14'),
   pressed: alpha(mfdiy['primary.8'], '33'),
   focus: mfdiy['primary.8'],
-  'focus.glow': `0 0 8px ${alpha(mfdiy['primary.8'], '55')}`,
   'critical.hover': alpha(mfdiy['critical.8'], '1a'),
   'critical.pressed': alpha(mfdiy['critical.8'], '33'),
 

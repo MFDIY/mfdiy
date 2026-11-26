@@ -6,14 +6,21 @@ import { Text } from '../Text/Text.js';
 
 export type TextFieldProps = {
   label: string;
+  /** Explains what's wrong with the value. Shown under the field, which turns red. */
+  error?: string | undefined;
+  disabled?: boolean | undefined;
   maxLength?: number | undefined;
   /** Fires with the new value. */
   onChange: (value: string) => void;
+  /** Shown while the field is empty. */
+  placeholder?: string | undefined;
   value: string;
 };
 
-export function TextField({ label, maxLength, onChange, value }: TextFieldProps) {
+/** A labelled, single-line text field with the shared control height and Button's focus ring. */
+export function TextField({ disabled, error, label, maxLength, onChange, placeholder, value }: TextFieldProps) {
   const id = useId();
+  const errorId = useId();
 
   return (
     <Stack spacing='2x'>
@@ -21,13 +28,16 @@ export function TextField({ label, maxLength, onChange, value }: TextFieldProps)
         {label}
       </Text>
       <Box
+        aria-describedby={error ? errorId : undefined}
+        aria-invalid={error ? true : undefined}
         autoComplete='off'
         backgroundColor='transparent'
-        borderColor={{ default: 'line', hover: 'line.strong', focusVisible: 'focus' }}
-        borderStyle='solid'
+        borderColor={error ? 'status.critical' : { default: 'line', hover: 'line.strong', disabled: 'line' }}
+        borderStyle={disabled ? 'dashed' : 'solid'}
         borderWidth='hairline'
-        boxShadow={{ default: 'none', focusVisible: 'focus.glow' }}
-        color='text'
+        color={{ default: 'text', placeholder: 'text.faint', disabled: 'text.faint' }}
+        cursor={{ default: 'text', disabled: 'not-allowed' }}
+        disabled={disabled}
         fontSize='body'
         fontWeight='regular'
         height='control'
@@ -37,13 +47,22 @@ export function TextField({ label, maxLength, onChange, value }: TextFieldProps)
         maxLength={maxLength}
         onChange={event => onChange(event.target.value)}
         onFocus={event => event.target.select()}
-        outlineStyle='none'
+        outlineColor='focus'
+        outlineOffset='focus'
+        outlineStyle={{ default: 'none', focusVisible: 'solid' }}
+        outlineWidth='focus'
         paddingInline='3x'
+        placeholder={placeholder}
         tagName='input'
         type='text'
         value={value}
         width='full'
       />
+      {error ? (
+        <Text color='status.critical' id={errorId} variant='body'>
+          {error}
+        </Text>
+      ) : null}
     </Stack>
   );
 }

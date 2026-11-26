@@ -73,7 +73,6 @@ export const borderColor = {
 } as const;
 
 export const boxShadow = {
-  'focus.glow': v['focus.glow'],
   'canvas.halo': v['canvas.halo'],
   'canvas.selected': v['canvas.selected'],
   none: 'none'

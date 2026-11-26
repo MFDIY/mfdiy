@@ -97,15 +97,10 @@ export function TextInput({
         aria-labelledby={typeof ariaLabel === 'undefined' ? ariaLabelledBy : undefined}
         backgroundColor='transparent'
         borderColor={
-          error
-            ? 'status.critical'
-            : elevation === 'base'
-              ? { default: 'line', hover: 'line.strong', focusVisible: hideFocusRing ? 'line' : 'focus' }
-              : 'transparent'
+          error ? 'status.critical' : elevation === 'base' ? { default: 'line', hover: 'line.strong' } : 'transparent'
         }
         borderStyle='solid'
         borderWidth='hairline'
-        boxShadow={{ default: 'none', focusVisible: hideFocusRing ? 'none' : 'focus.glow' }}
         className={[textStyles.variants['body'], styles.removeNativeDecoration, designSystemClassNames, className]}
         color={{
           default: 'text',
@@ -115,7 +110,10 @@ export function TextInput({
         height='control'
         id={id}
         onChange={handleChange}
-        outlineStyle='none'
+        outlineColor='focus'
+        outlineOffset='focus'
+        outlineStyle={hideFocusRing ? 'none' : { default: 'none', focusVisible: 'solid' }}
+        outlineWidth='focus'
         paddingLeft='3x'
         paddingRight={typeof onClear === 'undefined' ? '3x' : '6x'}
         ref={mergedRef}
