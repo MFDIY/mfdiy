@@ -1,3 +1,5 @@
+import type { IconName } from '../Icon/Icon.js';
+import type { IconPosition } from './props/IconPosition.js';
 import type { Width } from './props/Width.js';
 
 import { useState, type FocusEvent, type KeyboardEvent, type PointerEvent, type PropsWithChildren } from 'react';
@@ -9,6 +11,7 @@ import {
   type DesignSystem
 } from '../../styles/design-system.js';
 import { Box, type CssVariablesProp, type IntrinsicProps as BoxIntrinsicProps } from '../Box/Box.js';
+import { Icon } from '../Icon/Icon.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './ButtonBase.css.js';
@@ -38,6 +41,10 @@ export type ButtonBaseProps = BoxIntrinsicProps<'button'> &
      * nested components.
      */
     cssVariables?: CssVariablesProp | undefined;
+    /** An icon beside the text; without text, the button is square. Name an icon-only button with `aria-label`. */
+    icon?: IconName | undefined;
+    /** Puts the icon before the text (the default) or after it. */
+    iconPosition?: IconPosition | undefined;
     /** Sets the button width. */
     width?: ContainerSizeConditionalValue<Width> | undefined;
   }>;
@@ -57,6 +64,8 @@ export function ButtonBase({
   flexBasis,
   flexGrow,
   flexShrink,
+  icon,
+  iconPosition = 'leading',
   justifyContent,
   onBlur,
   onKeyDown,
@@ -170,6 +179,7 @@ export function ButtonBase({
         transitionTimingFunction='ease-out'
         width='full'
       >
+        {icon && iconPosition === 'leading' ? <Icon name={icon} /> : null}
         {children && (
           <Box textAlign={textAlign} width={textWidth}>
             <Text variant='label' whiteSpace='nowrap'>
@@ -177,6 +187,7 @@ export function ButtonBase({
             </Text>
           </Box>
         )}
+        {icon && iconPosition === 'trailing' ? <Icon name={icon} /> : null}
       </Box>
     </Box>
   );

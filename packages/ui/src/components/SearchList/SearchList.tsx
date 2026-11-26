@@ -3,7 +3,8 @@ import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from 'rea
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
+import { Icon } from '../Icon/Icon.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 
@@ -168,11 +169,7 @@ export function SearchList({
           <Stack spacing='3x'>
             {back ? (
               <Box alignItems='center' display='flex' gap='2x'>
-                <Button aria-label='Back' onClick={back.onBack} variant='quiet'>
-                  <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                    <Box d='M8 2L4 6l4 4' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-                  </Box>
-                </Button>
+                <IconButton icon='chevron_left' label='Back' onClick={back.onBack} />
                 <Text color='text.dim' id={headingId} variant='label'>
                   {back.label}
                 </Text>
@@ -187,9 +184,7 @@ export function SearchList({
                 ref={inputRef}
               />
               <Autocomplete.Clear aria-label='Clear search' className={clearClass}>
-                <Box aria-hidden display='block' height='4x' tagName='svg' viewBox='0 0 12 12' width='4x'>
-                  <Box d='M2 2l8 8M10 2l-8 8' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
-                </Box>
+                <Icon name='close' />
               </Autocomplete.Clear>
             </Box>
           </Stack>
@@ -245,17 +240,8 @@ export function SearchList({
                       </Stack>
                     </Box>
                     {item.opens ? (
-                      <Box
-                        aria-hidden
-                        color='text.dim'
-                        display='block'
-                        flexShrink='0'
-                        height='4x'
-                        tagName='svg'
-                        viewBox='0 0 12 12'
-                        width='4x'
-                      >
-                        <Box d='M4 2l4 4-4 4' fill='none' stroke='currentColor' strokeWidth='1.5' tagName='path' />
+                      <Box color='text.dim' flexShrink='0'>
+                        <Icon name='chevron_right' />
                       </Box>
                     ) : null}
                   </Autocomplete.Item>

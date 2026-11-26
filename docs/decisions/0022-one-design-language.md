@@ -56,6 +56,7 @@ The builder chrome follows the **Phosphor console** direction in its **Panel whi
 - **Flat**: no elevation or shadows. Structure comes from hairlines and tone. This matches the MFDs, which are flat; Bonsai's chrome looked three-dimensional next to them.
 - **No hue of its own**: warm white on near-black. Selection and the primary action invert to solid white with dark ink. Colour is reserved for meaning (caution, danger) and for the user's MFD, which becomes the most colourful thing on screen.
 - **Mono, condensed type** (Martian Mono at 87.5 % width). Uppercase only for short labels and buttons; names, values, descriptions and headings in mixed case, for readability. Sizes: label 10.5 px, body 12 px, value 13 px, heading 15 px (bold). **No italics anywhere**: Martian Mono has none, so the reset sets `font-style: normal` on everything a browser italicises.
+- **Icons are Material Symbols, Sharp, weight 300**: square ends to match the square controls, and strokes about as thick as the text and hairlines. One size, made for controls. Only the icons the chrome uses are bundled, generated as paths (`npm run icons -w @mfdiy/ui`), so they work offline like the fonts. An icon-only button always has a name, shown as a tooltip with a mouse or keyboard.
 - **Editing controls on the canvas** (selection, handles) use a hue MFD themes are unlikely to use (blue), the same in every theme (0003).
 
 ## Why

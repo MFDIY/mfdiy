@@ -1,6 +1,6 @@
 export { Box, tagNames as boxTagNames, type BoxProps } from './Box/Box.js';
 
-export { Button, type ButtonProps } from './Button/Button.js';
+export { Button, iconPositions as buttonIconPositions, type ButtonProps } from './Button/Button.js';
 
 export { ButtonLink, type ButtonLinkProps } from './ButtonLink/ButtonLink.js';
 
@@ -9,6 +9,10 @@ export { Columns, order as columnsOrder, tagNames as columnsTagNames, type Colum
 export { Dialog, type DialogProps } from './Dialog/Dialog.js';
 
 export { Divider, type DividerProps } from './Divider/Divider.js';
+
+export { Icon, iconNames, type IconName, type IconProps } from './Icon/Icon.js';
+
+export { IconButton, type IconButtonProps } from './IconButton/IconButton.js';
 
 export { Inline, order as inlineOrder, tagNames as inlineTagNames, type InlineProps } from './Inline/Inline.js';
 
@@ -45,3 +49,5 @@ export {
 } from './SearchList/SearchList.js';
 
 export { ToastProvider, useToast, type ToastOptions } from './Toast/Toast.js';
+
+export { Tooltip, type TooltipProps } from './Tooltip/Tooltip.js';

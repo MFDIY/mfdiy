@@ -3,5 +3,5 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2023"]
   },
-  "include": ["./.storybook/**/*", "./src/**/*", "./vite.config.ts"]
+  "include": ["./.storybook/**/*", "./scripts/**/*", "./src/**/*", "./vite.config.ts"]
 }
