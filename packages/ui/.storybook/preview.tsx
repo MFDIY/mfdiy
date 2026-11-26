@@ -1,70 +1,19 @@
-import type { colorSchemeVars, globalVars } from '../src/styles/design-system.js';
 import type { Preview } from '@storybook/react-vite';
-import type { createGlobalTheme } from '@vanilla-extract/css';
 
 import { Title, Subtitle, Description, Primary, Stories, Controls } from '@storybook/addon-docs/blocks';
-import { DecoratorHelpers } from '@storybook/addon-themes';
 import { MemoryRouter } from 'react-router';
+
+import '../src/styles/reset.css.js';
+import '../src/styles/fonts.css.js';
+import '../src/styles/themes/app.css.js';
 
 import { Box } from '../src/components/Box/Box.js';
 import { PreferencesProvider } from '../src/contexts/PreferencesProvider/PreferencesProvider.js';
-import { designSystem } from '../src/styles/design-system.js';
-import {
-  darkColorSchemeTokens as appDarkColorSchemeTokens,
-  globalTokens as appGlobalTokens,
-  lightColorSchemeTokens as appLightColorSchemeTokens
-} from '../src/styles/themes/app-tokens.js';
 
 import * as styles from './preview.css.js';
 
-type GlobalTokens = Parameters<typeof createGlobalTheme<typeof globalVars>>[2];
-
-type ColorSchemeTokens = Parameters<typeof createGlobalTheme<typeof colorSchemeVars>>[2];
-
-type Theme = {
-  themeSelector: string;
-  globalTokens: GlobalTokens;
-  colorSchemeTokens: {
-    light: ColorSchemeTokens;
-    dark: ColorSchemeTokens;
-  };
-};
-
-const { initializeThemeState, pluckThemeFromContext } = DecoratorHelpers;
-
-const THEMES = {
-  App: {
-    themeSelector: styles.themeSelectors['App'],
-    globalTokens: appGlobalTokens,
-    colorSchemeTokens: {
-      light: appLightColorSchemeTokens,
-      dark: appDarkColorSchemeTokens
-    }
-  }
-} as const satisfies Record<string, Theme>;
-
-const DEFAULT_THEME = 'App' as const satisfies keyof typeof THEMES;
-
-initializeThemeState(Object.keys(THEMES), DEFAULT_THEME);
-
 export default {
   tags: ['autodocs', 'visual'],
-  globalTypes: {
-    colorScheme: {
-      description: 'Color scheme',
-      toolbar: {
-        title: 'Color scheme',
-        items: [
-          { value: 'light', title: 'Light', icon: 'sun' },
-          { value: 'dark', title: 'Dark', icon: 'moon' }
-        ],
-        dynamicTitle: true
-      }
-    }
-  },
-  initialGlobals: {
-    colorScheme: 'light'
-  },
   parameters: {
     options: {
       storySort: {
@@ -135,38 +84,12 @@ export default {
         <Story />
       </MemoryRouter>
     ),
-    (Story, context) => {
-      const colorScheme = (context.globals['colorScheme'] ?? 'light') as string;
-      document.documentElement.setAttribute('data-color-scheme', colorScheme);
-      document.documentElement.classList.add(
-        ...designSystem({ backgroundColor: 'page', containerType: 'inline-size' }).split(' ')
-      );
-
-      return (
-        <Box backgroundColor='page' className={styles.storyBackground} containerType='inline-size' padding='6x'>
-          <PreferencesProvider>
-            <Story />
-          </PreferencesProvider>
-        </Box>
-      );
-    },
-    (Story, context) => {
-      const selectedTheme = pluckThemeFromContext(context) as keyof typeof THEMES;
-      const activeTheme = selectedTheme || DEFAULT_THEME;
-
-      // Also on the root, for what's portalled out of the story, like the command palette.
-      document.documentElement.classList.remove(...Object.values(THEMES).map(theme => theme.themeSelector));
-      document.documentElement.classList.add(THEMES[activeTheme].themeSelector);
-
-      return (
-        <Box
-          className={THEMES[activeTheme].themeSelector}
-          data-attribute-theme={activeTheme}
-          id='story-decorator-theme'
-        >
-          {Story(context)}
-        </Box>
-      );
-    }
+    Story => (
+      <Box backgroundColor='surface' className={styles.storyBackground} containerType='inline-size' padding='6x'>
+        <PreferencesProvider>
+          <Story />
+        </PreferencesProvider>
+      </Box>
+    )
   ]
 } satisfies Preview;

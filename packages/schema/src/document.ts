@@ -8,7 +8,7 @@ import { TokenValuesSchema } from './tokens.js';
  * An MFD document: what the builder edits and the display renders. This is a first draft;
  * expect it to grow (transforms, groups, the edge-button rail). Layout rules: docs/decisions/0006.
  */
-export const DOCUMENT_SCHEMA_VERSION = 1;
+export const DOCUMENT_SCHEMA_VERSION = 2;
 
 /** Placement on the page grid, in cells. Relative units only (see docs/decisions/0001). */
 export const AreaSchema = v.object({

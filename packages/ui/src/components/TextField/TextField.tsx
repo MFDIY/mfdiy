@@ -6,45 +6,64 @@ import { Text } from '../Text/Text.js';
 
 export type TextFieldProps = {
   label: string;
+  /** Explains what's wrong with the value. Shown under the field, which turns red. */
+  error?: string | undefined;
+  disabled?: boolean | undefined;
   maxLength?: number | undefined;
   /** Fires with the new value. */
   onChange: (value: string) => void;
+  /** Shown while the field is empty. */
+  placeholder?: string | undefined;
   value: string;
 };
 
-export function TextField({ label, maxLength, onChange, value }: TextFieldProps) {
+/** A labelled, single-line text field with the shared control height. Its border brightens while focused. */
+export function TextField({ disabled, error, label, maxLength, onChange, placeholder, value }: TextFieldProps) {
   const id = useId();
+  const errorId = useId();
 
   return (
     <Stack spacing='2x'>
-      <Text htmlFor={id} tagName='label' variant='field.label'>
+      <Text color='text.dim' htmlFor={id} tagName='label' variant='label'>
         {label}
       </Text>
       <Box
+        aria-describedby={error ? errorId : undefined}
+        aria-invalid={error ? true : undefined}
         autoComplete='off'
-        backgroundColor='elevation.depressed'
-        borderColor='input.text'
-        borderRadius='2x'
-        borderStyle='solid'
-        borderWidth='input.text'
-        color='input.text'
-        fontSize='input.text'
-        fontWeight='input'
+        backgroundColor='transparent'
+        borderColor={
+          error
+            ? 'status.critical'
+            : { default: 'line', hover: 'line.strong', active: 'focus', focusVisible: 'focus', disabled: 'line' }
+        }
+        borderStyle={disabled ? 'dashed' : 'solid'}
+        borderWidth='hairline'
+        color={{ default: 'text', placeholder: 'text.faint', disabled: 'text.faint' }}
+        cursor={{ default: 'text', disabled: 'not-allowed' }}
+        disabled={disabled}
+        fontSize='body'
+        fontWeight='regular'
+        height='control'
         id={id}
-        letterSpacing='input'
-        lineHeight='input'
+        letterSpacing='none'
+        lineHeight='body'
         maxLength={maxLength}
         onChange={event => onChange(event.target.value)}
         onFocus={event => event.target.select()}
-        outlineColor='focus-ring'
-        outlineStyle={{ default: 'none', focusVisible: 'solid' }}
-        outlineWidth='focus-ring'
-        padding='3x'
+        outlineStyle='none'
+        paddingInline='3x'
+        placeholder={placeholder}
         tagName='input'
         type='text'
         value={value}
         width='full'
       />
+      {error ? (
+        <Text color='status.critical' id={errorId} variant='body'>
+          {error}
+        </Text>
+      ) : null}
     </Stack>
   );
 }

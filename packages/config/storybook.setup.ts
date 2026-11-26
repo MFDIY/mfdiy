@@ -9,6 +9,8 @@ afterEach(async context => {
   const story = (context as { story?: { tags: readonly string[] } }).story;
 
   if (story?.tags.includes('visual') && context.task.result?.state !== 'fail') {
+    // Bundled fonts swap in when loaded; a screenshot taken before that would show the fallback.
+    await document.fonts.ready;
     await expect(page.elementLocator(document.body)).toMatchScreenshot();
   }
 });

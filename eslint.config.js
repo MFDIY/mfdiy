@@ -78,7 +78,14 @@ export default [
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['**/index.js']
+          patterns: [
+            { group: ['**/index.js'] },
+            {
+              group: ['@base-ui/*', 'sonner'],
+              message:
+                'Only packages/ui uses Base UI and sonner, wrapped in its own components. Use those from @mfdiy/ui (0003).'
+            }
+          ]
         }
       ],
 
@@ -171,6 +178,14 @@ export default [
           ignoreCase: false
         }
       ]
+    }
+  },
+
+  {
+    name: 'Base UI lives behind packages/ui (0003)',
+    files: ['packages/ui/**'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{ group: ['**/index.js'] }] }]
     }
   }
 ];

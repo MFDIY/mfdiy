@@ -28,6 +28,16 @@ globalStyle('fieldset, select', {
   border: 'none'
 });
 
+/** No italics anywhere (0022): Martian Mono has none, and a browser's faked slant looks broken. */
+globalStyle('address, cite, dfn, em, i, var', {
+  fontStyle: 'normal'
+});
+
+/** Links that aren't a `TextLink` take the colour of the text around them, never browser blue. */
+globalStyle('a', {
+  color: 'inherit'
+});
+
 globalStyle('ol, ul', {
   listStyleType: 'none'
 });

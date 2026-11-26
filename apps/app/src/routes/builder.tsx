@@ -5,7 +5,7 @@ import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { PageEditor } from '@mfdiy/builder';
 import { removeWidget } from '@mfdiy/schema';
-import { Box, Button, Dialog, Inline, SegmentedControl, Stack, Text, TextLink } from '@mfdiy/ui/components';
+import { Box, Button, Dialog, Inline, Text, TextLink } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
 
@@ -153,15 +153,23 @@ function Editor({ id }: { id: string }) {
             <Text variant='body'>
               <TextLink to='/'>Back</TextLink>
             </Text>
-            <Text tagName='h1' variant='heading.4'>
+            <Text tagName='h1' variant='heading'>
               {document.name}
             </Text>
             {page && document.pages.length > 1 ? (
-              <SegmentedControl
-                onChange={handlePageChange}
-                options={document.pages.map(candidate => ({ label: candidate.name, value: candidate.id }))}
-                value={page.id}
-              />
+              // Plain buttons until page tabs get their own Tabs component.
+              <Inline aria-label='Pages' spacing='1x' tagName='nav'>
+                {document.pages.map(candidate => (
+                  <Button
+                    aria-current={candidate.id === page.id ? 'page' : undefined}
+                    key={candidate.id}
+                    onClick={() => handlePageChange(candidate.id)}
+                    variant={candidate.id === page.id ? 'primary' : 'quiet'}
+                  >
+                    {candidate.name}
+                  </Button>
+                ))}
+              </Inline>
             ) : null}
           </Inline>
           <Inline alignItems='center' spacing='3x'>
@@ -169,7 +177,6 @@ function Editor({ id }: { id: string }) {
               aria-label='Undo'
               disabled={current.past.length === 0}
               onClick={() => handleTimeTravel(undo)}
-              size='large'
               title='Undo'
             >
               ↶
@@ -178,7 +185,6 @@ function Editor({ id }: { id: string }) {
               aria-label='Redo'
               disabled={current.future.length === 0}
               onClick={() => handleTimeTravel(redo)}
-              size='large'
               title='Redo'
             >
               ↷
@@ -191,13 +197,12 @@ function Editor({ id }: { id: string }) {
                   setSelectedId(null);
                 }
               }}
-              size='large'
             >
               Remove
             </Button>
           </Inline>
           <Inline alignItems='center' spacing='3x'>
-            <Text role='status' variant={failure || conflict ? 'field.error' : 'deemphasized'}>
+            <Text color={failure || conflict ? 'status.critical' : 'text.dim'} role='status' variant='body'>
               {saving
                 ? 'Saving…'
                 : failure
@@ -208,14 +213,11 @@ function Editor({ id }: { id: string }) {
                       ? 'Unsaved changes'
                       : 'Saved'}
             </Text>
-            <Button onClick={() => setDialog('save-as-new')} size='large'>
-              Save as new
-            </Button>
+            <Button onClick={() => setDialog('save-as-new')}>Save as new</Button>
             <Button
               disabled={!dirty || saving}
               onClick={() => (conflict ? setDialog('conflict') : void save())}
-              size='large'
-              variant='attention'
+              variant='primary'
             >
               Save
             </Button>
@@ -240,34 +242,28 @@ function Editor({ id }: { id: string }) {
       </Box>
 
       {blocker.state === 'blocked' ? (
-        <Dialog onClose={() => blocker.reset()} title={`Save changes to “${document.name}”?`}>
-          <Inline spacing='3x'>
-            <Button disabled={saving} onClick={() => void saveAndLeave()} size='large' variant='attention'>
-              Save
-            </Button>
-            <Button onClick={() => blocker.proceed()} size='large' variant='destructive'>
-              Discard
-            </Button>
-            <Button onClick={() => blocker.reset()} size='large'>
-              Keep editing
-            </Button>
-          </Inline>
-        </Dialog>
+        <Dialog
+          actions={
+            <>
+              <Button disabled={saving} onClick={() => void saveAndLeave()} variant='primary'>
+                Save
+              </Button>
+              <Button onClick={() => blocker.proceed()} variant='danger'>
+                Discard
+              </Button>
+              <Button onClick={() => blocker.reset()}>Keep editing</Button>
+            </>
+          }
+          onClose={() => blocker.reset()}
+          title={`Save changes to “${document.name}”?`}
+        />
       ) : null}
 
       {dialog === 'conflict' ? (
         <Dialog
-          onClose={() => setDialog(null)}
-          title={
-            watched.status === 'missing'
-              ? `“${document.name}” has been deleted`
-              : `“${document.name}” was changed on another device`
-          }
-        >
-          <Stack spacing='5x'>
-            <Text variant='body'>Your changes aren’t saved, but they’re still here.</Text>
-            <Inline spacing='3x'>
-              <Button onClick={() => setDialog('save-as-new')} size='large' variant='attention'>
+          actions={
+            <>
+              <Button onClick={() => setDialog('save-as-new')} variant='primary'>
                 Save as new
               </Button>
               {watched.status === 'ready' ? (
@@ -277,17 +273,22 @@ function Editor({ id }: { id: string }) {
                     setFailure(null);
                     setDialog(null);
                   }}
-                  size='large'
-                  variant='destructive'
+                  variant='danger'
                 >
                   Discard mine
                 </Button>
               ) : null}
-              <Button onClick={() => setDialog(null)} size='large'>
-                Keep editing
-              </Button>
-            </Inline>
-          </Stack>
+              <Button onClick={() => setDialog(null)}>Keep editing</Button>
+            </>
+          }
+          onClose={() => setDialog(null)}
+          title={
+            watched.status === 'missing'
+              ? `“${document.name}” has been deleted`
+              : `“${document.name}” was changed on another device`
+          }
+        >
+          <Text variant='body'>Your changes aren’t saved, but they’re still here.</Text>
         </Dialog>
       ) : null}
 

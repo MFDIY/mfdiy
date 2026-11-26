@@ -1,12 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from './Button.js';
+import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
+import { containerSizeConditionalProperties } from '../../styles/sprinkles.css.js';
+
+import { Button, variants, widths } from './Button.js';
 
 const meta = {
   title: 'Components / Button',
   component: Button,
+  argTypes: {
+    children: {
+      description: 'The label.',
+      control: { type: 'text' },
+      table: { type: { summary: 'ReactNode' } }
+    },
+    disabled: {
+      description: 'Disables the button.',
+      control: { type: 'boolean' },
+      table: { type: { summary: 'boolean' } }
+    },
+    variant: createArgTypeFromConditionalStyleProp(variants, undefined, 'default'),
+    width: createArgTypeFromConditionalStyleProp(widths, containerSizeConditionalProperties.conditions, 'fit-content')
+  },
   args: {
-    children: 'Lorem ipsum',
+    children: 'Apply',
     disabled: false
   }
 } satisfies Meta<typeof Button>;
@@ -14,13 +31,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** A hairline outline: most actions. */
 export const Default = {} satisfies Story;
 
-/** A transparent button used on elevated surfaces. */
-export const Transparent = { args: { variant: 'transparent' } } satisfies Story;
+/** Solid and inverted: the one action a screen is for, like Save. */
+export const Primary = { args: { children: 'Save', variant: 'primary' } } satisfies Story;
 
-/** A button visually indicating destructive actions. */
-export const Destructive = { args: { variant: 'destructive' } } satisfies Story;
+/** No outline, for toolbars and buttons inside other controls. */
+export const Quiet = { args: { variant: 'quiet' } } satisfies Story;
 
-/** A yellow button for actions requiring moderate attention. */
-export const Attention = { args: { variant: 'attention' } } satisfies Story;
+/** Destructive actions, like Delete. */
+export const Danger = { args: { children: 'Delete', variant: 'danger' } } satisfies Story;
+
+export const Disabled = { args: { disabled: true } } satisfies Story;

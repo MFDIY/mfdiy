@@ -49,7 +49,7 @@ export const AutomaticOrientation = {
       <Columns spacing='5x'>
         <Box>
           <Stack spacing='2x'>
-            <Text variant='heading.4'>Horizontal</Text>
+            <Text variant='heading'>Horizontal</Text>
             <Placeholder height={60} />
             <Story />
             <Placeholder height={60} />
@@ -59,7 +59,7 @@ export const AutomaticOrientation = {
         </Box>
         <Box>
           <Stack height='full' spacing='2x'>
-            <Text variant='heading.4'>Vertical</Text>
+            <Text variant='heading'>Vertical</Text>
             <Columns height='full' spacing='2x'>
               <Placeholder height='100%' />
               <Story />

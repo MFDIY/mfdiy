@@ -6,13 +6,13 @@ import { glow, transition } from './styleHelpers.js';
 
 export const light = style({
   backgroundColor: token('light.off'),
-  border: `${token('size.border')} solid ${token('outline')}`,
-  borderRadius: token('size.radius'),
-  color: token('text.dim'),
+  border: `${token('border.width')} solid ${token('line')}`,
+  borderRadius: token('radius'),
+  color: token('light.off.text'),
   fontSize: 'clamp(9px, 28cqmin, 22px)',
   letterSpacing: '0.08em',
   padding: '0 4cqmin',
-  textTransform: 'uppercase',
+  textTransform: token('label.case') as 'uppercase',
   transition: transition('background-color', 'color', 'box-shadow'),
 
   selectors: {
@@ -20,19 +20,19 @@ export const light = style({
       backgroundColor: token('light.on'),
       borderColor: token('light.on'),
       boxShadow: glow(token('light.on')),
-      color: token('light.text')
-    },
-    '&[data-state="caution"]': {
-      backgroundColor: token('state.caution'),
-      borderColor: token('state.caution'),
-      boxShadow: glow(token('state.caution')),
-      color: token('light.text')
+      color: token('light.on.text')
     },
     '&[data-state="warning"]': {
-      backgroundColor: token('state.warning'),
-      borderColor: token('state.warning'),
-      boxShadow: glow(token('state.warning')),
-      color: token('light.text')
+      backgroundColor: token('light.warning'),
+      borderColor: token('light.warning'),
+      boxShadow: glow(token('light.warning')),
+      color: token('light.warning.text')
+    },
+    '&[data-state="critical"]': {
+      backgroundColor: token('light.critical'),
+      borderColor: token('light.critical'),
+      boxShadow: glow(token('light.critical')),
+      color: token('light.critical.text')
     }
   }
 });
@@ -46,14 +46,14 @@ export const pressable = style({
       transform: 'scale(0.97)'
     },
     '&:focus-visible': {
-      outline: `2px solid ${token('state.on')}`,
+      outline: `2px solid ${token('accent')}`,
       outlineOffset: '2px'
     },
     '&[data-status="pending"]': {
       opacity: 0.6
     },
     '&[data-status="failed"]': {
-      outline: `2px solid ${token('state.warning')}`,
+      outline: `2px solid ${token('button.failed')}`,
       outlineOffset: '2px'
     },
     '&:disabled': {

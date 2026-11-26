@@ -1,9 +1,9 @@
-import type { Variant } from './props/Variant.js';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
 import { stylePropArgTypes } from '../../../.storybook/stylePropArgTypes.js';
-import { containerSizeConditionalProperties } from '../../styles/sprinkles.css.js';
+import { Box } from '../Box/Box.js';
+import { Stack } from '../Stack/Stack.js';
 
 import { Text, supportedStyleProps, tagNames, variants } from './Text.js';
 
@@ -57,7 +57,7 @@ const meta = {
         }
       }
     },
-    variant: createArgTypeFromConditionalStyleProp(variants, containerSizeConditionalProperties.conditions),
+    variant: createArgTypeFromConditionalStyleProp(variants, undefined),
     ...textStylePropArgTypes
   },
   args: {
@@ -133,7 +133,7 @@ export const WhiteSpace: Story = {
 
 export const InlinedVariants = {
   render: () => (
-    <Text>
+    <Text variant='body'>
       Lorem ipsum dolor sit amet, <b>consectetur adipiscing</b> elit. Nam tempor ipsum ac{' '}
       <strong>pharetra semper</strong>. Cras aliquet <i>pharetra</i> diam nec <em>euismod</em>. Maecenas iaculis orci et
       velit ullamcorper pretium. Quisque sed sapien et erat pharetra aliquam ac eget tellus. Nunc lacus elit, porta eu
@@ -145,81 +145,55 @@ export const InlinedVariants = {
 } satisfies Story;
 
 export const TextScale = {
-  render: ({ children: _children, ...restProps }) => {
-    const variants = [
-      'display',
-      'heading.1',
-      'heading.2',
-      'heading.3',
-      'heading.4',
-      'body',
-      'button.large',
-      'button.standard',
-      'button.small'
-    ] as const satisfies Variant[];
+  render: ({ children: _children, ...restProps }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+      {variants.map(variant => (
+        <Text {...restProps} key={variant} variant={variant}>
+          {variant}
+        </Text>
+      ))}
+    </div>
+  )
+} satisfies Story;
 
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-        {variants.map(variant => (
-          <Text {...restProps} key={variant} variant={variant}>
-            {variant}
+export const Label = { args: { variant: 'label' } } satisfies Story;
+
+export const Body = { args: { variant: 'body' } } satisfies Story;
+
+export const Value = { args: { children: '212 m/s', variant: 'value' } } satisfies Story;
+
+export const Heading = { args: { variant: 'heading' } } satisfies Story;
+
+/** All four variants as the builder uses them: a properties panel. */
+export const Specimen = {
+  render: () => (
+    <Box borderColor='line.strong' borderStyle='solid' borderWidth='hairline' padding='5x' width='max-content'>
+      <Stack spacing='5x'>
+        <Text tagName='h2' variant='heading'>
+          Landing gear
+        </Text>
+        <Stack spacing='2x'>
+          <Text color='text.dim' variant='label'>
+            Action
           </Text>
-        ))}
-      </div>
-    );
-  }
-} satisfies Story;
-
-export const Body = {
-  args: {
-    variant: 'body'
-  }
-} satisfies Story;
-
-export const ButtonLarge = {
-  args: {
-    variant: 'button.large'
-  }
-} satisfies Story;
-
-export const ButtonSmall = {
-  args: {
-    variant: 'button.small'
-  }
-} satisfies Story;
-
-export const ButtonStandard = {
-  args: {
-    variant: 'button.standard'
-  }
-} satisfies Story;
-
-export const Display = {
-  args: {
-    variant: 'display'
-  }
-} satisfies Story;
-
-export const Heading1 = {
-  args: {
-    variant: 'heading.1'
-  }
-} satisfies Story;
-
-export const Heading2 = {
-  args: {
-    variant: 'heading.2'
-  }
-} satisfies Story;
-
-export const Heading3 = {
-  args: {
-    variant: 'heading.3'
-  }
-} satisfies Story;
-
-export const Heading4 = {
-  args: {
-    variant: 'heading.4'
-  }
+          <Text variant='body'>Toggle landing gear</Text>
+        </Stack>
+        <Stack spacing='2x'>
+          <Text color='text.dim' variant='label'>
+            Size
+          </Text>
+          <Text variant='value'>4 × 2 cells</Text>
+        </Stack>
+        <Stack spacing='2x'>
+          <Text variant='body'>Readout</Text>
+          <Text color='text.dim' variant='body'>
+            Shows the value of any signal as text.
+          </Text>
+        </Stack>
+        <Text color='status.critical' variant='body'>
+          Hold time must be 0–5 s.
+        </Text>
+      </Stack>
+    </Box>
+  )
 } satisfies Story;

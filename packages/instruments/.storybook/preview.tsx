@@ -6,7 +6,7 @@ import { builtInThemes } from '../src/theme/themes.js';
 
 /** Theme playground: switch between built-in themes from the toolbar. */
 export default {
-  tags: ['visual'],
+  tags: ['autodocs', 'visual'],
   globalTypes: {
     theme: {
       description: 'MFD theme',

@@ -10,7 +10,7 @@ const stored: StoredDocument = {
   id: ID,
   revision: 1,
   updatedAt: 0,
-  document: { schema: 1, name: 'Fighter', game: 'test', pages: [] }
+  document: { schema: 2, name: 'Fighter', game: 'test', pages: [] }
 };
 
 function createLink() {

@@ -1,7 +1,7 @@
 import type { Area, ResizeHandle, WidgetInstance } from '@mfdiy/schema';
 import type { PointerEvent, ReactNode } from 'react';
 
-import { applyTokens } from '@mfdiy/instruments';
+import { applyTokens, LayoutArea } from '@mfdiy/instruments';
 import { Box } from '@mfdiy/ui/components';
 
 import * as styles from './Canvas.css.js';
@@ -33,19 +33,16 @@ type CanvasWidgetProps = {
 /** A widget on the canvas, wrapped in everything needed to select, move and resize it. */
 export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPointerDown, children }: CanvasWidgetProps) {
   return (
-    <Box
+    <LayoutArea
+      area={area}
       minHeight='none'
       minWidth='none'
+      offset={lifted}
       position='relative'
-      style={{
-        gridColumn: `${area.column} / span ${area.columnSpan}`,
-        gridRow: `${area.row} / span ${area.rowSpan}`,
-        transform: lifted ? `translate(${lifted.x}px, ${lifted.y}px)` : undefined
-      }}
       zIndex={lifted ? '2' : selected ? '1' : 'auto'}
     >
       {/* Inert: widgets show live data here, but can't be pressed. */}
-      <Box className={styles.content} height='full' inert style={applyTokens(widget.tokens)}>
+      <Box className={styles.content} cssVariables={applyTokens(widget.tokens)} height='full' inert>
         {children}
       </Box>
       {/* Covers the widget, so a press selects or drags it instead of triggering its action. */}
@@ -54,7 +51,6 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
         aria-label={widgetName(widget)}
         aria-pressed={selected}
         backgroundColor='transparent'
-        borderRadius='1x'
         borderStyle='hidden'
         boxShadow={selected ? 'canvas.selected' : 'none'}
         cursor={lifted ? 'grabbing' : 'grab'}
@@ -67,9 +63,9 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
           }
         }}
         onPointerDown={event => onPointerDown(event, widget.id)}
-        outlineColor='focus-ring'
+        outlineColor='focus'
         outlineStyle={{ default: 'none', focusVisible: 'solid' }}
-        outlineWidth='focus-ring'
+        outlineWidth='focus'
         padding='none'
         position='absolute'
         tagName='button'
@@ -98,10 +94,9 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
             >
               <Box
                 backgroundColor='canvas.handle'
-                borderColor='canvas.handle'
-                borderRadius='1x'
+                borderColor='canvas.edit'
                 borderStyle='solid'
-                borderWidth='canvas'
+                borderWidth='edit'
                 boxShadow='canvas.halo'
                 className={[styles.knob, styles.knobColumn[column], styles.knobRow[row]]}
                 height='4x'
@@ -113,6 +108,6 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
           ))}
         </Box>
       ) : null}
-    </Box>
+    </LayoutArea>
   );
 }

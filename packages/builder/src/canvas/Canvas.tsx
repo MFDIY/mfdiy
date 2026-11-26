@@ -1,6 +1,6 @@
 import type { Area, GridPoint, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
-import { applyTokens, mfdRoot } from '@mfdiy/instruments';
+import { applyTokens, LayoutArea, LayoutGrid, mfdRoot } from '@mfdiy/instruments';
 import {
   areasEqual,
   areasOverlap,
@@ -12,7 +12,15 @@ import {
   withArea
 } from '@mfdiy/schema';
 import { Box, Text } from '@mfdiy/ui/components';
-import { useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
+import {
+  useImperativeHandle,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+  type Ref
+} from 'react';
 
 import * as styles from './Canvas.css.js';
 import { CanvasWidget } from './CanvasWidget.js';
@@ -48,6 +56,12 @@ type Gesture = {
   dragging: boolean;
 };
 
+/** Lets the page around the canvas ask where things are on it, e.g. for a drag from outside. */
+export type CanvasPointer = {
+  /** The grid point under a pointer, or null if it isn't over the grid. */
+  gridPointAt: (clientX: number, clientY: number) => GridPoint | null;
+};
+
 export type CanvasProps = {
   page: Page;
   /** The layout being edited: one of the page's own. */
@@ -73,6 +87,8 @@ export type CanvasProps = {
   onEmptyTap?: ((point: GridPoint, pointerType: string) => void) | undefined;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
+  /** Receives a `CanvasPointer`. */
+  pointerRef?: Ref<CanvasPointer> | undefined;
 };
 
 /**
@@ -90,9 +106,22 @@ export function Canvas({
   ghost,
   newWidgetArea,
   onEmptyTap,
-  renderWidget
+  renderWidget,
+  pointerRef
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(pointerRef, () => ({
+    gridPointAt(clientX, clientY) {
+      const dots = dotsRef.current?.getBoundingClientRect();
+
+      if (!dots || clientX < dots.left || clientX > dots.right || clientY < dots.top || clientY > dots.bottom) {
+        return null;
+      }
+
+      return pointAt({ clientX, clientY }, dots);
+    }
+  }));
   /** Where a press on the empty grid started, if it could become a tap. */
   const emptyPressRef = useRef<{ x: number; y: number; point: GridPoint; pointerType: string } | null>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
@@ -159,7 +188,7 @@ export function Canvas({
   }
 
   /** The nearest quarter or three quarters of a cell: where things go never depends on more than that. */
-  function pointAt(event: MouseEvent, dots: DOMRect): GridPoint {
+  function pointAt(event: { clientX: number; clientY: number }, dots: DOMRect): GridPoint {
     return {
       x: snapAxis(((event.clientX - dots.left) / dots.width) * layout.grid.columns, layout.grid.columns),
       y: snapAxis(((event.clientY - dots.top) / dots.height) * layout.grid.rows, layout.grid.rows)
@@ -297,6 +326,7 @@ export function Canvas({
       containerType='size'
       display='flex'
       height='full'
+      isolation='isolate'
       justifyContent='center'
       minHeight='none'
       minWidth='none'
@@ -305,10 +335,10 @@ export function Canvas({
       <Box
         className={mfdRoot}
         containerType='size'
+        cssVariables={applyTokens(documentTokens)}
         data-canvas='frame'
         flexShrink='0'
         style={{
-          ...applyTokens(documentTokens),
           height: aspectRatio ? `min(100cqh, ${100 / aspectRatio}cqw)` : '100%',
           width: aspectRatio ? `min(100cqw, ${100 * aspectRatio}cqh)` : '100%'
         }}
@@ -316,6 +346,7 @@ export function Canvas({
         <Box
           aria-label={`Canvas, page ${page.name}`}
           className={styles.page}
+          cssVariables={applyTokens(page.tokens)}
           height='full'
           onContextMenu={event => {
             // A long press must not open a menu halfway through a drag.
@@ -329,24 +360,19 @@ export function Canvas({
           overscrollBehavior='none'
           position='relative'
           role='group'
-          style={applyTokens(page.tokens)}
           touchAction='none'
           userSelect='none'
         >
-          <Box
+          <LayoutGrid
             className={styles.grid}
             cursor={invitation ? 'pointer' : 'default'}
-            display='grid'
+            grid={layout.grid}
             height='full'
             onClick={handleEmptyClick}
             onPointerDown={handleEmptyPointerDown}
             onPointerLeave={() => setHovered(null)}
             onPointerMove={handleHover}
             position='relative'
-            style={{
-              gridTemplateColumns: `repeat(${layout.grid.columns}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${layout.grid.rows}, minmax(0, 1fr))`
-            }}
           >
             <Box
               backgroundImage='canvas.dots'
@@ -386,25 +412,21 @@ export function Canvas({
             {marked ? <Plus area={marked} /> : null}
             {overlaps.map(({ widgetIds, area }) => (
               // Striped and dashed as well as red, so it doesn't rely on colour alone.
-              <Box
+              <LayoutArea
+                area={area}
                 backgroundImage='canvas.overlap'
                 borderColor='canvas.overlap'
-                borderRadius='1x'
                 borderStyle='dashed'
-                borderWidth='canvas'
+                borderWidth='edit'
                 boxShadow='canvas.halo'
                 data-canvas='overlap'
                 key={widgetIds.join(' ')}
                 pointerEvents='none'
                 position='relative'
-                style={{
-                  gridColumn: `${area.column} / span ${area.columnSpan}`,
-                  gridRow: `${area.row} / span ${area.rowSpan}`
-                }}
                 zIndex='3'
               />
             ))}
-          </Box>
+          </LayoutGrid>
           {onEmptyTap && page.widgets.length === 0 && !marked ? (
             <Box
               alignItems='center'
@@ -414,7 +436,7 @@ export function Canvas({
               pointerEvents='none'
               position='absolute'
             >
-              <Box backgroundColor='elevation.floating' borderRadius='2x' color='body' padding='4x'>
+              <Box backgroundColor='surface.raised' color='text' padding='4x'>
                 <Text variant='body'>Tap anywhere to add a widget</Text>
               </Box>
             </Box>
@@ -433,20 +455,16 @@ type GhostProps = {
 
 function Ghost({ area, quiet = false }: GhostProps) {
   return (
-    <Box
+    <LayoutArea
+      area={area}
       backgroundColor={quiet ? 'transparent' : 'canvas.ghost'}
-      borderColor='canvas.ghost'
-      borderRadius='1x'
+      borderColor='canvas.edit'
       borderStyle={quiet ? 'dashed' : 'solid'}
-      borderWidth={quiet ? 'divider' : 'canvas'}
+      borderWidth={quiet ? 'hairline' : 'edit'}
       boxShadow={quiet ? 'none' : 'canvas.halo'}
       data-canvas='ghost'
       pointerEvents='none'
       position='relative'
-      style={{
-        gridColumn: `${area.column} / span ${area.columnSpan}`,
-        gridRow: `${area.row} / span ${area.rowSpan}`
-      }}
       // Above a lifted widget, which would otherwise hide it.
       zIndex='3'
     />
@@ -456,30 +474,20 @@ function Ghost({ area, quiet = false }: GhostProps) {
 /** In the middle of an area, shrinking with it. */
 function Plus({ area }: { area: Area }) {
   return (
-    <Box
+    <LayoutArea
       alignItems='center'
+      area={area}
       containerType='size'
       display='flex'
       justifyContent='center'
       pointerEvents='none'
       position='relative'
-      style={{
-        gridColumn: `${area.column} / span ${area.columnSpan}`,
-        gridRow: `${area.row} / span ${area.rowSpan}`
-      }}
       zIndex='3'
     >
-      <Box
-        aria-hidden
-        className={styles.plus}
-        color='canvas.handle'
-        data-canvas='plus'
-        tagName='svg'
-        viewBox='0 0 24 24'
-      >
+      <Box aria-hidden className={styles.plus} color='canvas.edit' data-canvas='plus' tagName='svg' viewBox='0 0 24 24'>
         <Box d='M12 5v14M5 12h14' fill='none' stroke='currentColor' strokeWidth='2' tagName='path' />
       </Box>
-    </Box>
+    </LayoutArea>
   );
 }
 

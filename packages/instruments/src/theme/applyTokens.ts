@@ -4,11 +4,11 @@ import { assignInlineVars } from '@vanilla-extract/dynamic';
 import { vars } from './contract.css.js';
 
 /**
- * Turns theme token values into an inline `style` object for a document, page or widget element.
- * Invalid or unsafe values are dropped as a last line of defence; themes should already have been
- * validated with `ThemeSchema` when they were loaded.
+ * Turns theme token values into inline CSS variables for a document, page or widget element: pass
+ * the result to `Box`'s `cssVariables`. Invalid or unsafe values are dropped as a last line of
+ * defence; themes should already have been validated with `ThemeSchema` when they were loaded.
  */
-export function applyTokens(values: TokenValues | undefined): Record<string, string> {
+export function applyTokens(values: TokenValues | undefined): Record<`--${string}`, string> {
   if (!values) {
     return {};
   }
@@ -21,5 +21,5 @@ export function applyTokens(values: TokenValues | undefined): Record<string, str
     }
   }
 
-  return assignInlineVars(assignments);
+  return assignInlineVars(assignments) as Record<`--${string}`, string>;
 }

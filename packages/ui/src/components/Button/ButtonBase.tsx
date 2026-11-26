@@ -1,13 +1,10 @@
-import type { Size } from './props/Size.js';
 import type { Width } from './props/Width.js';
 
 import { useState, type FocusEvent, type KeyboardEvent, type PointerEvent, type PropsWithChildren } from 'react';
 
 import { useRestProps } from '../../hooks/useRestProps/useRestProps.js';
 import {
-  mapContainerSizeAndMediaAndPseudoConditionalValue,
   mapContainerSizeConditionalValue,
-  type ContainerSizeAndMediaAndPseudoConditionalValue,
   type ContainerSizeConditionalValue,
   type DesignSystem
 } from '../../styles/design-system.js';
@@ -16,23 +13,17 @@ import { Text } from '../Text/Text.js';
 
 import * as styles from './ButtonBase.css.js';
 import * as justifyContentMaps from './justifyContentMaps.js';
-import * as sizeMaps from './sizeMaps.js';
 
 export { widths } from './props/Width.js';
 
 export const supportedStyleProps = [
   'backgroundColor',
-  'borderBottomLeftRadius',
-  'borderBottomRightRadius',
-  'borderTopLeftRadius',
-  'borderTopRightRadius',
-  'boxShadow',
+  'borderColor',
   'color',
   'flexBasis',
   'flexGrow',
   'flexShrink',
-  'justifyContent',
-  'outlineStyle'
+  'justifyContent'
 ] as const satisfies (keyof DesignSystem)[];
 
 type SupportedStyleProp = (typeof supportedStyleProps)[number];
@@ -47,19 +38,17 @@ export type ButtonBaseProps = BoxIntrinsicProps<'button'> &
      * nested components.
      */
     cssVariables?: CssVariablesProp | undefined;
-    /** Sets the button size. */
-    size?: ContainerSizeAndMediaAndPseudoConditionalValue<Size> | undefined;
     /** Sets the button width. */
     width?: ContainerSizeConditionalValue<Width> | undefined;
   }>;
 
+/**
+ * A flat button with a hairline border and square corners; `Button` gives it a variant's colours.
+ * One size: the shared control height, so buttons line up with fields (0022).
+ */
 export function ButtonBase({
   backgroundColor = 'transparent',
-  borderBottomLeftRadius = '2x',
-  borderBottomRightRadius = '2x',
-  borderTopLeftRadius = '2x',
-  borderTopRightRadius = '2x',
-  boxShadow = 'none',
+  borderColor = 'transparent',
   children,
   className,
   color,
@@ -74,9 +63,7 @@ export function ButtonBase({
   onKeyUp,
   onLostPointerCapture,
   onPointerDown,
-  outlineStyle = { default: 'none', focusVisible: 'solid' },
   ref,
-  size = 'standard',
   type,
   width,
   ...restProps
@@ -116,11 +103,6 @@ export function ButtonBase({
     onPointerDown?.(event);
   }
 
-  const height = mapContainerSizeAndMediaAndPseudoConditionalValue(size, s => `button.${s}`);
-  const textVariant = mapContainerSizeAndMediaAndPseudoConditionalValue(size, s => `button.${s}`);
-  const paddingBlock = mapContainerSizeAndMediaAndPseudoConditionalValue(size, s => sizeMaps.paddingBlock[s]);
-  const paddingInline = mapContainerSizeAndMediaAndPseudoConditionalValue(size, s => sizeMaps.paddingInline[s]);
-
   const textAlign =
     typeof justifyContent === 'undefined'
       ? undefined
@@ -137,12 +119,9 @@ export function ButtonBase({
       alignItems='center'
       appearance='none'
       backgroundColor={backgroundColor}
-      borderBottomLeftRadius={borderBottomLeftRadius}
-      borderBottomRightRadius={borderBottomRightRadius}
-      borderStyle='hidden'
-      borderTopLeftRadius={borderTopLeftRadius}
-      borderTopRightRadius={borderTopRightRadius}
-      boxShadow={boxShadow}
+      borderColor={borderColor}
+      borderStyle='solid'
+      borderWidth='hairline'
       className={className}
       color={color}
       cssVariables={cssVariables}
@@ -151,7 +130,7 @@ export function ButtonBase({
       flexBasis={flexBasis}
       flexGrow={flexGrow}
       flexShrink={flexShrink}
-      fontSize={textVariant}
+      height='control'
       justifyContent='center'
       lineHeight='0'
       onBlur={handleBlur}
@@ -159,10 +138,10 @@ export function ButtonBase({
       onKeyUp={handleKeyUp}
       onLostPointerCapture={handleLostPointerCapture}
       onPointerDown={handlePointerDown}
-      outlineColor='focus-ring'
-      outlineOffset='none'
-      outlineStyle={outlineStyle}
-      outlineWidth='focus-ring'
+      outlineColor='focus'
+      outlineOffset='focus'
+      outlineStyle={{ default: 'none', focusVisible: 'solid' }}
+      outlineWidth='focus'
       overflow='hidden'
       padding='none'
       position='relative'
@@ -174,7 +153,6 @@ export function ButtonBase({
       transitionProperty='button-surface'
       transitionTimingFunction='ease-out'
       width={width ?? 'fit-content'}
-      willChange='button-surface'
     >
       <Box
         alignItems='center'
@@ -182,20 +160,19 @@ export function ButtonBase({
         display='flex'
         flexGrow='1'
         gap='2x'
-        height={height}
+        height='full'
         justifyContent='center'
         lineHeight='0'
-        paddingInline={children ? paddingInline : undefined}
+        paddingInline={children ? '3x' : undefined}
         tagName='span'
         transitionDuration='click'
         transitionProperty='button-content'
         transitionTimingFunction='ease-out'
         width='full'
-        willChange='button-content'
       >
         {children && (
-          <Box paddingBlock={paddingBlock} textAlign={textAlign} width={textWidth}>
-            <Text variant={textVariant} whiteSpace='nowrap'>
+          <Box textAlign={textAlign} width={textWidth}>
+            <Text variant='label' whiteSpace='nowrap'>
               {children}
             </Text>
           </Box>

@@ -32,19 +32,19 @@ export default function Home() {
   return (
     <Box padding='6x' tagName='main'>
       <Stack spacing='5x'>
-        <Text tagName='h1' variant='heading.1'>
+        <Text tagName='h1' variant='heading'>
           MFDIY
         </Text>
         <Text variant='body'>Build your MFD. No code required.</Text>
-        <Text role='status' variant='deemphasized'>
+        <Text color='text.dim' role='status' variant='body'>
           {statusText[status]}
           {status === 'open' && hello ? ` to ${hello.game.name} (${hello.source})` : null}
         </Text>
         <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
-          <Text tagName='h2' variant='heading.2'>
+          <Text tagName='h2' variant='heading'>
             Profiles
           </Text>
-          <Button disabled={status !== 'open'} onClick={() => setCreating(true)} size='large' variant='attention'>
+          <Button disabled={status !== 'open'} onClick={() => setCreating(true)} variant='primary'>
             New
           </Button>
         </Inline>
@@ -72,20 +72,20 @@ export default function Home() {
 
 function ProfileCard({ onMore, profile }: { onMore: () => void; profile: DocumentSummary }) {
   return (
-    <Surface borderRadius='2x' elevation='raised' padding='4x' tagName='article'>
+    <Surface elevation='raised' padding='4x' tagName='article'>
       <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
         <Stack spacing='2x'>
-          <Text tagName='h3' variant='heading.4'>
+          <Text tagName='h3' variant='heading'>
             {profile.name}
           </Text>
-          <Text variant='deemphasized'>
+          <Text color='text.dim' variant='body'>
             {profile.pageCount} {profile.pageCount === 1 ? 'page' : 'pages'}
           </Text>
         </Stack>
         <Inline spacing='3x'>
           <ButtonLink to={`/display/${profile.id}`}>Show</ButtonLink>
           <ButtonLink to={`/builder/${profile.id}`}>Edit</ButtonLink>
-          <Button aria-label={`More for ${profile.name}`} onClick={onMore} size='large' variant='transparent'>
+          <Button aria-label={`More for ${profile.name}`} onClick={onMore} variant='quiet'>
             …
           </Button>
         </Inline>

@@ -1,16 +1,10 @@
 import type { Elevation } from './props/Elevation.js';
 import type { DesignSystem } from '../../styles/design-system.js';
 
+/** Flat (0022): elevation is only a step in tone, never a shadow. */
 export const backgroundColor = {
-  base: 'elevation.base',
-  depressed: 'elevation.depressed',
-  floating: 'elevation.floating',
-  raised: 'elevation.raised'
+  base: 'surface',
+  depressed: 'surface',
+  floating: 'surface.raised',
+  raised: 'surface.raised'
 } as const satisfies Record<Elevation, DesignSystem['backgroundColor']>;
-
-export const boxShadow = {
-  base: 'elevation.base',
-  depressed: 'elevation.depressed',
-  floating: 'elevation.floating',
-  raised: 'elevation.raised'
-} as const satisfies Record<Elevation, DesignSystem['boxShadow']>;

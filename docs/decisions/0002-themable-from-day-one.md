@@ -21,12 +21,12 @@ Adding theming later is expensive: every widget built before it would need rewor
 - **Sim-pit features to plan for:**
   - Custom fonts (including user-supplied), backgrounds and colour palettes.
   - **Physical bezel alignment**: put on-screen button labels exactly next to the buttons of a physical MFD bezel (e.g. bezels that clip around a screen), with adjustable offsets.
-  - Calibration of safe areas, margins and screen insets for screens mounted behind a frame.
+  - Calibration of safe areas, margins and screen insets for screens mounted behind a frame. This is a per-screen setting, not part of a theme (0022); the spacing between widgets is a theme token.
   - Night or low-brightness modes for dark sim rooms.
 - Ship a few distinctive built-in themes so the customisation is visible on first launch.
 
 ## Open questions
 
 - **Raw custom CSS?** Allowing it gives power users full control, but shared themes would then contain arbitrary CSS. Decide whether to allow it, scope it (e.g. Shadow DOM or `@scope`), or restrict themes to tokens only.
-- How do user-supplied assets (fonts, images) get stored and shared alongside a theme?
+- How do user-supplied assets (fonts, images) get stored and shared alongside a theme? For fonts, the current direction is a limited set of bundled fonts to pick from (0022), starting with Martian Mono.
 - Should a theme include layout-level choices such as widget chrome and frame style, or only visual tokens?

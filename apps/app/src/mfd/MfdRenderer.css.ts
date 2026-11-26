@@ -1,38 +1,42 @@
 import { token } from '@mfdiy/instruments';
 import { style } from '@vanilla-extract/css';
 
+/*
+ * Spacing comes from the theme (`gap`). On the display there's no container above the screen, so
+ * `cqmin` resolves against the viewport, as `vmin` would.
+ */
 export const screen = style({
-  gap: 'clamp(4px, 1.5vmin, 16px)',
+  gap: token('gap'),
   gridTemplateRows: '1fr auto',
-  padding: 'clamp(4px, 1.5vmin, 16px)'
+  padding: token('gap')
 });
 
 export const page = style({
-  gap: 'clamp(4px, 1.5vmin, 16px)'
+  gap: token('gap')
 });
 
 export const tabs = style({
-  gap: 'clamp(4px, 1.5vmin, 16px)'
+  gap: token('gap')
 });
 
 export const tab = style({
-  border: `${token('size.border')} solid ${token('outline')}`,
-  borderRadius: token('size.radius'),
+  border: `${token('border.width')} solid ${token('line')}`,
+  borderRadius: token('radius'),
   color: token('text.dim'),
   font: 'inherit',
-  letterSpacing: '0.12em',
+  letterSpacing: token('label.tracking'),
   padding: 'clamp(6px, 1.5vmin, 12px)',
-  textTransform: 'uppercase',
+  textTransform: token('label.case') as 'uppercase',
 
   selectors: {
     '&[aria-current="page"]': {
-      borderColor: token('state.on'),
-      color: token('state.on')
+      borderColor: token('status.on'),
+      color: token('status.on')
     }
   }
 });
 
 export const unknownWidget = style({
-  border: `${token('size.border')} dashed ${token('state.warning')}`,
-  color: token('state.warning')
+  border: `${token('border.width')} dashed ${token('status.critical')}`,
+  color: token('status.critical')
 });

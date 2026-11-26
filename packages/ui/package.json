@@ -27,10 +27,13 @@
     "react-dom": "^19.1.1"
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
     "@floating-ui/react": "^0.27.19",
+    "@mfdiy/schema": "0.0.0",
     "@vanilla-extract/css": "^1.18.0",
     "@vanilla-extract/sprinkles": "^1.6.5",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "sonner": "^2.0.8"
   },
   "devDependencies": {
     "@mfdiy/config": "0.0.0",

@@ -11,131 +11,13 @@ import { mediaConditions } from './conditions/media.js';
 import { pseudoConditions } from './conditions/pseudo.js';
 import * as properties from './properties.js';
 
-export const containerSizeAndMediaAndPseudoConditionalProperties = defineProperties({
-  conditions: {
-    default: {},
-    ...containerSizeConditions,
-    ...mediaConditions,
-    ...pseudoConditions
-  },
-  defaultCondition: 'default',
-  properties: {
-    backdropFilter: properties.backdropFilter,
-    backgroundColor: properties.backgroundColor,
-    boxShadow: properties.boxShadow,
-    color: properties.color,
-    display: properties.display,
-    fontSize: properties.fontSize,
-    fontWeight: properties.fontWeight,
-    height: properties.height,
-    letterSpacing: properties.letterSpacing,
-    lineHeight: properties.lineHeight,
-    maxHeight: properties.height,
-    maxWidth: properties.width,
-    minHeight: properties.height,
-    minWidth: properties.width,
-    opacity: properties.opacity,
-    overflowX: properties.overflow,
-    overflowY: properties.overflow,
-    paddingBottom: properties.paddingBlock,
-    paddingLeft: properties.paddingInline,
-    paddingRight: properties.paddingInline,
-    paddingTop: properties.paddingBlock,
-    position: properties.position,
-    transform: properties.transform,
-    visibility: properties.visibility,
-    width: properties.width
-  },
-  shorthands: {
-    overflow: ['overflowX', 'overflowY'],
-    padding: ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
-    paddingBlock: ['paddingTop', 'paddingBottom'],
-    paddingInline: ['paddingLeft', 'paddingRight']
-  }
-});
+/*
+ * Every value of every property is multiplied by every condition its group allows, so each property
+ * sits in the smallest group that covers how it's used: layout responds to its container, colours
+ * and interaction to the pointer and the element's state, and the rest to nothing.
+ */
 
-export const mapContainerSizeAndMediaAndPseudoConditionalValue = createMapValueFn(
-  containerSizeAndMediaAndPseudoConditionalProperties
-);
-export const normalizeContainerSizeAndMediaAndPseudoConditionalValue = createNormalizeValueFn(
-  containerSizeAndMediaAndPseudoConditionalProperties
-);
-
-export type ContainerSizeAndMediaAndPseudoCondition =
-  ContainerSizeCondition | PseudoCondition | ('default' | keyof typeof mediaConditions);
-
-export type ContainerSizeAndMediaAndPseudoConditionalValue<Value extends string | number> = ConditionalValue<
-  typeof containerSizeAndMediaAndPseudoConditionalProperties,
-  Value
->;
-
-export const containerSizeAndPseudoConditionalProperties = defineProperties({
-  conditions: {
-    default: {},
-    ...containerSizeConditions,
-    ...pseudoConditions
-  },
-  defaultCondition: 'default',
-  properties: {
-    borderBottomColor: properties.borderColor,
-    borderBottomWidth: properties.borderWidth,
-    borderLeftColor: properties.borderColor,
-    borderLeftWidth: properties.borderWidth,
-    borderRightColor: properties.borderColor,
-    borderRightWidth: properties.borderWidth,
-    borderTopColor: properties.borderColor,
-    borderTopWidth: properties.borderWidth,
-    transitionDuration: properties.transitionDuration,
-    zIndex: properties.zIndex
-  },
-  shorthands: {
-    borderColor: ['borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor'],
-    borderColorX: ['borderLeftColor', 'borderRightColor'],
-    borderColorY: ['borderTopColor', 'borderBottomColor'],
-    borderWidth: ['borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth'],
-    borderWidthX: ['borderLeftWidth', 'borderRightWidth'],
-    borderWidthY: ['borderTopWidth', 'borderBottomWidth']
-  }
-});
-
-export const mapContainerSizeAndPseudoConditionalValue = createMapValueFn(containerSizeAndPseudoConditionalProperties);
-export const normalizeContainerSizeAndPseudoConditionalValue = createNormalizeValueFn(
-  containerSizeAndPseudoConditionalProperties
-);
-
-export type ContainerSizeAndPseudoCondition = ContainerSizeCondition | PseudoCondition;
-
-export type ContainerSizeAndPseudoConditionalValue<Value extends string | number> = ConditionalValue<
-  typeof containerSizeAndPseudoConditionalProperties,
-  Value
->;
-
-export const mediaAndPseudoConditionalProperties = defineProperties({
-  conditions: {
-    default: {},
-    ...mediaConditions,
-    ...pseudoConditions
-  },
-  defaultCondition: 'default',
-  properties: {
-    backgroundSize: properties.backgroundSize,
-    touchAction: properties.touchAction,
-    userSelect: properties.userSelect
-  }
-});
-
-export const mapMediaAndPseudoConditionalValue = createMapValueFn(mediaAndPseudoConditionalProperties);
-export const normalizeMediaAndPseudoConditionalValue = createNormalizeValueFn(mediaAndPseudoConditionalProperties);
-
-export type MediaCondition = 'default' | keyof typeof mediaConditions;
-
-export type MediaAndPseudoCondition = MediaCondition | PseudoCondition;
-
-export type MediaAndPseudoConditionalValue<Value extends string | number> = ConditionalValue<
-  typeof mediaAndPseudoConditionalProperties,
-  Value
->;
-
+/** Layout: responds to the width of the nearest container. */
 export const containerSizeConditionalProperties = defineProperties({
   conditions: {
     default: {},
@@ -145,19 +27,32 @@ export const containerSizeConditionalProperties = defineProperties({
   properties: {
     alignItems: properties.alignItems,
     alignSelf: properties.alignSelf,
-    borderBottomLeftRadius: properties.spacing,
-    borderBottomRightRadius: properties.spacing,
-    borderTopLeftRadius: properties.spacing,
-    borderTopRightRadius: properties.spacing,
+    borderBottomLeftRadius: properties.borderRadius,
+    borderBottomRightRadius: properties.borderRadius,
+    borderTopLeftRadius: properties.borderRadius,
+    borderTopRightRadius: properties.borderRadius,
     columnGap: properties.spacing,
+    display: properties.display,
     flexBasis: properties.flexBasis,
     flexDirection: properties.flexDirection,
     flexGrow: properties.flexGrow,
     flexShrink: properties.flexShrink,
     flexWrap: properties.flexWrap,
+    height: properties.height,
     justifyContent: properties.justifyContent,
+    maxHeight: properties.height,
+    maxWidth: properties.width,
+    minHeight: properties.height,
+    minWidth: properties.width,
+    overflowX: properties.overflow,
+    overflowY: properties.overflow,
+    paddingBottom: properties.paddingBlock,
+    paddingLeft: properties.paddingInline,
+    paddingRight: properties.paddingInline,
+    paddingTop: properties.paddingBlock,
     rowGap: properties.spacing,
-    textAlign: properties.textAlign
+    textAlign: properties.textAlign,
+    width: properties.width
   },
   shorthands: {
     borderRadius: ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'],
@@ -165,7 +60,11 @@ export const containerSizeConditionalProperties = defineProperties({
     borderLeftRadius: ['borderTopLeftRadius', 'borderBottomLeftRadius'],
     borderRightRadius: ['borderTopRightRadius', 'borderBottomRightRadius'],
     borderTopRadius: ['borderTopLeftRadius', 'borderTopRightRadius'],
-    gap: ['rowGap', 'columnGap']
+    gap: ['rowGap', 'columnGap'],
+    overflow: ['overflowX', 'overflowY'],
+    padding: ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+    paddingBlock: ['paddingTop', 'paddingBottom'],
+    paddingInline: ['paddingLeft', 'paddingRight']
   }
 });
 
@@ -180,32 +79,53 @@ export type ContainerSizeConditionalValue<Value extends string | number> = Condi
   Value
 >;
 
-export const pseudoConditionalProperties = defineProperties({
+/** Colour and interaction: responds to the pointer and to the element's state. */
+export const mediaAndPseudoConditionalProperties = defineProperties({
   conditions: {
     default: {},
+    ...mediaConditions,
     ...pseudoConditions
   },
   defaultCondition: 'default',
   properties: {
+    backgroundColor: properties.backgroundColor,
+    borderBottomColor: properties.borderColor,
+    borderLeftColor: properties.borderColor,
+    borderRightColor: properties.borderColor,
+    borderTopColor: properties.borderColor,
+    boxShadow: properties.boxShadow,
+    color: properties.color,
     cursor: properties.cursor,
+    opacity: properties.opacity,
     outlineColor: properties.outlineColor,
     outlineStyle: properties.outlineStyle,
     outlineWidth: properties.outlineWidth,
     pointerEvents: properties.pointerEvents,
-    textDecoration: properties.textDecoration
+    textDecoration: properties.textDecoration,
+    touchAction: properties.touchAction,
+    transform: properties.transform,
+    transitionDuration: properties.transitionDuration,
+    userSelect: properties.userSelect,
+    visibility: properties.visibility
+  },
+  shorthands: {
+    borderColor: ['borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor'],
+    borderColorX: ['borderLeftColor', 'borderRightColor'],
+    borderColorY: ['borderTopColor', 'borderBottomColor']
   }
 });
 
-export const mapPseudoConditionalValue = createMapValueFn(pseudoConditionalProperties);
-export const normalizePseudoConditionalValue = createNormalizeValueFn(pseudoConditionalProperties);
+export const mapMediaAndPseudoConditionalValue = createMapValueFn(mediaAndPseudoConditionalProperties);
+export const normalizeMediaAndPseudoConditionalValue = createNormalizeValueFn(mediaAndPseudoConditionalProperties);
 
-export type PseudoCondition = 'default' | keyof typeof pseudoConditions;
+export type MediaAndPseudoCondition = 'default' | keyof typeof mediaConditions | keyof typeof pseudoConditions;
 
-export type PseudoConditionalValue<Value extends string | number> = ConditionalValue<
-  typeof pseudoConditionalProperties,
+export type MediaAndPseudoConditionalValue<Value extends string | number> = ConditionalValue<
+  typeof mediaAndPseudoConditionalProperties,
   Value
 >;
 
+/** Everything else, including type: set per element, never per condition. */
 export const unconditionalProperties = defineProperties({
   properties: {
     appearance: properties.appearance,
@@ -213,14 +133,23 @@ export const unconditionalProperties = defineProperties({
     backgroundPosition: properties.origin,
     backgroundRepeat: properties.backgroundRepeat,
     borderBottomStyle: properties.borderStyle,
+    borderBottomWidth: properties.borderWidth,
     borderLeftStyle: properties.borderStyle,
+    borderLeftWidth: properties.borderWidth,
     borderRightStyle: properties.borderStyle,
+    borderRightWidth: properties.borderWidth,
     borderTopStyle: properties.borderStyle,
+    borderTopWidth: properties.borderWidth,
     bottom: properties.inset,
     contain: properties.contain,
     containerType: properties.containerType,
     fontFamily: properties.fontFamily,
+    fontSize: properties.fontSize,
+    fontWeight: properties.fontWeight,
+    isolation: properties.isolation,
     left: properties.inset,
+    letterSpacing: properties.letterSpacing,
+    lineHeight: properties.lineHeight,
     listStyleType: properties.listStyleType,
     marginBottom: properties.margin,
     marginLeft: properties.margin,
@@ -228,22 +157,28 @@ export const unconditionalProperties = defineProperties({
     marginTop: properties.margin,
     objectFit: properties.objectFit,
     objectPosition: properties.origin,
-    outlineOffset: properties.spacing,
+    outlineOffset: properties.outlineOffset,
     overscrollBehavior: properties.overscrollBehavior,
+    position: properties.position,
     right: properties.inset,
     textOverflow: properties.textOverflow,
+    textTransform: properties.textTransform,
     top: properties.inset,
     transformOrigin: properties.origin,
     transitionProperty: properties.transitionProperty,
     transitionTimingFunction: properties.transitionTimingFunction,
     whiteSpace: properties.whiteSpace,
+    willChange: properties.transitionProperty,
     wordBreak: properties.wordBreak,
-    willChange: properties.transitionProperty
+    zIndex: properties.zIndex
   },
   shorthands: {
     borderStyle: ['borderTopStyle', 'borderRightStyle', 'borderBottomStyle', 'borderLeftStyle'],
     borderStyleBlock: ['borderTopStyle', 'borderBottomStyle'],
     borderStyleInline: ['borderLeftStyle', 'borderRightStyle'],
+    borderWidth: ['borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth'],
+    borderWidthX: ['borderLeftWidth', 'borderRightWidth'],
+    borderWidthY: ['borderTopWidth', 'borderBottomWidth'],
     inset: ['top', 'right', 'bottom', 'left'],
     insetX: ['left', 'right'],
     insetY: ['top', 'bottom'],
@@ -254,10 +189,7 @@ export const unconditionalProperties = defineProperties({
 });
 
 export const sprinkles = createSprinkles(
-  containerSizeAndMediaAndPseudoConditionalProperties,
-  containerSizeAndPseudoConditionalProperties,
   containerSizeConditionalProperties,
   mediaAndPseudoConditionalProperties,
-  pseudoConditionalProperties,
   unconditionalProperties
 );

@@ -1,17 +1,16 @@
 import { token } from '@mfdiy/instruments';
-import { globalVars } from '@mfdiy/ui';
-import { createVar, style, styleVariants } from '@vanilla-extract/css';
+import { uiVars } from '@mfdiy/ui';
+import { style, styleVariants } from '@vanilla-extract/css';
 
 /*
  * Only what Bonsai's style props can't express: geometry computed from the canvas, and MFD tokens.
  * Everything else is a style prop.
  */
 
-const gap = createVar();
+/** The theme's spacing, relative to the canvas instead of the viewport (the frame is a container). */
+const gap = token('gap');
 
-/** Same proportions as the display, but relative to the canvas instead of the viewport. */
 export const page = style({
-  vars: { [gap]: 'clamp(4px, 1.5cqmin, 16px)' },
   padding: gap,
   WebkitTouchCallout: 'none',
   WebkitUserSelect: 'none'
@@ -28,7 +27,7 @@ export const dots = style({ inset: `calc(${gap} / -2)` });
 /** The MFD's own background, so the dot grid doesn't show through widgets. */
 export const content = style({ backgroundColor: token('surface') });
 
-const handleSize = globalVars['size.canvas.handle'];
+const handleSize = uiVars['size.canvas.handle'];
 
 // Handles reach half their size into the widget, but always leave its middle free for dragging.
 const insetX = `min(${handleSize} / 2, 30cqw)`;

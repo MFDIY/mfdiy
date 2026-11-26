@@ -1,7 +1,7 @@
 import type { DocumentOutcome } from './DocumentStore.js';
 import type { DocumentSummary } from '@mfdiy/schema';
 
-import { Button, Dialog, Inline, Stack, Text } from '@mfdiy/ui/components';
+import { Button, Dialog, Stack, Text } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { useDocumentRequest } from './DocumentsProvider.js';
@@ -49,42 +49,45 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
   }
 
   const failure = error ? (
-    <Text role='alert' variant='field.error'>
+    <Text color='status.critical' role='alert' variant='body'>
       {error}
     </Text>
   ) : null;
 
   if (step !== 'menu') {
     return (
-      <Dialog onClose={onClose} title={`Delete “${profile.name}”?`}>
-        <Stack spacing='5x'>
-          <Text variant='body'>It’s removed for every device, and can’t be brought back.</Text>
-          {failure}
-          <Inline spacing='3x'>
+      <Dialog
+        actions={
+          <>
             <Button
               disabled={busy}
               onClick={() =>
                 void run(request({ type: 'document-delete', id: profile.id, revision: step.deleteRevision }))
               }
-              size='large'
-              variant='destructive'
+              variant='danger'
             >
               Delete
             </Button>
-            <Button onClick={onClose} size='large'>
-              Keep
-            </Button>
-          </Inline>
+            <Button onClick={onClose}>Keep</Button>
+          </>
+        }
+        dismissible
+        onClose={onClose}
+        title={`Delete “${profile.name}”?`}
+      >
+        <Stack spacing='5x'>
+          <Text variant='body'>It’s removed for every device, and can’t be brought back.</Text>
+          {failure}
         </Stack>
       </Dialog>
     );
   }
 
   return (
-    <Dialog onClose={onClose} title={profile.name}>
+    <Dialog dismissible onClose={onClose} title={profile.name}>
       <Stack spacing='3x'>
         {failure}
-        <Button onClick={() => setStep('rename')} size='large' width='full'>
+        <Button onClick={() => setStep('rename')} width='full'>
           Rename
         </Button>
         <Button
@@ -92,7 +95,6 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
           onClick={() =>
             void run(request({ type: 'document-duplicate', id: profile.id, name: copyName(profile.name) }))
           }
-          size='large'
           width='full'
         >
           Duplicate
@@ -102,13 +104,12 @@ export function ProfileDialog({ onClose, profile }: ProfileDialogProps) {
             setError(null);
             setStep({ deleteRevision: profile.revision });
           }}
-          size='large'
-          variant='destructive'
+          variant='danger'
           width='full'
         >
           Delete
         </Button>
-        <Button onClick={onClose} size='large' variant='transparent' width='full'>
+        <Button onClick={onClose} variant='quiet' width='full'>
           Cancel
         </Button>
       </Stack>

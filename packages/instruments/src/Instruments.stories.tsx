@@ -28,13 +28,13 @@ function Showcase({ themeName }: { themeName: string }) {
     >
       <Light label='Gear' state='on' />
       <Light label='Decpl' state='off' />
-      <Light label='QT Low' state='caution' />
-      <Light label='Hull' state='warning' />
+      <Light label='QT Low' state='warning' />
+      <Light label='Hull' state='critical' />
       <Box style={{ gridColumn: 'span 2' }}>
         <Bar displayValue='92%' label='Shield front' state='normal' value={0.92} />
       </Box>
       <Box style={{ gridColumn: 'span 2' }}>
-        <Bar displayValue='18%' label='Quantum fuel' state='caution' value={0.18} />
+        <Bar displayValue='18%' label='Quantum fuel' state='warning' value={0.18} />
       </Box>
       <Box style={{ gridColumn: 'span 2' }}>
         <Readout label='SCM speed' unit='m/s' value='212' />
@@ -47,6 +47,8 @@ function Showcase({ themeName }: { themeName: string }) {
 
 export default {
   title: 'Instruments/Showcase',
+  // A page of examples, not a component, so no docs page.
+  tags: ['!autodocs'],
   render: (_args, context) => <Showcase themeName={String(context.globals['theme'] ?? '')} />
 } satisfies Meta;
 

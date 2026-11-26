@@ -1,12 +1,12 @@
 import type { Preview } from '@storybook/react-vite';
 
-import { builtInThemes } from '@mfdiy/instruments';
-
 import '@mfdiy/ui';
+import { builtInThemes } from '@mfdiy/instruments';
+import { ToastProvider } from '@mfdiy/ui/components';
 
 /** Editing controls must stay visible on any theme: switch between them from the toolbar. */
 export default {
-  tags: ['visual'],
+  tags: ['autodocs', 'visual'],
   globalTypes: {
     theme: {
       description: 'MFD theme',
@@ -18,16 +18,16 @@ export default {
       }
     }
   },
-  decorators: [
-    Story => {
-      document.documentElement.setAttribute('data-color-scheme', 'dark');
-
-      return <Story />;
-    }
-  ],
   initialGlobals: {
     theme: builtInThemes[0]?.name
   },
+  decorators: [
+    Story => (
+      <ToastProvider>
+        <Story />
+      </ToastProvider>
+    )
+  ],
   parameters: {
     layout: 'fullscreen'
   }

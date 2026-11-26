@@ -27,6 +27,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0019: Saving profiles](docs/decisions/0019-saving-profiles.md)
 - [0020: What the first public beta contains](docs/decisions/0020-launch-mvp.md)
 - [0021: Testing and visual regression](docs/decisions/0021-testing.md)
+- [0022: One design language for the brand and the MFDs](docs/decisions/0022-one-design-language.md)
 
 ## Working with the maintainer
 
@@ -49,7 +50,7 @@ The repository is public in the `MFDIY` org, and the landing page is live at htt
 
 Waiting on the maintainer: generate the schema on the gaming PC (PTU and LIVE) and put both files where a session can read them; confirm PTU access; read the game developer's terms before charging for anything, and its fan-content and posting rules before announcing the beta.
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup forked from Bonsai produces about 656 kB of builder CSS (54 kB gzipped), makes every package that imports `@mfdiy/ui` spend ~22 s re-checking its types (0021), and can be pruned.
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup still produces about 177 kB of builder CSS (20.5 kB gzipped), down from 656 kB before the chrome rebuild (0022); a cold type check of a package that imports `@mfdiy/ui` takes ~15 s.
 
 ## Commands
 
@@ -75,19 +76,23 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 - `packages/schema`: Valibot schemas for every public format: signals, bridge protocol, theme tokens, documents.
 - `packages/instruments`: MFD primitives (pure), widgets and manifests (data-aware), the `--mfd-*` theme contract.
 - `packages/builder`: the builder's canvas and palette (`PageEditor`), independent of the page hosting them. Develop it in Storybook first.
-- `packages/ui`: builder design system, forked from Bonsai (`manage.vet`). One-way fork; prune freely.
+- `packages/ui`: builder design system: Bonsai's styling contract (tokens, Sprinkles, `Box`), with interactive components built on Base UI (0003, 0022).
 - `packages/adapter-star-citizen`: Star Citizen signal and action catalogue, and the starter documents a new library gets.
 - `packages/config`: shared TypeScript config.
 
 ## Code rules
 
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
-- In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). Before using `className`, check `packages/ui/src/styles/properties.ts`: if a style is missing, consider adding it there. In MFD primitives, looks come from `--mfd-*` tokens through `className`.
+- In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). `className` or `style` on a Bonsai component is a code smell (0022): check `packages/ui/src/styles/properties.ts`, and if a style or scale value is missing, raise it with the maintainer rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className`, and values computed from the document, wrapped in components such as `LayoutGrid` and `LayoutArea`.
+- Style Base UI's parts (inside `packages/ui` only) with `className={designSystem({ … })}`, or a function of the part's state (`state => designSystem({ backgroundColor: state.highlighted ? 'hover' : 'transparent' })`), so they reuse Sprinkles' classes. A `.css.ts` is only for what Sprinkles can't express, such as Base UI's CSS variables and `data-*` transition attributes.
 - Pressable MFD elements use `pressHandlers` from `@mfdiy/instruments`, so they fire on touch (0010).
-- In MFD styles, always read tokens through `token()` from `@mfdiy/instruments`, never `vars` directly; it resolves the base → semantic → component fallback chain at the point of use.
+- In MFD styles, always read tokens through `token()` (from `@mfdiy/schema`, re-exported by `@mfdiy/instruments`), never `vars` directly; it resolves the primitive → semantic → component fallback chain at the point of use.
 - Container query units resolve against an element's _ancestor_ container: build primitives on `Frame`, whose outer cell is the container, and put `cqmin` sizing on the frame.
 - `useEffect` is for synchronising with external systems only; derive values during render.
 - Keep components driven by props, so every state worth checking can be a story; stories are the UI tests (0021).
+- Every component has a Documentation page in Storybook (`autodocs`) and a `Default` story whose props are all `undefined` or their default values. Pages of examples that aren't a component (e.g. `Instruments/Tokens`) opt out with `!autodocs`.
+- In stories, every prop with a fixed set of values (variant, size, width, …) is picked from a list. Export the values from the component (e.g. `variants` in `props/Variant.ts`) and build the control from it (`createArgTypeFromConditionalStyleProp` from `packages/ui/.storybook/` in `ui`, a `select` control elsewhere), so Storybook can't drift from the code. Boolean props always get `false` in the story's `args` (otherwise the control shows a "Set boolean" button instead of a toggle), and props that take content (`children`, `actions`, other elements) get `control: false`.
+- Form components are controlled (the page owns the value). Their stories hold the value in local state, keyed on the control, so the field can be used in Storybook; Storybook's `useArgs` doesn't re-render in story tests. See `TextField.stories.tsx`.
 
 ## Planned architecture
 

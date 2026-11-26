@@ -27,7 +27,13 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
       plugins: [storybookTest({ configDir: join(packageDir, '.storybook') })],
       // Found late otherwise, so Vite reloads the page mid-run on a cold cache and tests fail.
       optimizeDeps: {
-        include: ['@vanilla-extract/sprinkles/createRuntimeSprinkles', '@vanilla-extract/sprinkles/createUtils']
+        include: [
+          '@vanilla-extract/sprinkles/createRuntimeSprinkles',
+          '@vanilla-extract/sprinkles/createUtils',
+          '@base-ui/react/autocomplete',
+          '@base-ui/react/drawer',
+          'sonner'
+        ]
       },
       test: {
         name: 'storybook',
@@ -35,7 +41,8 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
         browser: {
           enabled: true,
           headless: true,
-          provider: playwright(),
+          // Motion that depends on timing, like a placeholder typing itself, would never screenshot the same.
+          provider: playwright({ contextOptions: { reducedMotion: 'reduce' } }),
           instances: [{ browser: 'chromium' }],
           expect: {
             toMatchScreenshot: {
