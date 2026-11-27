@@ -2,10 +2,10 @@ import type { WatchedDocument } from '../documents/DocumentStore.js';
 import type { Edit } from '../documents/edit.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
-import { EditorHeader, PageEditor } from '@mfdiy/builder';
+import { EditorHeader, PageEditor, type CanvasView } from '@mfdiy/builder';
 import { pageToken } from '@mfdiy/instruments';
 import { addPage, duplicatePage, removePage } from '@mfdiy/schema';
-import { Box, Button, Dialog, MenuItem, Text, useToast } from '@mfdiy/ui/components';
+import { Box, Button, Dialog, MenuItem, MenuSeparator, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
 
@@ -60,6 +60,7 @@ function Editor({ id }: { id: string }) {
 
   // Set when leaving on purpose, as the changes are still there until the next render.
   const leavingRef = useRef(false);
+  const viewRef = useRef<CanvasView>(null);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       dirty && !leavingRef.current && currentLocation.pathname !== nextLocation.pathname
@@ -205,7 +206,21 @@ function Editor({ id }: { id: string }) {
             canRedo={current.future.length > 0}
             canUndo={current.past.length > 0}
             dirty={dirty}
-            menu={<MenuItem onClick={() => setDialog('save-as-new')}>Save as new…</MenuItem>}
+            menu={
+              <>
+                <MenuItem icon='zoom_in' onClick={() => viewRef.current?.zoomIn()} shortcut='+'>
+                  Zoom in
+                </MenuItem>
+                <MenuItem icon='zoom_out' onClick={() => viewRef.current?.zoomOut()} shortcut='−'>
+                  Zoom out
+                </MenuItem>
+                <MenuItem icon='fit_screen' onClick={() => viewRef.current?.fit()} shortcut='0'>
+                  Zoom to fit
+                </MenuItem>
+                <MenuSeparator />
+                <MenuItem onClick={() => setDialog('save-as-new')}>Save as new…</MenuItem>
+              </>
+            }
             onAddPage={handleAddPage}
             onBack={() => void navigate('/')}
             onPageChange={handlePageChange}
@@ -218,8 +233,7 @@ function Editor({ id }: { id: string }) {
           />
         </Box>
       ) : null}
-      {/* Padded, so resize handles at the edges of the canvas stay on screen. */}
-      <Box flexBasis='fluid' flexGrow='1' minHeight='none' padding='4x'>
+      <Box flexBasis='fluid' flexGrow='1' minHeight='none'>
         {page && layout ? (
           <PageEditor
             catalogue={hello ?? emptyCatalogue}
@@ -234,6 +248,7 @@ function Editor({ id }: { id: string }) {
             page={page}
             renderWidget={widget => <MfdWidget widget={widget} />}
             selectedId={selected}
+            viewRef={viewRef}
           />
         ) : null}
       </Box>

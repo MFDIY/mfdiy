@@ -89,7 +89,7 @@ const contentClass = designSystem({
 const FALLBACK_PEEK_HEIGHT = 64;
 
 /** Fractions of the screen's height, as Base UI's Drawer takes them. */
-const snapPoints = { half: 0.5, full: 1 } as const satisfies Record<Stop, number>;
+export const snapPoints = { half: 0.5, full: 1 } as const satisfies Record<Stop, number>;
 
 export type SheetProps = PropsWithChildren<{
   /**

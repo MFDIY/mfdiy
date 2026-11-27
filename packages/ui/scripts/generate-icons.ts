@@ -14,6 +14,7 @@ const names = [
   'close',
   'content_copy',
   'delete',
+  'fit_screen',
   'info',
   'keyboard_arrow_down',
   'keyboard_arrow_up',
@@ -21,7 +22,9 @@ const names = [
   'redo',
   'remove',
   'undo',
-  'unfold_more'
+  'unfold_more',
+  'zoom_in',
+  'zoom_out'
 ] as const;
 
 const require = createRequire(import.meta.url);

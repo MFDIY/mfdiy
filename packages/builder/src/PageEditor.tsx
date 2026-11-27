@@ -1,4 +1,4 @@
-import type { CanvasPointer, CanvasProps } from './canvas/Canvas.js';
+import type { CanvasHandle, CanvasProps, CanvasView } from './canvas/Canvas.js';
 import type { Catalogue } from './palette/choices.js';
 import type { Area, GridPoint, Page } from '@mfdiy/schema';
 
@@ -13,7 +13,7 @@ import {
   type PanelSide,
   type SearchListProps
 } from '@mfdiy/ui/components';
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type PointerEvent, type Ref } from 'react';
 
 import { Canvas } from './canvas/Canvas.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
@@ -24,7 +24,7 @@ import { propertiesTitle } from './properties/title.js';
 
 export type PageEditorProps = Omit<
   CanvasProps,
-  'ghost' | 'newWidgetArea' | 'onChange' | 'onDragChange' | 'onEmptyTap' | 'pointerRef'
+  'ghost' | 'handleRef' | 'newWidgetArea' | 'onChange' | 'onDragChange' | 'onEmptyTap' | 'onPanHint' | 'reveal'
 > & {
   catalogue: Catalogue;
   /**
@@ -38,6 +38,8 @@ export type PageEditorProps = Omit<
   onDeletePage?: (() => void) | undefined;
   /** Duplicates the page; greyed out without it. */
   onDuplicatePage?: (() => void) | undefined;
+  /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
+  viewRef?: Ref<CanvasView> | undefined;
 };
 
 /** A row being dragged out of the library. */
@@ -62,6 +64,8 @@ const CLICKS_BEFORE_HINT = 2;
 
 const HINT = 'Tap a cell, or drag a widget onto the page.';
 
+const PAN_HINT = 'Use two fingers to move or zoom the page.';
+
 /**
  * The canvas between the widget library and the properties panel (0006, 0008), laid out by
  * PanelLayout. A widget is added where a cell was marked, or where it's dropped; never somewhere
@@ -74,6 +78,7 @@ export function PageEditor({
   focusPageName = false,
   onDeletePage,
   onDuplicatePage,
+  viewRef,
   ...canvasProps
 }: PageEditorProps) {
   const { page, layout, documentTokens, onChange, onSelect, selectedId } = canvasProps;
@@ -82,13 +87,19 @@ export function PageEditor({
   const [drag, setDrag] = useState<Drag | null>(null);
   const [widgetDragging, setWidgetDragging] = useState(false);
   const dragRef = useRef<Drag | null>(null);
-  const canvasRef = useRef<CanvasPointer>(null);
+  const canvasRef = useRef<CanvasHandle>(null);
   /** A drag that ends on its own row also clicks it; that click mustn't count. */
   const justDraggedRef = useRef(false);
   const idleClicksRef = useRef(0);
 
   const toast = useToast();
   const library = useWidgetLibrary({ documentTokens, pageTokens: page.tokens });
+
+  useImperativeHandle(viewRef, () => ({
+    fit: () => canvasRef.current?.fit(),
+    zoomIn: () => canvasRef.current?.zoomIn(),
+    zoomOut: () => canvasRef.current?.zoomOut()
+  }));
 
   /** What every widget covers at least, before one is picked: the smallest of their default sizes. */
   function smallestPlace(point: GridPoint): Area {
@@ -331,11 +342,13 @@ export function PageEditor({
           <Canvas
             {...canvasProps}
             ghost={ghost}
+            handleRef={canvasRef}
             newWidgetArea={smallestPlace}
             onDragChange={setWidgetDragging}
             onEmptyTap={handleEmptyTap}
+            onPanHint={() => toast.show(PAN_HINT, { id: PAN_HINT })}
             onSelect={handleSelect}
-            pointerRef={canvasRef}
+            reveal={(selectedId === null ? null : layout.areas[selectedId]) ?? (marked ? ghost : null)}
           />
         </Box>
       </PanelLayout>

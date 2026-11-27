@@ -11,9 +11,10 @@ import {
   resizeArea,
   withArea
 } from '@mfdiy/schema';
-import { Box, Text } from '@mfdiy/ui/components';
+import { Box, Text, useSheetCover } from '@mfdiy/ui/components';
 import {
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   useState,
   type MouseEvent,
@@ -24,10 +25,14 @@ import {
 
 import * as styles from './Canvas.css.js';
 import { CanvasWidget } from './CanvasWidget.js';
+import { useCanvasView, type Point } from './useCanvasView.js';
 import { widgetMinSize } from './widgetInfo.js';
 
 /** How far a pointer travels, in pixels, before a press becomes a drag. Fingers are less steady. */
 const DRAG_THRESHOLD = { mouse: 4, touch: 8 };
+
+/** How far one finger drags across the page before it's told that two fingers move it. */
+const PAN_HINT_DISTANCE = 32;
 
 function dragThreshold(pointerType: string): number {
   return pointerType === 'mouse' ? DRAG_THRESHOLD.mouse : DRAG_THRESHOLD.touch;
@@ -56,8 +61,26 @@ type Gesture = {
   dragging: boolean;
 };
 
-/** Lets the page around the canvas ask where things are on it, e.g. for a drag from outside. */
-export type CanvasPointer = {
+/** A press on the empty page or around it, which may become a pan. */
+type BackgroundPress = {
+  hinted: boolean;
+  onPage: boolean;
+  pointerId: number;
+  pointerType: string;
+  x: number;
+  y: number;
+};
+
+/** Moves the view from outside the canvas, e.g. from a menu (0024). */
+export type CanvasView = {
+  /** Zooms out until the whole page fits, centred. */
+  fit: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+};
+
+/** Lets the page around the canvas ask where things are on it, e.g. for a drag from outside, and move the view. */
+export type CanvasHandle = CanvasView & {
   /** The grid point under a pointer, or null if it isn't over the grid. */
   gridPointAt: (clientX: number, clientY: number) => GridPoint | null;
 };
@@ -69,6 +92,8 @@ export type CanvasProps = {
   documentTokens?: TokenValues | undefined;
   /** Where a widget is being added: marked with a plus. */
   ghost?: Area | null | undefined;
+  /** Receives a `CanvasHandle`. */
+  handleRef?: Ref<CanvasHandle> | undefined;
   /** The layout being edited: one of the page's own. */
   layout: Layout;
   /**
@@ -84,17 +109,24 @@ export type CanvasProps = {
    * only lets go of it. Comes with what was used to tap.
    */
   onEmptyTap?: ((point: GridPoint, pointerType: string) => void) | undefined;
+  /** Fires when one finger drags across the page, which only two fingers move (0024). */
+  onPanHint?: (() => void) | undefined;
   onSelect: (widgetId: string | null) => void;
   page: Page;
-  /** Receives a `CanvasPointer`. */
-  pointerRef?: Ref<CanvasPointer> | undefined;
   /** Renders a widget's contents. Presses never reach it. */
   renderWidget: (widget: WidgetInstance) => ReactNode;
+  /**
+   * What to keep in view above an open sheet: the selected widget, or the cell marked to add one.
+   * The view moves only when the selection or the mark changes, or a sheet opens, and only if it's
+   * hidden (0024).
+   */
+  reveal?: Area | null | undefined;
   selectedId: string | null;
 };
 
 /**
- * The page being edited: select, move and resize widgets on the grid. Fits any box it's given and
+ * The page being edited: select, move and resize widgets on the grid, and pan and zoom around it
+ * (0024). Fills any box it's given, edge to edge, and fits the page into it with room around it;
  * knows nothing about the page around it, so it can be reused on the display (0008, 0009).
  */
 export function Canvas({
@@ -109,12 +141,22 @@ export function Canvas({
   ghost,
   newWidgetArea,
   onEmptyTap,
+  onPanHint,
   renderWidget,
-  pointerRef
+  reveal,
+  handleRef
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
+  /** Every finger on the canvas, so a second one can turn into a pinch. */
+  const touchesRef = useRef(new Map<number, Point>());
+  const backgroundPressRef = useRef<BackgroundPress | null>(null);
+  const view = useCanvasView({ aspectRatio, hasTouches: () => touchesRef.current.size > 0 });
+  const cover = useSheetCover();
 
-  useImperativeHandle(pointerRef, () => ({
+  useImperativeHandle(handleRef, () => ({
+    fit: view.fit,
+    zoomIn: view.zoomIn,
+    zoomOut: view.zoomOut,
     gridPointAt(clientX, clientY) {
       const dots = dotsRef.current?.getBoundingClientRect();
 
@@ -130,6 +172,43 @@ export function Canvas({
   const [gesture, setGesture] = useState<Gesture | null>(null);
   /** The part of the grid under the mouse or pen, if it isn't on a widget. */
   const [hovered, setHovered] = useState<GridPoint | null>(null);
+
+  const revealSubject = selectedId ?? (reveal ? `${reveal.column},${reveal.row}` : null);
+  const [revealed, setRevealed] = useState({ cover, subject: revealSubject });
+  /** Measured once the view has rendered, so it's kept until then. */
+  const pendingRevealRef = useRef<Area | null>(null);
+
+  if (revealed.cover !== cover || revealed.subject !== revealSubject) {
+    setRevealed({ cover, subject: revealSubject });
+
+    if (reveal && cover > 0) {
+      pendingRevealRef.current = reveal;
+    }
+  }
+
+  useLayoutEffect(() => {
+    const area = pendingRevealRef.current;
+    const dots = dotsRef.current?.getBoundingClientRect();
+
+    pendingRevealRef.current = null;
+
+    if (!area || !dots) {
+      return;
+    }
+
+    const cellWidth = dots.width / layout.grid.columns;
+    const cellHeight = dots.height / layout.grid.rows;
+
+    view.reveal(
+      {
+        bottom: dots.top + (area.row - 1 + area.rowSpan) * cellHeight,
+        left: dots.left + (area.column - 1) * cellWidth,
+        right: dots.left + (area.column - 1 + area.columnSpan) * cellWidth,
+        top: dots.top + (area.row - 1) * cellHeight
+      },
+      window.innerHeight * (1 - cover)
+    );
+  });
 
   const minSizes = new Map(page.widgets.map(widget => [widget.id, widgetMinSize(widget, layout.grid)]));
 
@@ -154,7 +233,7 @@ export function Canvas({
     const dots = dotsRef.current?.getBoundingClientRect();
 
     // One gesture at a time: a second finger never interferes with a drag.
-    if (gesture || event.button !== 0 || !startArea || !dots) {
+    if (gesture || view.driving() || event.button !== 0 || !startArea || !dots) {
       return;
     }
 
@@ -210,7 +289,7 @@ export function Canvas({
     const dots = dotsRef.current?.getBoundingClientRect();
     // Fingers don't hover. Over a widget, the target is the widget.
     const hovering = dots && event.pointerType !== 'touch' && event.target === event.currentTarget;
-    const point = hovering ? pointAt(event, dots) : null;
+    const point = hovering && !view.driving() ? pointAt(event, dots) : null;
 
     if (point?.x !== hovered?.x || point?.y !== hovered?.y) {
       setHovered(point);
@@ -222,13 +301,11 @@ export function Canvas({
 
     emptyPressRef.current = null;
 
-    if (event.target !== event.currentTarget || gesture || !dots) {
+    if (event.target !== event.currentTarget || gesture || view.driving() || !dots) {
       return;
     }
 
-    if (selectedId !== null) {
-      onSelect(null);
-    } else if (event.isPrimary && event.button === 0) {
+    if (event.isPrimary && event.button === 0) {
       emptyPressRef.current = {
         x: event.clientX,
         y: event.clientY,
@@ -241,7 +318,8 @@ export function Canvas({
 
   /**
    * On click rather than when the pointer is released: touch screens click after that, on whatever
-   * has appeared under the finger by then.
+   * has appeared under the finger by then. Not on press either, so the page can be dragged to pan
+   * without losing the selection.
    */
   function handleEmptyClick(event: MouseEvent) {
     const press = emptyPressRef.current;
@@ -252,11 +330,130 @@ export function Canvas({
       return;
     }
 
-    if (
-      isEmpty(press.point) &&
-      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType)
-    ) {
+    if (Math.hypot(event.clientX - press.x, event.clientY - press.y) >= dragThreshold(press.pointerType)) {
+      return;
+    }
+
+    if (selectedId !== null) {
+      onSelect(null);
+    } else if (isEmpty(press.point)) {
       onEmptyTap?.(press.point, press.pointerType);
+    }
+  }
+
+  /** Hands the pointers to the view, letting go of any press that hasn't become a drag. */
+  function startPan(pointers: [number, Point][]) {
+    emptyPressRef.current = null;
+    backgroundPressRef.current = null;
+    setGesture(null);
+    setHovered(null);
+    view.drive(pointers);
+  }
+
+  /**
+   * Runs before anything on the canvas sees the press: a second finger, before the first has
+   * started dragging a widget, pinches instead; the middle button pans from anywhere.
+   */
+  function handleViewportPointerDownCapture(event: PointerEvent<HTMLElement>) {
+    const point = { x: event.clientX, y: event.clientY };
+
+    if (event.pointerType === 'touch') {
+      touchesRef.current.set(event.pointerId, point);
+    }
+
+    if (view.driving()) {
+      if (event.pointerType === 'touch') {
+        view.addDriver(event.pointerId, point);
+      }
+
+      event.stopPropagation();
+
+      return;
+    }
+
+    if (event.pointerType === 'touch' && touchesRef.current.size >= 2 && !gesture?.dragging) {
+      startPan([...touchesRef.current]);
+      event.stopPropagation();
+
+      return;
+    }
+
+    if (event.pointerType !== 'touch' && event.button === 1) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      startPan([[event.pointerId, point]]);
+      event.stopPropagation();
+    }
+  }
+
+  function handleViewportPointerDown(event: PointerEvent<HTMLElement>) {
+    const target = event.target instanceof Element ? event.target : null;
+
+    if (gesture || view.driving() || !event.isPrimary || event.button !== 0 || !target) {
+      return;
+    }
+
+    if (target.closest('[data-canvas="widget"]')) {
+      return;
+    }
+
+    backgroundPressRef.current = {
+      hinted: false,
+      onPage: target.closest('[data-canvas="frame"]') !== null,
+      pointerId: event.pointerId,
+      pointerType: event.pointerType,
+      x: event.clientX,
+      y: event.clientY
+    };
+  }
+
+  function handleViewportPointerMoveCapture(event: PointerEvent<HTMLElement>) {
+    if (touchesRef.current.has(event.pointerId)) {
+      touchesRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+  }
+
+  /** A mouse or pen pans by dragging the page or around it; one finger only around it. */
+  function handleViewportPointerMove(event: PointerEvent<HTMLElement>) {
+    if (view.driving(event.pointerId)) {
+      view.moveDriver(event.pointerId, { x: event.clientX, y: event.clientY });
+
+      return;
+    }
+
+    const press = backgroundPressRef.current;
+
+    if (press?.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const distance = Math.hypot(event.clientX - press.x, event.clientY - press.y);
+
+    if (press.pointerType === 'touch' && press.onPage) {
+      if (!press.hinted && distance >= PAN_HINT_DISTANCE && touchesRef.current.size === 1) {
+        press.hinted = true;
+        onPanHint?.();
+      }
+
+      return;
+    }
+
+    if (distance >= dragThreshold(press.pointerType)) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      startPan([[event.pointerId, { x: press.x, y: press.y }]]);
+      view.moveDriver(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+  }
+
+  function handleViewportPointerEnd(event: PointerEvent<HTMLElement>) {
+    touchesRef.current.delete(event.pointerId);
+
+    if (backgroundPressRef.current?.pointerId === event.pointerId) {
+      backgroundPressRef.current = null;
+    }
+
+    if (view.driving(event.pointerId)) {
+      view.endDriver(event.pointerId);
     }
   }
 
@@ -326,7 +523,7 @@ export function Canvas({
   const drag = gesture?.dragging ? { ...gesture, area: targetArea(gesture) } : null;
   // Only where a click would add a widget: with a selection, it only lets go of that.
   const invitation =
-    hovered && !gesture && !ghost && selectedId === null && onEmptyTap && isEmpty(hovered)
+    hovered && !gesture && !view.panning && !ghost && selectedId === null && onEmptyTap && isEmpty(hovered)
       ? (newWidgetArea?.(hovered) ?? null)
       : null;
   const marked = ghost ?? invitation;
@@ -334,14 +531,30 @@ export function Canvas({
 
   return (
     <Box
-      alignItems='center'
-      containerType='size'
-      display='flex'
+      cursor={view.panning ? 'grabbing' : 'grab'}
+      data-canvas='viewport'
       height='full'
       isolation='isolate'
-      justifyContent='center'
       minHeight='none'
       minWidth='none'
+      onLostPointerCapture={event => {
+        // Only its own: capture moving from a widget or the grid to the viewport mustn't end a pan.
+        if (event.target === event.currentTarget) {
+          handleViewportPointerEnd(event);
+        }
+      }}
+      onPointerCancelCapture={handleViewportPointerEnd}
+      onPointerDown={handleViewportPointerDown}
+      onPointerDownCapture={handleViewportPointerDownCapture}
+      onPointerMove={handleViewportPointerMove}
+      onPointerMoveCapture={handleViewportPointerMoveCapture}
+      onPointerUpCapture={handleViewportPointerEnd}
+      overflow='hidden'
+      overscrollBehavior='none'
+      position='relative'
+      ref={view.viewportRef}
+      touchAction='none'
+      userSelect='none'
       width='full'
     >
       <Box
@@ -349,11 +562,10 @@ export function Canvas({
         containerType='size'
         cssVariables={applyTokens(documentTokens)}
         data-canvas='frame'
-        flexShrink='0'
-        style={{
-          height: aspectRatio ? `min(100cqh, ${100 / aspectRatio}cqw)` : '100%',
-          width: aspectRatio ? `min(100cqw, ${100 * aspectRatio}cqh)` : '100%'
-        }}
+        left='none'
+        position='absolute'
+        ref={view.frameRef}
+        top='none'
       >
         <Box
           aria-label={`Canvas, page ${page.name}`}
@@ -377,7 +589,7 @@ export function Canvas({
         >
           <LayoutGrid
             className={styles.grid}
-            cursor={invitation ? 'pointer' : 'default'}
+            cursor={view.panning ? 'grabbing' : invitation ? 'pointer' : 'grab'}
             grid={layout.grid}
             height='full'
             onClick={handleEmptyClick}
