@@ -9,8 +9,10 @@ import { openLibrary, type Library, type LibraryChange } from './library.js';
 
 const document = (name: string): MfdDocument => ({
   schema: 2,
+  fit: 'contain',
   name,
   game: 'test',
+  shape: { width: 16, height: 10 },
   pages: [
     {
       id: 'one',

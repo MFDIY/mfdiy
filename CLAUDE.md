@@ -29,6 +29,8 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0021: Testing and visual regression](docs/decisions/0021-testing.md)
 - [0022: One design language for the brand and the MFDs](docs/decisions/0022-one-design-language.md)
 - [0023: The properties panel](docs/decisions/0023-properties-panel.md)
+- [0024: Panning and zooming the canvas](docs/decisions/0024-canvas-pan-and-zoom.md)
+- [0025: Vocabulary](docs/decisions/0025-vocabulary.md)
 
 ## Working with the maintainer
 
@@ -43,7 +45,7 @@ Built: monorepo scaffold, schemas, theme contract v2 (0022), four MFD primitives
 Next: **the first public beta (0020)**. Its scope, order and gates are agreed; don't reopen them without new information.
 
 1. **Connect the bridge to the game** (critical path). **Blocked:** the game's telemetry feed was removed in a patch (27 Nov 2026); the launch waits for it to return (0020). The schema can be generated from the installed game; a real frame is still needed for units and the order of shield faces. See [`docs/research/star-citizen-telemetry.md`](docs/research/star-citizen-telemetry.md).
-2. **Editor** (0006–0008), limited to what 0020 lists. The primitives it needs are built; A first version of the **properties panel** (0023) is built (`packages/builder/src/properties`, stories under Builder/PropertiesPanel); its looks are still to be worked out with the maintainer, and the widgets themselves are developer art, so don't polish them. Pages and the header are built (0008, 0023); the one-row header is on trial on phones. Next: the canvas redesign (zoomable and pannable), in its own session, before the widgets are redesigned.
+2. **Editor** (0006–0008), limited to what 0020 lists. The primitives it needs are built; A first version of the **properties panel** (0023) is built (`packages/builder/src/properties`, stories under Builder/PropertiesPanel); its looks are still to be worked out with the maintainer, and the widgets themselves are developer art, so don't polish them. Pages and the header are built (0008, 0023); the one-row header is on trial on phones. Profiles have a shape (0006): the canvas shows pages in it, under a label that opens the profile's settings, and displays keep it or stretch. The canvas pans and zooms (0024, first pass: `useCanvasView` in `packages/builder/src/canvas`); its limits and speeds are to be tuned with the maintainer by feel, on a real phone and a desktop. Next: the widget redesign.
    - Postponed: a split Save button (0008).
    - Not built yet from 0008: a keyboard shortcut that focuses the library's search; dragging from the library on touch (long-press).
 3. **Windows download, QR code, tap-to-engage and keep-awake.**
@@ -53,7 +55,7 @@ The repository is public in the `MFDIY` org, and the landing page is live at htt
 
 Waiting on the maintainer: generate the schema on the gaming PC (PTU and LIVE) and put both files where a session can read them; confirm PTU access; read the game developer's terms before charging for anything, and its fan-content and posting rules before announcing the beta.
 
-Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup still produces about 177 kB of builder CSS (20.5 kB gzipped), down from 656 kB before the chrome rebuild (0022); a cold type check of a package that imports `@mfdiy/ui` takes ~15 s; TextInput still uses `useMergeRefs` from `@floating-ui/react`, left over from Bonsai; Select's Keyboard Chooses story failed once under a full run (it waits for each highlight now).
+Known tech debt: React Router 8 is available (we're on 7, per 0003); ESLint 9 is no longer supported upstream; `npm audit` reports moderate advisories in dev tooling only (glob and minimatch, via `rimraf` and Storybook's React docgen; don't use `npm audit fix --force`, it makes breaking version changes); the Sprinkles setup still produces about 177 kB of builder CSS (20.5 kB gzipped), down from 656 kB before the chrome rebuild (0022); a cold type check of a package that imports `@mfdiy/ui` takes ~15 s; TextInput still uses `useMergeRefs` from `@floating-ui/react`, left over from Bonsai; Select's Keyboard Chooses story failed once under a full run (it waits for each highlight now). Components in `packages/ui` import each other across folders (Box, Text, Icon, Button and others are imported by their siblings), which the maintainer wants to untangle, as it risks circular imports; new shared pieces go in `src/contexts` or `src/hooks`, not in a component's folder.
 
 ## Commands
 
@@ -86,6 +88,7 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 
 ## Code rules
 
+- Anything a player reads (the app, the builder, the bridge's output, the landing page) uses the words in the glossary, [0025](docs/decisions/0025-vocabulary.md): one word per thing (profile, MFD, page, screen, device), never a synonym. A new term goes into 0025 before it goes into the interface.
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
 - In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). `className` or `style` on a Bonsai component is a code smell (0022): check `packages/ui/src/styles/properties.ts`, and if a style or scale value is missing, raise it with the maintainer rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className`, and values computed from the document, wrapped in components such as `LayoutGrid` and `LayoutArea`.
 - Style Base UI's parts (inside `packages/ui` only) with `className={designSystem({ … })}`, or a function of the part's state (`state => designSystem({ backgroundColor: state.highlighted ? 'hover' : 'transparent' })`), so they reuse Sprinkles' classes. A `.css.ts` is only for what Sprinkles can't express, such as Base UI's CSS variables and `data-*` transition attributes.

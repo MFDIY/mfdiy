@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useState } from 'react';
-import { expect, screen } from 'storybook/test';
+import { expect, screen, waitFor } from 'storybook/test';
 
 import { Button } from '../Button/Button.js';
 import { Stack } from '../Stack/Stack.js';
@@ -51,7 +51,7 @@ export const Default = {} satisfies Story;
 export const Confirm = {
   args: {
     title: 'Save changes to “Fighter”?',
-    children: <Text variant='body'>Displays keep showing the saved version.</Text>,
+    children: <Text variant='body'>MFDs keep showing the saved version.</Text>,
     actions: (
       <>
         <Button variant='primary'>Save</Button>
@@ -104,6 +104,34 @@ export const Form = {
   },
   play: async () => {
     await expect(screen.getByRole('textbox')).toHaveFocus();
+  }
+} satisfies Story;
+
+/**
+ * Popups inside a dialog, like a field's hint, show above it: a modal dialog is in the browser's top
+ * layer, so they render into it rather than at the end of the page.
+ */
+export const HintInside = {
+  tags: ['!dev'],
+  args: {
+    dismissible: true,
+    title: 'New profile',
+    children: (
+      <TextField description='Width to height, like 16:10.' label='Shape' onChange={() => undefined} value='16:10' />
+    )
+  },
+  play: async ({ userEvent }) => {
+    await userEvent.click(screen.getByRole('button', { name: 'About Shape' }));
+
+    await waitFor(() => {
+      const onTop = screen.getAllByText('Width to height, like 16:10.').some(hint => {
+        const { left, top, width, height } = hint.getBoundingClientRect();
+
+        return width > 0 && hint.contains(document.elementFromPoint(left + width / 2, top + height / 2));
+      });
+
+      expect(onTop).toBe(true);
+    });
   }
 } satisfies Story;
 

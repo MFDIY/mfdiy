@@ -1,5 +1,5 @@
 import { MAX_PAGE_NAME_LENGTH, type MfdDocument, type Page } from './document.js';
-import { DEFAULT_GRID } from './layoutEditing.js';
+import { seedGrid } from './shape.js';
 
 /** An id no page in the document has, e.g. `page-2`. */
 export function newPageId(document: MfdDocument): string {
@@ -13,7 +13,7 @@ export function newPageId(document: MfdDocument): string {
   return `page-${number}`;
 }
 
-/** The document with an empty page at the end, named "Page _n_" with a new page's grid (0006, 0008). */
+/** The document with an empty page at the end, named "Page _n_", its grid seeded from the profile's shape as it is now (0006, 0008). */
 export function addPage(document: MfdDocument): { document: MfdDocument; id: string } {
   const names = new Set(document.pages.map(page => page.name));
   let number = document.pages.length + 1;
@@ -26,7 +26,7 @@ export function addPage(document: MfdDocument): { document: MfdDocument; id: str
     id: newPageId(document),
     name: `Page ${number}`,
     widgets: [],
-    layouts: [{ orientation: 'any', grid: DEFAULT_GRID, areas: {} }]
+    layouts: [{ orientation: 'any', grid: seedGrid(document.shape), areas: {} }]
   };
 
   return { document: { ...document, pages: [...document.pages, page] }, id: page.id };

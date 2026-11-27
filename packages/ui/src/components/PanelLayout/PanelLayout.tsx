@@ -4,7 +4,7 @@ import { useMatchesMediaQuery } from '../../hooks/useMatchesMediaQuery/useMatche
 import { onSurface } from '../../styles/surface.css.js';
 import { Box } from '../Box/Box.js';
 import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
-import { Sheet, SheetPeekSpace } from '../Sheet/Sheet.js';
+import { Sheet, SheetPeekSpace, snapPoints } from '../Sheet/Sheet.js';
 
 export const panelForms = ['sidebars', 'sheets'] as const;
 
@@ -34,6 +34,17 @@ const PanelFormContext = createContext<PanelForm>('sidebars');
 /** Whether the panels around this are sidebars or sheets, e.g. to only allow dragging out of a sidebar. */
 export function usePanelForm(): PanelForm {
   return use(PanelFormContext);
+}
+
+const SheetCoverContext = createContext(0);
+
+/**
+ * How much of the screen's height, from the bottom, an open sheet covers while half open, as a
+ * fraction; 0 with sidebars or no sheet open. Lets the main content keep something in view above it,
+ * e.g. the canvas the selected widget (0024).
+ */
+export function useSheetCover(): number {
+  return use(SheetCoverContext);
 }
 
 export type PanelLayoutProps = {
@@ -90,35 +101,38 @@ export function PanelLayout({ children, end, onSheetClose, onSheetOpen, openShee
     ] as const
   ).filter((entry): entry is readonly [PanelSide, Panel] => entry[1] !== undefined);
   const peeking = form === 'sheets' && panels.some(([, panel]) => panel.peek);
+  const cover = form === 'sheets' && openSheet !== null ? 1 - snapPoints.half : 0;
 
   return (
     <PanelFormContext value={form}>
-      <Box display='flex' gap='4x' height='full' isolation='isolate' minWidth='none' ref={rootRef} width='full'>
-        {form === 'sidebars' && start ? <Sidebar side='start'>{start.content}</Sidebar> : null}
-        <Box display='flex' flexDirection='column' flexGrow='1' height='full' minWidth='none'>
-          <Box flexGrow='1' minHeight='none'>
-            {children}
+      <SheetCoverContext value={cover}>
+        <Box display='flex' height='full' isolation='isolate' minWidth='none' ref={rootRef} width='full'>
+          {form === 'sidebars' && start ? <Sidebar side='start'>{start.content}</Sidebar> : null}
+          <Box display='flex' flexDirection='column' flexGrow='1' height='full' minWidth='none'>
+            <Box flexGrow='1' minHeight='none'>
+              {children}
+            </Box>
+            {peeking ? <SheetPeekSpace /> : null}
           </Box>
-          {peeking ? <SheetPeekSpace /> : null}
+          {form === 'sidebars' && end ? <Sidebar side='end'>{end.content}</Sidebar> : null}
+          {form === 'sheets'
+            ? panels
+                .toSorted(([, a], [, b]) => Number(Boolean(b.peek)) - Number(Boolean(a.peek)))
+                .map(([side, panel]) => (
+                  <Sheet
+                    key={side}
+                    onClose={onSheetClose}
+                    onOpen={() => onSheetOpen?.(side)}
+                    open={openSheet === side}
+                    peek={panel.peek}
+                    title={panel.title}
+                  >
+                    {panel.content}
+                  </Sheet>
+                ))
+            : null}
         </Box>
-        {form === 'sidebars' && end ? <Sidebar side='end'>{end.content}</Sidebar> : null}
-        {form === 'sheets'
-          ? panels
-              .toSorted(([, a], [, b]) => Number(Boolean(b.peek)) - Number(Boolean(a.peek)))
-              .map(([side, panel]) => (
-                <Sheet
-                  key={side}
-                  onClose={onSheetClose}
-                  onOpen={() => onSheetOpen?.(side)}
-                  open={openSheet === side}
-                  peek={panel.peek}
-                  title={panel.title}
-                >
-                  {panel.content}
-                </Sheet>
-              ))
-          : null}
-      </Box>
+      </SheetCoverContext>
     </PanelFormContext>
   );
 }
@@ -141,12 +155,7 @@ function Sidebar({ children, side }: { children: ReactNode; side: PanelSide }) {
       width='panel'
     >
       <ScrollContainer hideEdges>
-        <Box
-          backgroundColor='surface'
-          className={onSurface}
-          paddingLeft={side === 'end' ? '4x' : undefined}
-          paddingRight={side === 'start' ? '4x' : undefined}
-        >
+        <Box backgroundColor='surface' className={onSurface} padding='4x'>
           {children}
         </Box>
       </ScrollContainer>

@@ -1,17 +1,26 @@
 # 0006: Builder grid, layouts and interaction
 
 - **Status:** Accepted
-- **Date:** 2026-11-24
+- **Date:** 2026-11-24 (shape added 2026-11-27)
 
 ## Decision
 
-### A stretching grid of cells
+### A profile has a shape
 
-- Each page layout is a grid of **columns × rows** that the user chooses. A new page starts at **24 × 16**, where one cell is about a fingertip on a landscape tablet; the grid can be changed at any time.
-- The grid **stretches** to fill whatever screen it is shown on. Cells become rectangles on screens of a different shape; that's an accepted side effect of being fully responsive (0001). Widgets cope through container queries.
+- A profile has a **shape**: the ratio of the screen it's made for, typed as `16:10`, `1920:1080` or `1920 × 1080` (only the ratio counts), picked from common screens (16:10, 4:3, 16:9, a phone at 9:19.5), or taken with **Use this screen** from the device the builder is open on, such as the tablet that will show it. New profiles default to **16:10**: Android tablets' ratio, and closer to an iPad's 4.3:3 than 16:9 is.
+- The builder **always shows pages in the profile's shape**, on any device, so a profile looks the same on a phone and a laptop, only zoomed differently (0024).
+- A **display** keeps the shape by default: the page as large as fits, centred, with bars in the theme's background. A profile can instead **stretch** to fill any screen, for use anywhere; cells then become rectangles on screens of another shape, and widgets cope through container queries.
+- **Creating a profile asks only for its shape**, in a dialog, and opens its canvas; its name ("New profile") and everything else are set there. Save as new and duplicating keep the shape.
+- On the canvas, a **label above the page's top-left corner**, like an artboard's name, shows the profile and page and the shape and grid: "Fighter · Flight", then "16:10 · 24 × 15". Pressing it shows the **profile's settings** in the properties panel (0023): its name, its shape, and Keep shape or Stretch for other screens.
+- Profiles saved before shapes existed get 16:10 and keep their grids; there's no migration, as nothing has been released yet.
+
+### A grid per page
+
+- Each page layout is a grid of **columns × rows** that the user chooses. A new page's grid is **seeded with square-ish cells** for the profile's shape as it is at that moment: 24 cells along the longer side, and as many along the shorter as keeps them closest to square (16:10 → 24 × 15, 4:3 → 24 × 18, a phone → 11 × 24). One cell is then about a fingertip on a tablet. The grid can be changed at any time, so cells may be as stretched as the user likes.
+- **Changing the shape leaves every page's grid as it is**: the cells take the new shape. Pages added afterwards are seeded for the new shape.
 - Widgets snap to the grid: position and size are always whole cells. The builder shows the cell corners as a **dot grid**.
 - When the grid size changes after widgets are placed, widget positions and sizes are **scaled proportionally**, then collisions caused by rounding are resolved where there is room, rather than clipping widgets at the new edge. Widgets that don't fit overlap.
-- There is **no stored target screen size**. Instead the builder offers a **preview switcher** (phone portrait, tablet landscape, square panel, ...) that changes the canvas shape without changing the layout.
+- A **preview switcher** (phone portrait, tablet landscape, ...) for stretching profiles stays postponed (0020): with a stored shape, the builder already shows what matters.
 
 ### Layouts per page, orientation variants later
 
@@ -44,15 +53,16 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
   - Clicking rows without a mark does nothing; after a few such clicks, a toast explains: "Tap a cell, or drag a widget onto the page."
   - Dragging needs a mouse or pen. With touch only, the library opens from tapping a cell (0008), so a spot is always marked.
 - **Before adding:** hovering an empty cell with a mouse or pen outlines what any widget would **cover at least** there, with a **[+]** in the middle: quietly, as it follows the pointer around. It only appears when a click would add one, so not while a widget is selected. Fingers don't hover: after the tap, the same area marks the spot while a widget is picked, filled in. As every widget starts at the same size, it doesn't change while one is highlighted or picked.
-- **Letting go:** with a widget selected, the first tap on an empty cell only deselects; the next one marks the spot to add.
+- **Letting go:** with a widget selected, the first tap on an empty cell only deselects; the next one marks the spot to add. Both happen on release, not on press, so a drag on empty cells pans instead (0024).
 - **Duplicate** and **remove** the selected widget from the properties panel's header (0023); **undo / redo** from the toolbar. Undo reaches past a save, and shows the page it changed.
-- **Default sizes:** manifests give default sizes as a **share of the page**, rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density. **Every widget starts at 1/6 of the page's width by 1/4 of its height** (4 × 4 cells on a new page), so every widget must work at that size.
+- **Default sizes:** manifests give default sizes as a **share of the page**, rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density. **Every widget starts at 1/6 of the page's width by 1/4 of its height** (4 × 4 cells on a new 16:10 page), so every widget must work at that size.
 - **Touch screens:** widgets can be dragged directly, since nothing scrolls (0007). Tapping a widget selects it, which opens its properties.
 - **Without dragging (0001):** the properties panel has numeric position and size fields. There is no keyboard editing: an MFD is an input device next to the keyboard, not driven by it.
 
 ## Why
 
-- Stretching keeps the builder and displays fully responsive with one simple model, and matches how people think about layouts ("this button is 5 × 3 cells").
+- A grid of cells matches how people think about layouts ("this button is 5 × 3 cells").
+- A stored shape came from seeing the same profile on a phone and a laptop: with the canvas taking the shape of whatever space the builder had, they looked like different pages. Keeping the shape makes a profile look as designed; stretching stays available for "use it anywhere". Seeding square-ish cells gives widgets natural proportions without forcing them, as some layouts want stretched cells.
 - Orientation variants solve the one real failure of stretching (a landscape layout squeezed onto an upright phone) without introducing web-style breakpoints.
 - Refusing overlap made a full page impossible to rearrange: there was never room to move a widget out of the way for a moment. Highlighting still catches accidents, and overlap makes layering (e.g. a label over a gauge) possible.
 

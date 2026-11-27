@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 
+import { usePopupLayer } from '../../contexts/PopupLayer/popupLayer.js';
 import { designSystem } from '../../styles/design-system.js';
 import { Text } from '../Text/Text.js';
 
@@ -32,11 +33,13 @@ export type TooltipProps = {
  * Base UI's Tooltip (0003). It only shows a name: give the control its own accessible name too.
  */
 export function Tooltip({ children, label }: TooltipProps) {
+  const layer = usePopupLayer();
+
   return (
     <BaseTooltip.Root>
       <BaseTooltip.Trigger render={children} />
-      <BaseTooltip.Portal>
-        <BaseTooltip.Positioner sideOffset={OFFSET}>
+      <BaseTooltip.Portal {...layer.portal}>
+        <BaseTooltip.Positioner {...layer.positioner} sideOffset={OFFSET}>
           <BaseTooltip.Popup className={popupClass}>
             <Text variant='body'>{label}</Text>
           </BaseTooltip.Popup>

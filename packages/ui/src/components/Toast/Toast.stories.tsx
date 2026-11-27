@@ -23,7 +23,7 @@ function ToastDemo({ storyId = 'toast', title, ...options }: ToastDemoProps) {
       <Button onClick={() => toast.show(title, { ...options, id: options.id ?? storyId })}>Show toast</Button>
       <Button
         onClick={() =>
-          toast.show('Saved', { description: 'Displays keep showing the saved version.', id: `${storyId} another` })
+          toast.show('Saved', { description: 'MFDs keep showing the saved version.', id: `${storyId} another` })
         }
       >
         Show another

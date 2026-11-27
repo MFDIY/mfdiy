@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, type PropsWithChildren } from 'react';
 
+import { PopupLayerContext } from '../../contexts/PopupLayer/popupLayer.js';
 import { Box } from '../Box/Box.js';
 
 import { DialogPresentationContext } from './DialogPresentation.js';
@@ -73,7 +74,7 @@ export function Modal({ children, className, dismissible, onClose, titleId }: Mo
       tabIndex={-1}
       tagName='dialog'
     >
-      {children}
+      <PopupLayerContext value={inline ? null : ref}>{children}</PopupLayerContext>
     </Box>
   );
 }

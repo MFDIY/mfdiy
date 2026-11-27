@@ -37,6 +37,7 @@ export {
   panelForms,
   panelSides,
   usePanelForm,
+  useSheetCover,
   type Panel,
   type PanelForm,
   type PanelLayoutProps,

@@ -8,7 +8,7 @@
 ### A library on the bridge
 
 - Saved MFDs live **on the bridge**, as one JSON file each in the operating system's app-data folder. Every device on the network shares them. They travel over the same WebSocket as telemetry.
-- The **home page is the library**: create, rename, duplicate and delete, and **Show** or **Edit** one.
+- The **home page is the library**: create, rename, duplicate and delete, and **Show** or **Edit** one. Creating one asks only for its shape and opens it in the builder (0006).
 - **The address decides** what a device shows or edits: `/display/<id>` and `/builder/<id>`, so a bookmark or refresh opens the same one. There is no switcher on the display.
 
 ### Explicit saving

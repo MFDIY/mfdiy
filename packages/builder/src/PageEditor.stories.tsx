@@ -1,9 +1,10 @@
 import type { Catalogue } from './palette/choices.js';
+import type { ProfileSettings } from './properties/ProfileProperties.js';
 import type { Page, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
-import { addWidget, createBlankDocument } from '@mfdiy/schema';
+import { addWidget, createBlankDocument, shapeRatio } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
 import { expect, screen, waitFor, within } from 'storybook/test';
@@ -36,7 +37,9 @@ function renderWidget(widget: WidgetInstance) {
   ) : null;
 }
 
-const blankPage = createBlankDocument('Demo', 'demo').pages[0] as Page;
+const blankDocument = createBlankDocument('Demo', 'demo');
+const blankPage = blankDocument.pages[0] as Page;
+const blankProfile: ProfileSettings = { fit: blankDocument.fit, name: blankDocument.name, shape: blankDocument.shape };
 const [blankLayout] = blankPage.layouts;
 
 /** A page with one fuel bar on it, to select. */
@@ -69,12 +72,14 @@ function Demo({
 }: DemoProps) {
   const [page, setPage] = useState(initialPage);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelection);
+  const [profile, setProfile] = useState(blankProfile);
   const [layout] = page.layouts;
 
   return layout ? (
     <Box backgroundColor='surface' height='viewport' padding='5x'>
       <div style={{ height: '100%', maxWidth: phone ? '390px' : undefined }}>
         <PageEditor
+          aspectRatio={shapeRatio(profile.shape)}
           catalogue={catalogue}
           documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
           focusPageName={focusPageName}
@@ -82,8 +87,10 @@ function Demo({
           onChange={setPage}
           onDeletePage={() => undefined}
           onDuplicatePage={() => undefined}
+          onProfileChange={setProfile}
           onSelect={setSelectedId}
           page={page}
+          profile={profile}
           renderWidget={renderWidget}
           selectedId={selectedId}
         />
@@ -110,7 +117,7 @@ export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], ac
 
 /** The canvas's grid, to press or drop on. */
 function gridOf(canvasElement: HTMLElement) {
-  const grid = within(canvasElement).getByRole('group', { name: /^Canvas/ }).firstElementChild;
+  const grid = within(canvasElement).getByRole('group', { name: /^Page / }).firstElementChild;
 
   if (!(grid instanceof HTMLElement)) {
     throw new Error('No grid to press');
@@ -197,6 +204,34 @@ export const SearchFindsWidgets: Story = {
   }
 };
 
+/** Clicking the white space around the page lets go of the selected widget, as anywhere else (0024). */
+export const DeselectingOutsideThePage: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, selectedId: 'fuel' },
+  play: async ({ canvasElement, userEvent }) => {
+    const viewport = canvasElement.querySelector('[data-canvas="viewport"]');
+
+    if (!(viewport instanceof HTMLElement)) {
+      throw new Error('No canvas');
+    }
+
+    const { left, top } = viewport.getBoundingClientRect();
+
+    await expect(within(canvasElement).getByRole('button', { name: 'Bar fuel' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: viewport, coords: { clientX: left + 4, clientY: top + 4 } },
+      { keys: '[/MouseLeft]', target: viewport, coords: { clientX: left + 4, clientY: top + 4 } }
+    ]);
+    await expect(within(canvasElement).getByRole('button', { name: 'Bar fuel' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+  }
+};
+
 /** On a phone, the properties sheet never leaves: with nothing to edit, it peeks with its title (0008). */
 export const PhonePeeking: Story = {
   args: { page: pageWithBar, phone: true }
@@ -248,5 +283,48 @@ export const PhonePageJustDuplicated: Story = {
   args: { focusPageName: true, page: { ...pageWithBar, name: 'Page 1 (clone)' }, phone: true },
   play: async () => {
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus());
+  }
+};
+
+/** Whether a focus ring shows after a click depends on earlier stories' typing, so screenshots don't keep focus. */
+function blurActive() {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+}
+
+/** Pressing the label above the page shows the profile's settings: its name, its shape, and what displays do with it (0006). */
+export const ShowingProfileSettings: Story = {
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Demo · Page 1/ }));
+    await expect(await screen.findByRole('textbox', { name: 'Shape' })).toHaveValue('16:10');
+    blurActive();
+  }
+};
+
+/** A new shape reshapes the page, and its grid stays as it is: the cells stretch (0006). */
+export const ReshapingTheProfile: Story = {
+  tags: ['!dev'],
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Demo · Page 1/ }));
+    await userEvent.click(await screen.findByRole('button', { name: '4:3' }));
+    await expect(within(canvasElement).getByRole('button', { name: /^Demo · Page 1/ })).toHaveTextContent(
+      '4:3 · 24 × 15'
+    );
+    blurActive();
+  }
+};
+
+/** On a phone, the profile's settings open in the properties sheet. */
+export const PhoneProfileSettings: Story = {
+  args: { phone: true },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Demo · Page 1/ }));
+
+    const sheet = await screen.findByRole('dialog', { name: 'Profile' });
+
+    await waitFor(() => expect(within(sheet).getByRole('textbox', { name: 'Shape' })).toBeVisible());
+    await Promise.all(sheet.getAnimations().map(animation => animation.finished));
+    blurActive();
   }
 };

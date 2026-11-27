@@ -35,6 +35,7 @@ export function CanvasWidget({ widget, area, selected, lifted, onSelect, onPoint
   return (
     <LayoutArea
       area={area}
+      data-canvas='widget'
       minHeight='none'
       minWidth='none'
       offset={lifted}

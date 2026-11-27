@@ -13,7 +13,7 @@ Several telemetry tools for the game appeared within days of its telemetry becom
 
 1. **Game connection:** telemetry, reconnecting, clear "no game" and "not in a ship" states, and `user.cfg` lines to copy. MFDIY doesn't edit the file itself yet.
 2. **Actions:** only safe ones from the allowlist. Destructive actions stay out until the guarded button (0010) exists.
-3. **Editor:** add, delete, duplicate and label widgets; bind a signal or action; thresholds; pages; at least one level of undo.
+3. **Editor:** add, delete, duplicate and label widgets; bind a signal or action; thresholds; pages; at least one level of undo; panning and zooming the canvas (0024), which keeps the widget being edited in view above a sheet on a phone.
 4. **Widgets:** the four that exist (Light, Bar, Readout, Button), with the annunciators added as signals to bind.
 5. **Starting point:** three polished starter profiles and three built-in themes to pick from.
 6. **Connecting a tablet:** QR code and IP address (0004), tap to engage and keep-awake (0005).
@@ -28,7 +28,7 @@ Several telemetry tools for the game appeared within days of its telemetry becom
 
 ### After the beta
 
-`mfdiy.local`, theme editor, zoom, preview switcher, full undo history, automatic profiles (0012), virtual input device (0011), accounts and billing (0017), creator tools (0014) and the co-pilot (0016). These are **postponed, not dropped**: 0014 and 0016 stand and remain MFDIY's intended edge.
+`mfdiy.local`, theme editor, preview switcher, full undo history, automatic profiles (0012), virtual input device (0011), accounts and billing (0017), creator tools (0014) and the co-pilot (0016). These are **postponed, not dropped**: 0014 and 0016 stand and remain MFDIY's intended edge.
 
 ### Order and gates
 

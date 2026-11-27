@@ -31,6 +31,10 @@ With nothing selected, the panel shows the page's properties: its name and grid 
 - **Duplicate** and **Delete** sit in the header, as a widget's do. Duplicate adds a copy right after the page, named "_Name_ (clone)", shows it, and focuses its Name field with the name selected, ready to rename.
 - **Delete** happens at once and shows a toast with **Undo**, as undo reaches past a save (0006); no dialog asks first. A profile always has a page, so Delete is greyed out on the last one.
 
+### The profile, from the canvas's label
+
+Pressing the label above the canvas (0006) shows the **profile's settings** instead of the page's: its name, its shape (typed, picked or taken from this screen), and **Other screens**: Keep shape or Stretch. Selecting a widget or tapping an empty cell lets go of it, as of a selection. Changing the shape leaves the pages' grids as they are.
+
 ### Type first, data later
 
 A widget is added as a type, without data (0006). Its Data rows start empty, and the panel shows that it isn't connected yet as an error, since the widget doesn't work like that: the Signal row reads "Not connected" in the critical colour, as does its accordion row's summary, inside the controls so nothing shifts. The same goes for a Button without an action; a Light's action is optional, so "No action" is no error; the canvas shows such a widget with its type's name and no value.
