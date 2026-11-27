@@ -5,7 +5,14 @@ import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { EditorHeader, PageEditor, subgridWidgetId, type CanvasView } from '@mfdiy/builder';
 import { pageToken } from '@mfdiy/instruments';
-import { addPage, duplicatePage, pagesWithSubgridOverlap, removePage, shapeRatio } from '@mfdiy/schema';
+import {
+  addPage,
+  duplicatePage,
+  pagesWithSubgridOverlap,
+  removePage,
+  shapeRatio,
+  unreachablePages
+} from '@mfdiy/schema';
 import { Box, Button, Dialog, MenuItem, MenuSeparator, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate } from 'react-router';
@@ -101,6 +108,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
     : [...(page?.widgets.map(widget => widget.id) ?? []), ...subgrids.map(subgrid => subgridWidgetId(subgrid.id))];
   const selected = selectedId !== null && selectable.includes(selectedId) ? selectedId : null;
   const overlapping = pagesWithSubgridOverlap(document);
+  const unreachable = unreachablePages(document);
 
   /** Every change but the delete it undoes makes the Undo of a page's delete out of date. */
   function setEditAndDismiss(next: Edit) {
@@ -272,7 +280,13 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             pageId={page.id}
             pages={document.pages.map(candidate => ({
               label: candidate.name,
-              mark: overlapping.has(candidate.id) ? 'Overlap' : undefined,
+              mark:
+                [
+                  overlapping.has(candidate.id) ? 'Overlap' : null,
+                  unreachable.has(candidate.id) ? 'No page button shows it' : null
+                ]
+                  .filter(Boolean)
+                  .join(', ') || undefined,
               value: candidate.id
             }))}
             saving={saving}
@@ -311,6 +325,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             )}
             selectedId={selected}
             subgrids={subgrids}
+            unreachable={unreachable.has(page.id)}
             viewRef={viewRef}
           />
         ) : null}

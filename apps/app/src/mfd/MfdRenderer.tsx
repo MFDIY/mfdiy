@@ -1,6 +1,6 @@
 import type { Area, MfdDocument, WidgetInstance } from '@mfdiy/schema';
 
-import { applyTokens, LayoutArea, LayoutGrid, mfdRoot, pressHandlers } from '@mfdiy/instruments';
+import { applyTokens, LayoutArea, LayoutGrid, mfdRoot } from '@mfdiy/instruments';
 import { selectLayout, subgridArea } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useMatchesMediaQuery } from '@mfdiy/ui/hooks';
@@ -19,7 +19,7 @@ type MfdRendererProps = {
  * Renders an MFD document: theme tokens cascade document → page → widget, and each widget
  * subscribes only to the signals it is bound to. Shared subgrids are drawn above the page's widgets,
  * so they take the touches where they overlap; between their widgets, touches reach the page
- * (0026).
+ * (0026). The MFD adds no page tabs of its own: page buttons switch pages (0009, 0018).
  */
 export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps) {
   const page = document.pages.find(candidate => candidate.id === pageId) ?? document.pages[0];
@@ -63,28 +63,6 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
             </LayoutArea>
           ))}
         </LayoutGrid>
-        {document.pages.length > 1 ? (
-          <Box className={styles.tabs} cssVariables={applyTokens(page.tokens)} display='flex' tagName='nav'>
-            {document.pages.map(candidate => (
-              <Box
-                {...pressHandlers(() => onPageChange(candidate.id))}
-                appearance='none'
-                aria-current={candidate.id === page.id ? 'page' : undefined}
-                backgroundColor='transparent'
-                className={styles.tab}
-                cursor='pointer'
-                flexBasis='fluid'
-                flexGrow='1'
-                key={candidate.id}
-                tagName='button'
-                touchAction='none'
-                type='button'
-              >
-                {candidate.name}
-              </Box>
-            ))}
-          </Box>
-        ) : null}
       </Box>
     </PageNavigationProvider>
   );

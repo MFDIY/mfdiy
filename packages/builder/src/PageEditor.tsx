@@ -90,6 +90,8 @@ export type PageEditorProps = Omit<
   profile?: ProfileSettings | undefined;
   /** The profile's shared subgrids, shown above the page's widgets on every page (0026). */
   subgrids?: readonly SharedSubgrid[] | undefined;
+  /** No page button leads to the page; its properties say so (0026). */
+  unreachable?: boolean | undefined;
   /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
   viewRef?: Ref<CanvasView> | undefined;
 };
@@ -146,6 +148,7 @@ export function PageEditor({
   pages: pagesProp,
   profile,
   subgrids = [],
+  unreachable = false,
   viewRef,
   ...canvasProps
 }: PageEditorProps) {
@@ -496,6 +499,7 @@ export function PageEditor({
               pages={pages}
               profile={profileShown ? profile : undefined}
               selectedId={selectedId}
+              unreachable={unreachable}
             />
           ),
           peek: true,

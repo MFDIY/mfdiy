@@ -115,13 +115,23 @@ type DemoProps = {
   profile: boolean;
   selectedId: string | null;
   themeName: string;
+  /** No page button leads to the page (0026). */
+  unreachable: boolean;
 };
 
 /**
  * The panel fills whatever it's given; the container here starts at the sidebar's width and can be
  * resized from its corner. It keeps its own page and selection, so it can be used.
  */
-function Demo({ catalogue, focusPageName, onlyPage, profile, selectedId: initialSelection, themeName }: DemoProps) {
+function Demo({
+  catalogue,
+  focusPageName,
+  onlyPage,
+  profile,
+  selectedId: initialSelection,
+  themeName,
+  unreachable
+}: DemoProps) {
   const [current, setCurrent] = useState(page);
   const [settings, setSettings] = useState<ProfileSettings>({
     fit: 'contain',
@@ -160,6 +170,7 @@ function Demo({ catalogue, focusPageName, onlyPage, profile, selectedId: initial
           pages={pages}
           profile={profile ? settings : undefined}
           selectedId={selectedId}
+          unreachable={unreachable}
         />
       </Box>
     </div>
@@ -168,7 +179,7 @@ function Demo({ catalogue, focusPageName, onlyPage, profile, selectedId: initial
 
 const meta = {
   title: 'Builder/PropertiesPanel',
-  args: { catalogue, focusPageName: false, onlyPage: false, profile: false, selectedId: null },
+  args: { catalogue, focusPageName: false, onlyPage: false, profile: false, selectedId: null, unreachable: false },
   render: (args, context) => <Demo {...args} themeName={String(context.globals['theme'] ?? '')} />
 } satisfies Meta<Omit<DemoProps, 'themeName'>>;
 
@@ -178,6 +189,9 @@ type Story = StoryObj<typeof meta>;
 
 /** With nothing selected, the panel shows the page: its name and grid, with Duplicate and Delete. */
 export const Page: Story = {};
+
+/** No page button shows this page, so the MFD can't get to it; the editor says so (0026). */
+export const UnreachablePage: Story = { args: { unreachable: true } };
 
 /** A profile always has a page, so its only one can't be deleted. */
 export const OnlyPage: Story = { args: { onlyPage: true } };

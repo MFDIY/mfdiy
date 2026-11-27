@@ -25,6 +25,8 @@ export type PropertiesPanelProps = Pick<PagePropertiesProps, 'onDelete' | 'onDup
   /** The profile's settings, shown instead of the page's while nothing is selected, with `onProfileChange`. */
   profile?: ProfileSettings | undefined;
   selectedId: string | null;
+  /** No page button leads to the page; its properties say so (0026). */
+  unreachable?: boolean | undefined;
 };
 
 /**
@@ -38,6 +40,7 @@ export function PropertiesPanel({
   onProfileChange,
   profile,
   selectedId,
+  unreachable,
   ...props
 }: PropertiesPanelProps) {
   const { layout, onChange, page } = props;
@@ -59,6 +62,7 @@ export function PropertiesPanel({
       onDelete={onDelete}
       onDuplicate={onDuplicate}
       page={page}
+      unreachable={unreachable}
     />
   );
 }

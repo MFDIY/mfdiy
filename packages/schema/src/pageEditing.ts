@@ -1,4 +1,4 @@
-import { MAX_PAGE_NAME_LENGTH, type MfdDocument, type Page } from './document.js';
+import { MAX_PAGE_NAME_LENGTH, pageActionOf, type MfdDocument, type Page } from './document.js';
 import { seedGrid } from './shape.js';
 
 /** An id no page in the document has, e.g. `page-2`. */
@@ -69,4 +69,35 @@ export function removePage(document: MfdDocument, id: string): { document: MfdDo
   const next = pages[Math.max(index - 1, 0)];
 
   return { document: { ...document, pages }, id: next?.id ?? id };
+}
+
+/**
+ * The pages a player can't get to on the MFD: it opens on the first page, and from there only page
+ * buttons (0018) switch pages, on a page or in a shared subgrid, which is on every page. The editor
+ * warns about them; they can still be seen through it (0009, 0026).
+ */
+export function unreachablePages(document: MfdDocument): Set<string> {
+  const shared = (document.subgrids ?? []).flatMap(subgrid => subgrid.widgets);
+  const targetsOf = (page: Page) =>
+    [...page.widgets, ...shared].flatMap(widget => {
+      const target = pageActionOf(widget);
+
+      return target === undefined ? [] : [target];
+    });
+  const first = document.pages[0];
+  const reached = new Set(first ? [first.id] : []);
+  const queue = first ? [first] : [];
+
+  for (let page = queue.shift(); page; page = queue.shift()) {
+    for (const target of targetsOf(page)) {
+      const next = document.pages.find(candidate => candidate.id === target);
+
+      if (next && !reached.has(next.id)) {
+        reached.add(next.id);
+        queue.push(next);
+      }
+    }
+  }
+
+  return new Set(document.pages.filter(page => !reached.has(page.id)).map(page => page.id));
 }
