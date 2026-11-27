@@ -9,15 +9,16 @@ Help text called the same thing a screen, a display and a profile, and the landi
 
 ## Decision
 
-| Thing | Word | Not |
-|---|---|---|
-| What a player builds and saves | **profile** | layout, document (a code-only word), MFD |
-| What a profile shows while flying | **MFD** ("Build your MFD", "Show") | display |
-| One set of widgets, switched between like an MFD's pages | **page** | screen, canvas |
-| The surface something is shown on, which has a shape (16:10) | **screen** ("Use this screen", "On a screen of another shape") | display |
-| The phone, tablet or PC a player uses, connects and syncs | **device** ("changed on another device", "any device on your network") | |
-| A control placed on a page | **widget** | |
-| The program on the gaming PC | **bridge** | |
+| Thing                                                                            | Word                                                                   | Not                                      |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------- |
+| What a player builds and saves                                                   | **profile**                                                            | layout, document (a code-only word), MFD |
+| What a profile shows while flying                                                | **MFD** ("Build your MFD", "Show")                                     | display                                  |
+| One set of widgets, switched between like an MFD's pages                         | **page**                                                               | screen, canvas                           |
+| The surface something is shown on, which has a shape (16:10)                     | **screen** ("Use this screen", "On a screen of another shape")         | display                                  |
+| The phone, tablet or PC a player uses, connects and syncs                        | **device** ("changed on another device", "any device on your network") |                                          |
+| A control placed on a page                                                       | **widget**                                                             |                                          |
+| A grid of widgets placed once that shows on every page, in the same place (0026) | **shared subgrid**                                                     | bar, strip, overlay                      |
+| The program on the gaming PC                                                     | **bridge**                                                             |                                          |
 
 - **Page** is the MFD term, kept even though people also know web pages. Where the browser page is meant, say something else ("Reload and try again").
 - **Screen** and **device** are different things: a device is what you hold and connect; its screen is the part with a shape.

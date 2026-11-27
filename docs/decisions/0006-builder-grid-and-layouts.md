@@ -1,7 +1,7 @@
 # 0006: Builder grid, layouts and interaction
 
 - **Status:** Accepted
-- **Date:** 2026-11-24 (shape added 2026-11-27)
+- **Date:** 2026-11-24 (shape added and orientation variants dropped 2026-11-27)
 
 ## Decision
 
@@ -22,12 +22,11 @@
 - When the grid size changes after widgets are placed, widget positions and sizes are **scaled proportionally**, then collisions caused by rounding are resolved where there is room, rather than clipping widgets at the new edge. Widgets that don't fit overlap.
 - A **preview switcher** (phone portrait, tablet landscape, ...) for stretching profiles stays postponed (0020): with a stored shape, the builder already shows what matters.
 
-### Layouts per page, orientation variants later
+### One layout per page, no orientation variants
 
-- A page's widgets (type, options, bindings, action, theme overrides) are separate from their placement. Placement lives in the page's **layouts**: each layout has a grid and an area per widget.
-- Version 1 has exactly one layout per page, matching any orientation.
-- Later, a page can add a **portrait** and/or **landscape** variant. Orientation, not width breakpoints, is the breakpoint that matters for MFDs. Variants share the widgets, so a widget is configured once and only placed differently. The display picks the layout matching its orientation and falls back to the first layout, stretched.
-- The document format supports multiple layouts from the start, so adding variants later needs no migration.
+- A page's widgets (type, options, bindings, action, theme overrides) are separate from their placement. Placement lives in the page's **layout**: a grid and an area per widget.
+- A page has **exactly one layout**, for any orientation. There are no portrait or landscape variants: a profile is made for one screen's shape, and stretching covers other screens. Nobody turns a mounted MFD mid-flight.
+- What shows on every page, such as page buttons or a status line, goes in a **shared subgrid** (0026), placed once for the whole profile.
 
 ### Overlap is allowed, and highlighted
 
@@ -63,10 +62,11 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 
 - A grid of cells matches how people think about layouts ("this button is 5 × 3 cells").
 - A stored shape came from seeing the same profile on a phone and a laptop: with the canvas taking the shape of whatever space the builder had, they looked like different pages. Keeping the shape makes a profile look as designed; stretching stays available for "use it anywhere". Seeding square-ish cells gives widgets natural proportions without forcing them, as some layouts want stretched cells.
-- Orientation variants solve the one real failure of stretching (a landscape layout squeezed onto an upright phone) without introducing web-style breakpoints.
+- Orientation variants were planned for a landscape layout squeezed onto an upright phone. With a stored shape, a profile is made for the screen it will be shown on, so variants would add work to every page for a case that hardly happens.
 - Refusing overlap made a full page impossible to rearrange: there was never room to move a widget out of the way for a moment. Highlighting still catches accidents, and overlap makes layering (e.g. a label over a gauge) possible.
 
 ## Consequences
 
 - Breaking change to the document format: widget placement moved from `widget.area` to `page.layouts[].areas` (no documents exist yet, so no migration was needed).
 - The schema validates that every widget has exactly one area per layout and that areas stay within the grid.
+- The document format still holds a list of layouts, each with an orientation, from when variants were planned. It can become a single layout per page.

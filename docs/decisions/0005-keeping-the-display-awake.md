@@ -7,7 +7,7 @@
 
 Keeping the screen awake is the most important browser capability for an MFD. Because the display runs on plain HTTP (0004), the Wake Lock API is usually unavailable, so MFDIY uses a fallback chain:
 
-1. **"Tap to engage" screen.** The display starts on a themed start screen. The user's tap provides the gesture browsers require to enter full screen and start keep-awake.
+1. **"Tap to engage" screen.** The display starts on a themed start screen. The user's tap provides the gesture browsers require to start keep-awake. It doesn't enter fullscreen; that's the profile's Fullscreen button (0009).
 2. **Wake Lock API when available.** Use `navigator.wakeLock` when the page is a secure context.
 3. **Muted video fallback.** Otherwise, play a tiny, silent, inline video on loop (the NoSleep.js technique), which keeps phones and tablets awake without a secure context.
 4. **Recover automatically.** Re-acquire the lock or restart the video when the page becomes visible again (`visibilitychange`), since browsers release both when the tab is hidden.
