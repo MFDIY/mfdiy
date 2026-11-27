@@ -1,7 +1,7 @@
 import type { Catalogue } from '../palette/choices.js';
-import type { WidgetManifest } from '@mfdiy/instruments';
 import type { Area, Binding, Grid, Layout, Page, WidgetInstance } from '@mfdiy/schema';
 
+import { acceptsSignal, type WidgetManifest } from '@mfdiy/instruments';
 import { scaleLayout, withArea } from '@mfdiy/schema';
 
 import { widgetMinSize } from '../canvas/widgetInfo.js';
@@ -72,7 +72,7 @@ export function swapType(
     const signal = catalogue.signals.find(candidate => candidate.id === binding.signal);
     const spec = to.inputs[input];
 
-    if (spec && (!signal || spec.accepts.includes(signal.kind))) {
+    if (spec && (!signal || acceptsSignal(spec, signal))) {
       next = withBinding(next, input, binding);
     } else {
       lost.push(`${from?.inputs[input]?.label ?? input}: ${signal?.label ?? binding.signal}`);

@@ -33,6 +33,7 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
         include: [
           '@vanilla-extract/sprinkles/createRuntimeSprinkles',
           '@vanilla-extract/sprinkles/createUtils',
+          '@base-ui/react/accordion',
           '@base-ui/react/autocomplete',
           '@base-ui/react/drawer',
           '@base-ui/react/field',

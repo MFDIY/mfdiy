@@ -1,3 +1,5 @@
+export { Accordion, type AccordionItem, type AccordionProps } from './Accordion/Accordion.js';
+
 export { Box, tagNames as boxTagNames, type BoxProps } from './Box/Box.js';
 
 export { Button, iconPositions as buttonIconPositions, type ButtonProps } from './Button/Button.js';

@@ -22,6 +22,8 @@ export type Area = v.InferOutput<typeof AreaSchema>;
 
 /** Connects a widget input to a signal, with its own thresholds (0023). */
 export const BindingSchema = v.object({
+  /** How long a state is held after the value is back before it falls, in seconds (0023). */
+  holdSeconds: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(60))),
   signal: IdSchema,
   thresholds: v.optional(ThresholdsSchema)
 });

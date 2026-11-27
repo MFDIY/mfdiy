@@ -17,8 +17,15 @@ export type InputSpec = {
   label: string;
   /** Signal kinds this input accepts; the builder only offers compatible signals. */
   accepts: readonly SignalKind[];
+  /** Only numbers whose range means something, e.g. for a gauge (0023). */
+  bounded?: boolean | undefined;
   required: boolean;
 };
+
+/** Whether an input can show a signal: its kind, and for a gauge, a range that means something. */
+export function acceptsSignal(spec: InputSpec, signal: SignalDefinition): boolean {
+  return spec.accepts.includes(signal.kind) && !(spec.bounded && signal.kind === 'number' && signal.unbounded);
+}
 
 /** A static widget setting the user fills in, e.g. a label override. */
 export type OptionSpec =

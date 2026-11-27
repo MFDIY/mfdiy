@@ -143,7 +143,7 @@ export const AddByMarkingACell: Story = {
 
     await expect(within(canvasElement).getByRole('button', { name: 'Light' })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Lit by: Not connected' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Signal: Not connected' }));
     await userEvent.click(await screen.findByRole('option', { name: /^Gear/ }));
 
     await expect(within(canvasElement).getByRole('button', { name: 'Light gear' })).toBeInTheDocument();
@@ -228,7 +228,7 @@ export const PhonePickingData: Story = {
   args: { page: pageWithBar, phone: true, selectedId: 'fuel' },
   play: async ({ userEvent }) => {
     await userEvent.click(screen.getByRole('button', { name: 'Open Fuel' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Value: Fuel' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Signal: Fuel' }));
 
     const task = await screen.findByRole('dialog', { name: 'Value' });
 

@@ -181,7 +181,7 @@ export const NotConnected: Story = { args: { selectedId: 'empty' } };
 export const PickingData: Story = {
   args: { selectedId: 'fuel' },
   play: async ({ canvasElement, userEvent }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Value: Hydrogen fuel' }));
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Signal: Hydrogen fuel' }));
 
     await expect(await within(canvasElement).findByRole('option', { name: /^Speed/ })).toBeInTheDocument();
     await expect(within(canvasElement).queryByRole('option', { name: /^Landing gear down/ })).not.toBeInTheDocument();
@@ -217,7 +217,7 @@ export const PickingDataCopiesDefaults: Story = {
   play: async ({ canvasElement, userEvent }) => {
     const panel = within(canvasElement);
 
-    await userEvent.click(panel.getByRole('button', { name: 'Value: Not connected' }));
+    await userEvent.click(panel.getByRole('button', { name: 'Signal: Not connected' }));
     await userEvent.click(await panel.findByRole('option', { name: /^G-force/ }));
 
     await expect(panel.getByRole('switch', { name: 'Warn when high' })).toBeChecked();

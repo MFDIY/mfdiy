@@ -44,7 +44,12 @@ export const NumberSignalSchema = v.object({
   max: v.number(),
   unit: v.optional(v.pipe(v.string(), v.maxLength(16))),
   /** Copied into a binding when the signal is picked, so a new widget warns without setting up. */
-  thresholds: v.optional(ThresholdsSchema)
+  thresholds: v.optional(ThresholdsSchema),
+  /**
+   * The range is only a guess, e.g. a balance or a ship's speed, so a gauge of it would mislead;
+   * left out, `min` to `max` means something, like 0–100 % (0023).
+   */
+  unbounded: v.optional(v.boolean())
 });
 
 export const BooleanSignalSchema = v.object({

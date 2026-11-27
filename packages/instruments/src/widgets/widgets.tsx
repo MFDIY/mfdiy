@@ -109,7 +109,7 @@ export const barManifest: WidgetManifest = {
   type: 'bar',
   label: 'Bar',
   description: 'A linear gauge for a number signal, with warning and critical thresholds.',
-  inputs: { value: { label: 'Value', accepts: ['number'], required: true } },
+  inputs: { value: { label: 'Value', accepts: ['number'], bounded: true, required: true } },
   options: { label: labelOption },
   actionable: false,
   defaultSize: { width: 1 / 6, height: 1 / 4 },

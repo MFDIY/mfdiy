@@ -23,6 +23,10 @@
 - TypeScript checks **incrementally**, keeping build info per package in `node_modules/.cache/tsc`. Every package imports `@mfdiy/ui`'s source, not built types, so each one re-checks its polymorphic types (about 22 s per package, 90 s for the repository). Incremental checking makes reruns take seconds, but a change in `packages/ui` still costs the full time.
 - The shared setup lives in `@mfdiy/config/vitest`, so the three packages configure tests the same way.
 
+### Hooks and other logic without a look
+
+Pure logic gets plain unit tests. A hook is tested through a small story that drives it, running in the same browser as every other story (e.g. `Widgets / Held states`). No second, simulated DOM such as jsdom with React Testing Library: it can behave differently from the browser (layout, `:has()`, popovers). If many such tests ever make stories awkward, use `vitest-browser-react`, which renders in the same real browser.
+
 ### Storybook updates through Storybook
 
 - Storybook and its addons are updated and added with Storybook's own commands, never by editing versions by hand: `npx storybook@<version> upgrade --yes -c packages/ui/.storybook packages/instruments/.storybook packages/builder/.storybook` and `npx storybook@<version> add <addon> --yes -c <config dir>`. They also run Storybook's migrations. Review what they change: they may add addons or write unpinned versions.

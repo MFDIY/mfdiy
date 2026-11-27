@@ -3,9 +3,10 @@ import type { Merge } from './fields.js';
 import type { Catalogue } from '../palette/choices.js';
 import type { Area, Layout, Page, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
-import { widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
+import { acceptsSignal, widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
 import { bindingFor, duplicateWidget, removeWidget } from '@mfdiy/schema';
 import {
+  Accordion,
   Box,
   Button,
   Columns,
@@ -24,10 +25,11 @@ import { useState } from 'react';
 
 import { WidgetPreview } from '../palette/WidgetPreview.js';
 
+import { InputFields } from './InputFields.js';
 import { PickList } from './PickList.js';
-import { ThresholdFields } from './ThresholdFields.js';
 import { placeWidget, swapType, updateWidget, withAction, withBinding, withOption, type TypeSwap } from './editing.js';
 import { OpensRow, Section, Typing, useTyping } from './fields.js';
+import { inputSummary } from './inputs.js';
 import { widgetTitle } from './title.js';
 
 export type WidgetPropertiesProps = {
@@ -123,7 +125,7 @@ export function WidgetProperties({
       );
       const items = manifests.map((candidate): PickItem => {
         const { lost } = swapType(widget, manifest, candidate, catalogue);
-        const fits = shown && Object.values(candidate.inputs).some(spec => spec.accepts.includes(shown.kind));
+        const fits = shown && Object.values(candidate.inputs).some(spec => acceptsSignal(spec, shown));
 
         return {
           id: candidate.type,
@@ -159,7 +161,7 @@ export function WidgetProperties({
     if (current.kind === 'signal') {
       const spec = manifest.inputs[current.input];
       const items = catalogue.signals
-        .filter(signal => spec?.accepts.includes(signal.kind))
+        .filter(signal => spec !== undefined && acceptsSignal(spec, signal))
         .map((signal): PickItem => ({
           id: signal.id,
           label: signal.label,
@@ -311,40 +313,30 @@ export function WidgetProperties({
           />
           {inputs.length > 0 ? (
             <Section title='Data'>
-              {inputs.map(([name, spec]) => {
-                const binding = widget.bindings?.[name];
-                const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
+              <Accordion
+                defaultOpen={inputs.length === 1 ? inputs.map(([name]) => name) : []}
+                items={inputs.map(([name, spec]) => {
+                  const binding = widget.bindings?.[name];
+                  const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
 
-                return (
-                  <Stack key={name} spacing='4x'>
-                    <OpensRow
-                      empty='Not connected'
-                      label={spec.label}
-                      onOpen={() => setPicking({ kind: 'signal', input: name })}
-                      value={signal?.label ?? binding?.signal}
-                    />
-                    {binding && signal?.kind === 'number' ? (
-                      <ThresholdFields
+                  return {
+                    content: (
+                      <InputFields
+                        binding={binding}
                         input={name}
                         merge={typing.merge}
                         onBlur={typing.onBlur}
-                        onChange={(thresholds, merge) =>
-                          change(
-                            current =>
-                              withBinding(current, name, {
-                                signal: binding.signal,
-                                ...(thresholds ? { thresholds } : {})
-                              }),
-                            merge
-                          )
-                        }
+                        onChange={(next, merge) => change(current => withBinding(current, name, next), merge)}
+                        onPick={() => setPicking({ kind: 'signal', input: name })}
                         signal={signal}
-                        thresholds={binding.thresholds}
                       />
-                    ) : null}
-                  </Stack>
-                );
-              })}
+                    ),
+                    label: spec.label,
+                    summary: inputSummary(binding, signal),
+                    value: name
+                  };
+                })}
+              />
             </Section>
           ) : null}
           {manifest.actionable ? (

@@ -15,7 +15,7 @@ The panel is generated from the widget's manifest, never from code per widget, b
 
 - **Header:** the widget's type, with **Duplicate** and **Remove**, next to what they act on. This works the same in the phone sheet.
 - **Type** `›`: swaps the widget for another type (see below).
-- **Data:** **one row per input** the manifest declares, so a widget with several signals (a shield-face widget: front, rear, left, right) gets several rows. Each row picks its signal `›` and holds that binding's thresholds.
+- **Data:** **one accordion item per input** the manifest declares, so a widget with several signals (a shield-face widget, four directional lights) stays tidy. Collapsed, an item shows its input's name and a summary (the signal, and its thresholds, e.g. "Hydrogen fuel · low 25 / 10 %"); open, it holds everything about that input: its signal `›`, its thresholds, Hold state for, and Reset. A widget with one input shows it open; with several, they all start closed, and several can be open at once.
 - **Action** `›`, for widgets that can trigger one; optional on a Light, which then is a lit button.
 - **Label:** empty means the signal's or action's name, shown as the placeholder.
 - **Options** the manifest declares (e.g. a Readout's decimals), each with a control that suits its type: a choice of a few becomes a `SegmentedControl`, not a text field.
@@ -31,7 +31,7 @@ With nothing selected, the panel shows the page's properties: its name and grid 
 
 A widget is added as a type, without data (0006). Its Data rows start empty, and the panel shows that it isn't connected yet; the canvas shows such a widget with its type's name and no value.
 
-Swapping the type keeps as much as possible: the label always; each binding if the new type has an input of the same name that accepts the signal's kind; the action if the new type takes one. When a swap would drop anything, a dialog first says what would be lost and asks to confirm. One undo brings it all back.
+Swapping the type keeps as much as possible: the label always; each binding if the new type has an input of the same name that accepts the signal; the action if the new type takes one. When a swap would drop anything, a dialog first says what would be lost and asks to confirm. One undo brings it all back.
 
 ### Thresholds belong to a binding
 
@@ -40,6 +40,14 @@ Swapping the type keeps as much as possible: the label always; each binding if t
 - Values are in the **signal's own unit** ("above 7 g"), and stored that way, so correcting a signal's declared range never changes what a threshold means. For `%` signals that's the percentage.
 - The **adapter gives signals default thresholds**. They're **copied into the binding** when its signal is picked, so what the panel shows is exactly what's stored, and a later change to the defaults never changes existing profiles.
 - Widgets don't work out thresholds. The code that resolves a binding passes the widget the value, its **state** (normal, warning or critical) and the thresholds themselves, so a gauge can mark them. Bar, Readout and Light colour themselves by the state.
+- Thresholds are **number fields** only; dragging stops on a strip was considered and would be fiddly.
+- **Hold state for** (seconds, 0 = off, per binding): a state rises at once, so a warning is never late, but only falls back after the value has stayed back for that long, which stops a value hovering around a threshold from flickering. It steadies the colour only: the value always shows live. Its toggletip explains it and says it's useful to reduce flickering.
+- **Reset** puts an input's thresholds and Hold state for back to its signal's defaults. It's always there, greyed out while the input matches them, so nothing shifts and it also shows whether anything was changed.
+- No green or "good" state: a Light is either off/on (an on/off signal) or off/warning/critical (a number), and gauges warn and turn critical.
+
+### Which signals suit which widgets
+
+Inputs accept signal kinds (number, on/off, …), and a signal also says whether its range means something: hull and fuel run 0–100 %, but an aUEC balance or a ship's speed has no fixed maximum. A **Bar** only offers signals with a meaningful range, since a gauge of a guessed range misleads; a Readout or a Light takes any. More classification can come with the widget redesign.
 
 ### Editing and undo
 
