@@ -29,7 +29,7 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 Both panels switch between sidebar and sheet together, in one place (`PanelLayout` in `packages/ui`): they're sidebars with a mouse or pen and room for them, sheets otherwise, so on a phone everything but the canvas and a thin toolbar lives in sheets, one at a time. The properties sidebar stays in place when nothing is selected, so the canvas doesn't change size with the selection: it then shows the page's properties (0023). Sidebars have a fixed width; resizing or collapsing them can come later.
 
-A side task inside a panel, like choosing a widget's data, replaces a sidebar's contents and offers Back. On a sheet, it opens as a **modal sheet stacked on top**, with a darkened backdrop, and closes instead of going back. `PanelTask` in `packages/ui` chooses between the two, so a panel's code doesn't depend on its form.
+A side task inside a panel, like choosing a widget's data, replaces a sidebar's contents and offers Back. On a sheet, it opens as a **modal sheet stacked on top**, at the height the sheet under it rests at, and closes instead of going back: by choosing something in it, swiping it down or its close button. The sheets under it **step back**, staying in view, and can't be used until it closes. **One backdrop** darkens the page under the whole stack, never one per sheet. How they step back (only rising, a little less at each level, or also shrinking, like stacked toasts) is being compared in the Sheet stories. `PanelTask` in `packages/ui` chooses between the two, so a panel's code doesn't depend on its form.
 
 ### Preview mode
 

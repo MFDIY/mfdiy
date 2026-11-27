@@ -9,7 +9,8 @@ import { Inline } from '../Inline/Inline.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 
-import { Sheet, stops } from './Sheet.js';
+import * as styles from './Sheet.css.js';
+import { Sheet, stackAppearances, stops } from './Sheet.js';
 
 const widgets = [
   ['Bar', 'A linear gauge for a number signal.'],
@@ -66,6 +67,50 @@ function SheetOnAPage({ open: initiallyOpen, onClose, ...restProps }: ComponentP
   );
 }
 
+/** A button that stacks a modal sheet on the one it's in, which can stack another, up to `levels`. */
+function StackButton({ depth = 1, levels }: { depth?: number; levels: number }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>{`Stack sheet ${depth}`}</Button>
+      <Sheet modal onClose={() => setOpen(false)} open={open} title={`Stacked ${depth}`}>
+        <Stack spacing='5x'>
+          {depth < levels ? <StackButton depth={depth + 1} levels={levels} /> : null}
+          <WidgetList />
+        </Stack>
+      </Sheet>
+    </>
+  );
+}
+
+/** Content for a sheet that sheets can be stacked on. */
+function Stackable({ levels }: { levels: number }) {
+  return (
+    <Stack spacing='5x'>
+      <StackButton levels={levels} />
+      <WidgetList />
+    </Stack>
+  );
+}
+
+/** Waits until nothing on the page moves any more. */
+async function stillness() {
+  await waitFor(() => expect(document.querySelector('[data-starting-style]')).toBeNull());
+  await Promise.all(document.getAnimations().map(animation => animation.finished));
+}
+
+/** Opens the sheet, then stacks `levels` sheets on it. */
+async function stack(levels: number) {
+  await openSheet();
+
+  for (let depth = 1; depth <= levels; depth++) {
+    await userEvent.click(await screen.findByRole('button', { name: `Stack sheet ${depth}` }));
+    await screen.findByRole('dialog', { name: `Stacked ${depth}` });
+    await stillness();
+  }
+}
+
 /** Opens the sheet with its button and waits until it has finished sliding in. */
 async function openSheet() {
   await userEvent.click(screen.getByRole('button', { name: 'Open sheet' }));
@@ -80,6 +125,7 @@ const meta = {
   title: 'Components / Sheet',
   component: Sheet,
   argTypes: {
+    appearance: createArgTypeFromConditionalStyleProp(stackAppearances, undefined, 'scale'),
     children: { control: false },
     defaultStop: createArgTypeFromConditionalStyleProp(stops, undefined, 'half'),
     open: { control: { type: 'boolean' } },
@@ -88,6 +134,7 @@ const meta = {
   args: {
     children: undefined,
     defaultStop: undefined,
+    appearance: undefined,
     modal: false,
     onClose: fn(),
     open: false,
@@ -95,7 +142,9 @@ const meta = {
     title: 'Sheet'
   },
   // Keyed, so changing a control starts the story over with it.
-  render: args => <SheetOnAPage key={`${args.open}-${args.defaultStop}-${args.peek}-${args.modal}`} {...args} />
+  render: args => (
+    <SheetOnAPage key={`${args.open}-${args.defaultStop}-${args.peek}-${args.modal}-${args.appearance}`} {...args} />
+  )
 } satisfies Meta<typeof Sheet>;
 
 export default meta;
@@ -185,4 +234,46 @@ export const PeekingOpensAndCloses = {
 export const Modal = {
   args: { children: <WidgetList />, modal: true, title: 'Choose data' },
   play: openSheet
+} satisfies Story;
+
+/** A sheet stacked on another: the one under it rises and shrinks a little, like stacked toasts. */
+export const StackedScale = {
+  args: { appearance: 'scale', children: <Stackable levels={2} />, title: 'Properties' },
+  play: () => stack(1)
+} satisfies Story;
+
+/** The same, but the sheet under it only rises. */
+export const StackedRaise = {
+  args: { appearance: 'raise', children: <Stackable levels={2} />, title: 'Properties' },
+  play: () => stack(1)
+} satisfies Story;
+
+/** Two deep, shrinking: each sheet further back steps back as far again. */
+export const StackedTwoDeepScale = {
+  args: { appearance: 'scale', children: <Stackable levels={2} />, title: 'Properties' },
+  play: () => stack(2)
+} satisfies Story;
+
+/** Two deep, only rising: each sheet further back rises half as much as the one in front of it. */
+export const StackedTwoDeepRaise = {
+  args: { appearance: 'raise', children: <Stackable levels={2} />, title: 'Properties' },
+  play: () => stack(2)
+} satisfies Story;
+
+/** Only the top sheet can be used, and one backdrop darkens the page under the whole stack. */
+export const StackedSheetsWait = {
+  tags: ['!dev', '!visual'],
+  args: { children: <Stackable levels={2} />, title: 'Properties' },
+  play: async () => {
+    await stack(2);
+
+    const [bottom, middle, top] = document.querySelectorAll('[role="dialog"]');
+    const backdrops = [...document.getElementsByClassName(styles.backdrop)];
+
+    await expect(getComputedStyle(bottom as Element).pointerEvents).toBe('none');
+    await expect(getComputedStyle(middle as Element).pointerEvents).toBe('none');
+    await expect(getComputedStyle(top as Element).pointerEvents).toBe('auto');
+    await expect(backdrops).toHaveLength(1);
+    await expect(getComputedStyle(backdrops[0] as Element).opacity).toBe('1');
+  }
 } satisfies Story;
