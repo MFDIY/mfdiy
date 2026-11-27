@@ -11,6 +11,7 @@ import {
   Button,
   Columns,
   Dialog,
+  Group,
   IconButton,
   NumberField,
   PanelTask,
@@ -312,7 +313,7 @@ export function WidgetProperties({
             value={manifest.label}
           />
           {inputs.length > 0 ? (
-            <Section title='Data'>
+            <Group title='Data'>
               <Accordion
                 defaultOpen={inputs.length === 1 ? inputs.map(([name]) => name) : []}
                 items={inputs.map(([name, spec]) => {
@@ -337,10 +338,10 @@ export function WidgetProperties({
                   };
                 })}
               />
-            </Section>
+            </Group>
           ) : null}
           {manifest.actionable ? (
-            <Section title='Action'>
+            <Group title='Action'>
               <OpensRow
                 description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
                 empty={inputs.length > 0 ? 'No action' : 'Not connected'}
@@ -348,7 +349,7 @@ export function WidgetProperties({
                 onOpen={() => setPicking({ kind: 'action' })}
                 value={action?.label ?? widget.action}
               />
-            </Section>
+            </Group>
           ) : null}
           {options.length > 0 ? (
             <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>

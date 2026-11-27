@@ -14,6 +14,8 @@ export { Divider, type DividerProps } from './Divider/Divider.js';
 
 export { Field, type FieldProps } from './Field/Field.js';
 
+export { Group, type GroupProps } from './Group/Group.js';
+
 export { Icon, iconNames, iconSizes, type IconName, type IconProps, type IconSize } from './Icon/Icon.js';
 
 export { IconButton, type IconButtonProps } from './IconButton/IconButton.js';
