@@ -34,11 +34,11 @@ export type EditorHeaderProps = {
 };
 
 /**
- * The builder's header, in one row exactly a control high (0008): the logomark, Back between two
- * dividers, the page tabs with "+", then undo, redo, Save and a `⋯` menu with every other profile
- * action, side by side. Save shows whether there's anything to save. On narrower screens the
- * logomark gives way, and on a phone undo and redo move into `⋯`, so the tabs have the row.
- * Spans the page, and answers to its width: the row and the menu, which opens outside the header,
+ * The builder's header, in one row exactly a control high (0008): the logomark and a divider, Back,
+ * the page tabs with "+", then undo, redo, Save and a `⋯` menu with every other profile action,
+ * side by side. Save shows whether there's anything to save. On a desktop a little room follows
+ * `⋯`; on narrower screens the logomark and its divider give way, and on a phone undo and redo
+ * move into `⋯`, so the tabs have the row. Spans the page, and answers to its width: the row and the menu, which opens outside the header,
  * change together. It draws no hairline: what it's placed in does.
  */
 export function EditorHeader({
@@ -58,13 +58,12 @@ export function EditorHeader({
   saving
 }: EditorHeaderProps) {
   return (
-    <Box alignItems='center' display='flex' tagName='header'>
+    <Box alignItems='center' display='flex' paddingRight={{ default: 'none', 900: '3x' }} tagName='header'>
       <Box alignItems='center' display={{ default: 'none', 900: 'flex' }} flexShrink='0'>
         <Logomark color={accent} />
         <Divider />
       </Box>
       <IconButton icon='chevron_left' label='All profiles' onClick={onBack} />
-      <Divider />
       <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
         <Tabs
           after={<IconButton icon='add' label='Add a page' onClick={onAddPage} />}
