@@ -54,9 +54,10 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 - **Before adding:** hovering an empty cell with a mouse or pen outlines what any widget would **cover at least** there, with a **[+]** in the middle: quietly, as it follows the pointer around. It only appears when a click would add one, so not while a widget is selected. Fingers don't hover: after the tap, the same area marks the spot while a widget is picked, filled in. As every widget starts at the same size, it doesn't change while one is highlighted or picked.
 - **Letting go:** with a widget selected, the first tap on an empty cell only deselects; the next one marks the spot to add. Both happen on release, not on press, so a drag on empty cells pans instead (0024).
 - **Duplicate** and **remove** the selected widget from the properties panel's header (0023); **undo / redo** from the toolbar. Undo reaches past a save, and shows the page it changed.
+- **Copy and paste:** Ctrl+C (⌘C on a Mac) copies the selected widget, and Ctrl+V adds a copy of it to the grid being edited: another page, or a shared subgrid that's entered (0026). It's how a widget gets from one grid to another; widgets aren't moved between grids.
 - **Default sizes:** manifests give default sizes as a **share of the page**, rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density. **Every widget starts at 1/6 of the page's width by 1/4 of its height** (4 × 4 cells on a new 16:10 page), so every widget must work at that size.
 - **Touch screens:** widgets can be dragged directly, since nothing scrolls (0007). Tapping a widget selects it, which opens its properties.
-- **Without dragging (0001):** the properties panel has numeric position and size fields. There is no keyboard editing: an MFD is an input device next to the keyboard, not driven by it.
+- **Without dragging (0001):** the properties panel has numeric position and size fields. There is no keyboard editing beyond copy and paste: an MFD is an input device next to the keyboard, not driven by it.
 
 ## Why
 
@@ -70,3 +71,8 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 - Breaking change to the document format: widget placement moved from `widget.area` to `page.layouts[].areas` (no documents exist yet, so no migration was needed).
 - The schema validates that every widget has exactly one area per layout and that areas stay within the grid.
 - The document format still holds a list of layouts, each with an orientation, from when variants were planned. It can become a single layout per page.
+
+## Open questions
+
+- **Where a pasted widget goes:** the marked cell if there is one, otherwise the place it was copied from (as a share of the page, like default sizes), sliding to fit as when adding.
+- **Copy and paste without a keyboard** (0001): perhaps Copy beside Duplicate in the properties panel's header, and Paste where a spot is marked.
