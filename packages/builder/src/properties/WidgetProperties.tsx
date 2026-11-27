@@ -307,12 +307,18 @@ export function WidgetProperties({
           )}
         </Box>
         <Stack spacing='5x'>
-          <OpensRow
-            empty={widget.type}
-            label='Type'
-            onOpen={() => setPicking({ kind: 'type' })}
-            value={manifest.label}
-          />
+          <Group title='Widget'>
+            <Stack spacing='4x'>
+              {options.filter(([key]) => key === 'label').map(([key, spec]) => optionField(key, spec, typing.merge))}
+              <OpensRow
+                empty={widget.type}
+                label='Type'
+                onOpen={() => setPicking({ kind: 'type' })}
+                value={manifest.label}
+              />
+              {options.filter(([key]) => key !== 'label').map(([key, spec]) => optionField(key, spec, typing.merge))}
+            </Stack>
+          </Group>
           {inputs.length > 0 ? (
             <Group title='Data'>
               <Bleed bottom='3x' horizontal='3x'>
@@ -351,11 +357,6 @@ export function WidgetProperties({
               onOpen={() => setPicking({ kind: 'action' })}
               value={action?.label ?? widget.action}
             />
-          ) : null}
-          {options.length > 0 ? (
-            <Group title='Options'>
-              <Stack spacing='4x'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Stack>
-            </Group>
           ) : null}
           {area ? (
             <Group title='Place'>

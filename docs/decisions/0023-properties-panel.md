@@ -14,14 +14,12 @@
 The panel is generated from the widget's manifest, never from code per widget, because nobody can predict which widgets will exist. Top to bottom:
 
 - **Header:** the widget's type, with **Duplicate** and **Remove**, next to what they act on. This works the same in the phone sheet.
-- **Type** `›`: swaps the widget for another type (see below).
+- **Widget**, a group: the **Label** first (empty means the signal's or action's name, shown as the placeholder), then **Type** `›`, which swaps the widget for another type (see below), then the other options the manifest declares (e.g. a Readout's decimals), each with a control that suits its type: a choice of a few becomes a `SegmentedControl`, not a text field.
 - **Data:** a framed group (`Group`) of **one accordion item per input** the manifest declares, so a widget with several signals (a shield-face widget, four directional lights) stays tidy. Collapsed, an item shows its input's name and a summary (the signal, and its thresholds, e.g. "Hydrogen fuel · low 25 / 10 %"); open, it holds everything about that input: its signal `›`, its thresholds, Hold state for, and Reset. A widget with one input shows it open; with several, they all start closed, and several can be open at once.
 - **Action** `›`, a single field, as a widget triggers at most one action (0010), for widgets that can trigger one; optional on a Light, which then is a lit button.
-- **Label:** empty means the signal's or action's name, shown as the placeholder.
-- **Options**, a group of the options the manifest declares (e.g. a Readout's label and decimals), each with a control that suits its type: a choice of a few becomes a `SegmentedControl`, not a text field.
 - **Place**, a group: column, row, width and height as number fields, the way to edit without dragging (0006).
 
-**Groups and single fields.** A titled set of several fields about one subject is a `Group` (Data, Options, Place; on the page, Grid). A single field labelled by its own name stands alone (Type, Action, the page's Name). The frames separate the groups, so there are no divider lines between them.
+**Groups and single fields.** A titled set of several fields about one subject is a `Group` (Widget, Data, Place; on the page, Grid). A single field labelled by its own name stands alone (Action, the page's Name). The frames separate the groups, so there are no divider lines between them.
 
 Rows marked `›` open a side task that replaces the panel's contents and offers Back (0008): a searchable list of types, signals or actions, only those that suit.
 
