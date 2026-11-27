@@ -71,6 +71,7 @@ function ButtonWidget(props: WidgetProps) {
 
   return (
     <Button
+      current={props.action?.current}
       disabled={!props.action?.available}
       label={label}
       onPress={() => props.action?.trigger()}
@@ -137,7 +138,7 @@ export const readoutManifest: WidgetManifest = {
 export const buttonManifest: WidgetManifest = {
   type: 'button',
   label: 'Button',
-  description: 'Triggers a game action and shows whether the game accepted it.',
+  description: 'Triggers a game action and shows whether the game accepted it, or shows another page.',
   inputs: {},
   options: { label: labelOption },
   actionable: true,

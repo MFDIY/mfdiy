@@ -22,7 +22,7 @@ import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { DragLabel } from './palette/DragLabel.js';
 import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
 import { PropertiesPanel } from './properties/PropertiesPanel.js';
-import { propertiesTitle } from './properties/title.js';
+import { propertiesTitle, type PageChoice } from './properties/title.js';
 
 export type PageEditorProps = Omit<
   CanvasProps,
@@ -51,12 +51,13 @@ export type PageEditorProps = Omit<
   onDuplicatePage?: (() => void) | undefined;
   /** Changes the profile's name, shape or fit, from its settings (0006). */
   onProfileChange?: ((profile: ProfileSettings, merge?: string) => void) | undefined;
+  /** The profile's pages, which a page button can show (0018). Without them, only this page. */
+  pages?: readonly PageChoice[] | undefined;
   /**
    * The profile the page belongs to: named with the page and its shape in a label above the canvas,
    * which opens its settings. Without it, there's no label.
    */
   profile?: ProfileSettings | undefined;
-  /** Receives| undefined;
   /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
   viewRef?: Ref<CanvasView> | undefined;
 };
@@ -98,11 +99,13 @@ export function PageEditor({
   onDeletePage,
   onDuplicatePage,
   onProfileChange,
+  pages: pagesProp,
   profile,
   viewRef,
   ...canvasProps
 }: PageEditorProps) {
   const { page, layout, documentTokens, onChange, onSelect, selectedId } = canvasProps;
+  const pages = pagesProp ?? [page];
   const [marked, setMarked] = useState<GridPoint | null>(null);
   const [openSheet, setOpenSheet] = useState<PanelSide | null>(focusPageName ? 'end' : null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -362,13 +365,16 @@ export function PageEditor({
               onProfileChange={onProfileChange}
               onSelect={handleSelect}
               page={page}
+              pages={pages}
               profile={profileShown ? profile : undefined}
               selectedId={selectedId}
             />
           ),
           peek: true,
           title:
-            profileShown && profile && selectedId === null ? 'Profile' : propertiesTitle(page, selectedId, catalogue)
+            profileShown && profile && selectedId === null
+              ? 'Profile'
+              : propertiesTitle(page, selectedId, catalogue, pages)
         }}
         onSheetClose={() => {
           setOpenSheet(null);

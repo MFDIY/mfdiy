@@ -4,7 +4,7 @@ import type { Catalogue } from '../palette/choices.js';
 import type { Area, Layout, Page, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { acceptsSignal, widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
-import { bindingFor, duplicateWidget, removeWidget } from '@mfdiy/schema';
+import { bindingFor, duplicateWidget, gameActionOf, pageActionOf, removeWidget } from '@mfdiy/schema';
 import {
   Accordion,
   Bleed,
@@ -32,7 +32,7 @@ import { PickList } from './PickList.js';
 import { placeWidget, swapType, updateWidget, withAction, withBinding, withOption, type TypeSwap } from './editing.js';
 import { OpensRow, Typing, useTyping } from './fields.js';
 import { inputSummary } from './inputs.js';
-import { widgetTitle } from './title.js';
+import { widgetTitle, type PageChoice } from './title.js';
 
 export type WidgetPropertiesProps = {
   catalogue: Catalogue;
@@ -42,6 +42,8 @@ export type WidgetPropertiesProps = {
   onChange: (page: Page, merge?: string) => void;
   onSelect: (id: string | null) => void;
   page: Page;
+  /** The profile's pages, which a page button can show (0018). */
+  pages: readonly PageChoice[];
   widget: WidgetInstance;
 };
 
@@ -52,6 +54,9 @@ const manifests = Object.values(widgetManifests).sort((a, b) => a.label.localeCo
 
 const NO_ACTION = 'none';
 
+/** Picked page ids are told apart from game action ids, which can't hold a colon. */
+const PAGE_PREFIX = 'page:';
+
 /** The properties of one widget (0023), generated from its manifest. Key it by the widget's id. */
 export function WidgetProperties({
   catalogue,
@@ -61,13 +66,14 @@ export function WidgetProperties({
   onChange,
   onSelect,
   page,
+  pages,
   widget
 }: WidgetPropertiesProps) {
   const [picking, setPicking] = useState<Picking | null>(null);
   const [swap, setSwap] = useState<TypeSwap | null>(null);
   const area = layout.areas[widget.id];
   const typing = useTyping(widget.id, area);
-  const title = widgetTitle(widget, catalogue);
+  const title = widgetTitle(widget, catalogue, pages);
   const sidebar = usePanelForm() === 'sidebars';
   const tokens = { documentTokens, pageTokens: page.tokens };
 
@@ -117,7 +123,12 @@ export function WidgetProperties({
 
   function pickAction(id: string) {
     setPicking(null);
-    change(current => withAction(current, id === NO_ACTION ? undefined : id));
+    change(current =>
+      withAction(
+        current,
+        id === NO_ACTION ? undefined : id.startsWith(PAGE_PREFIX) ? { page: id.slice(PAGE_PREFIX.length) } : id
+      )
+    );
   }
 
   function pickTask(current: Picking): PanelTaskContent {
@@ -190,6 +201,12 @@ export function WidgetProperties({
     const optional = Object.keys(manifest.inputs).length > 0;
     const items: PickItem[] = [
       ...(optional ? [{ id: NO_ACTION, label: 'No action', description: 'Only shows its data' }] : []),
+      ...pages.map(({ id, name }) => ({
+        id: `${PAGE_PREFIX}${id}`,
+        label: name,
+        group: 'Show page',
+        description: id === page.id ? 'This page' : undefined
+      })),
       ...catalogue.actions.map(({ id, label, group }) => ({ id, label, group }))
     ];
 
@@ -210,10 +227,19 @@ export function WidgetProperties({
 
   const inputs = Object.entries(manifest.inputs);
   const options = Object.entries(manifest.options);
-  const action = catalogue.actions.find(candidate => candidate.id === widget.action);
+  const action = catalogue.actions.find(candidate => candidate.id === gameActionOf(widget));
+  const shownPageId = pageActionOf(widget);
+  const shownPage = pages.find(candidate => candidate.id === shownPageId);
+  const actionText =
+    shownPageId === undefined
+      ? (action?.label ?? gameActionOf(widget))
+      : shownPage
+        ? `Show ${shownPage.name}`
+        : 'Show a deleted page';
   const defaultLabel =
     catalogue.signals.find(candidate => candidate.id === Object.values(widget.bindings ?? {})[0]?.signal)?.label ??
     action?.label ??
+    shownPage?.name ??
     manifest.label;
 
   function optionField(key: string, spec: OptionSpec, merge: Merge) {
@@ -358,7 +384,7 @@ export function WidgetProperties({
               label='Action'
               onOpen={() => setPicking({ kind: 'action' })}
               required={inputs.length === 0}
-              value={action?.label ?? widget.action}
+              value={actionText}
             />
           ) : null}
           {area ? (

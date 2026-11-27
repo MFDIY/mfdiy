@@ -16,6 +16,7 @@ import { NameDialog } from '../documents/NameDialog.js';
 import { copyName, failureText } from '../documents/documentText.js';
 import { change, changedPageId, isDirty, redo, saved, startEdit, undo } from '../documents/edit.js';
 import { MfdWidget } from '../mfd/MfdWidget.js';
+import { PageNavigationProvider } from '../mfd/PageNavigation.js';
 import { useConnection } from '../telemetry/TelemetryProvider.js';
 
 /** Says why saving failed, until it's dismissed or saving works. */
@@ -281,8 +282,13 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             onProfileChange={(profile, merge) => setEditAndDismiss(change(current, { ...document, ...profile }, merge))}
             onSelect={setSelectedId}
             page={page}
+            pages={document.pages}
             profile={{ fit: document.fit, name: document.name, shape: document.shape }}
-            renderWidget={widget => <MfdWidget widget={widget} />}
+            renderWidget={widget => (
+              <PageNavigationProvider value={{ pageId: page.id, pages: document.pages, showPage: () => undefined }}>
+                <MfdWidget widget={widget} />
+              </PageNavigationProvider>
+            )}
             selectedId={selected}
             viewRef={viewRef}
           />

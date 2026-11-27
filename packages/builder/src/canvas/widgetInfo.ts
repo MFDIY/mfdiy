@@ -1,11 +1,16 @@
 import type { CellSize, Grid, WidgetInstance } from '@mfdiy/schema';
 
 import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
+import { gameActionOf, pageActionOf } from '@mfdiy/schema';
 
 /** A name for screen readers, e.g. "Light Gear". */
 export function widgetName(widget: WidgetInstance): string {
   const type = widgetManifests[widget.type]?.label ?? widget.type;
-  const label = widget.options?.['label'] || Object.values(widget.bindings ?? {})[0]?.signal || widget.action;
+  const label =
+    widget.options?.['label'] ||
+    Object.values(widget.bindings ?? {})[0]?.signal ||
+    gameActionOf(widget) ||
+    pageActionOf(widget);
 
   return label ? `${type} ${label}` : type;
 }

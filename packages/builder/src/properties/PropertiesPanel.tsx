@@ -1,3 +1,4 @@
+import type { PageChoice } from './title.js';
 import type { Catalogue } from '../palette/choices.js';
 import type { Layout, Page, TokenValues } from '@mfdiy/schema';
 
@@ -19,6 +20,8 @@ export type PropertiesPanelProps = Pick<PagePropertiesProps, 'onDelete' | 'onDup
   onProfileChange?: ((profile: ProfileSettings, merge?: string) => void) | undefined;
   onSelect: (id: string | null) => void;
   page: Page;
+  /** The profile's pages, which a page button can show (0018). */
+  pages: readonly PageChoice[];
   /** The profile's settings, shown instead of the page's while nothing is selected, with `onProfileChange`. */
   profile?: ProfileSettings | undefined;
   selectedId: string | null;

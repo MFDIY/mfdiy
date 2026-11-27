@@ -7,6 +7,7 @@ import { useMatchesMediaQuery } from '@mfdiy/ui/hooks';
 
 import * as styles from './MfdRenderer.css.js';
 import { MfdWidget } from './MfdWidget.js';
+import { PageNavigationProvider } from './PageNavigation.js';
 
 type MfdRendererProps = {
   document: MfdDocument;
@@ -29,37 +30,44 @@ export function MfdRenderer({ document, pageId, onPageChange }: MfdRendererProps
   const layout = selectLayout(page, portrait ? 'portrait' : 'landscape');
 
   return (
-    <Box className={[mfdRoot, styles.screen]} cssVariables={applyTokens(document.tokens)} display='grid' height='full'>
-      <LayoutGrid className={styles.page} cssVariables={applyTokens(page.tokens)} grid={layout.grid} minHeight='none'>
-        {page.widgets.map(widget => {
-          const area = layout.areas[widget.id];
+    <PageNavigationProvider value={{ pageId: page.id, pages: document.pages, showPage: onPageChange }}>
+      <Box
+        className={[mfdRoot, styles.screen]}
+        cssVariables={applyTokens(document.tokens)}
+        display='grid'
+        height='full'
+      >
+        <LayoutGrid className={styles.page} cssVariables={applyTokens(page.tokens)} grid={layout.grid} minHeight='none'>
+          {page.widgets.map(widget => {
+            const area = layout.areas[widget.id];
 
-          return area ? <WidgetSlot area={area} key={widget.id} widget={widget} /> : null;
-        })}
-      </LayoutGrid>
-      {document.pages.length > 1 ? (
-        <Box className={styles.tabs} cssVariables={applyTokens(page.tokens)} display='flex' tagName='nav'>
-          {document.pages.map(candidate => (
-            <Box
-              {...pressHandlers(() => onPageChange(candidate.id))}
-              appearance='none'
-              aria-current={candidate.id === page.id ? 'page' : undefined}
-              backgroundColor='transparent'
-              className={styles.tab}
-              cursor='pointer'
-              flexBasis='fluid'
-              flexGrow='1'
-              key={candidate.id}
-              tagName='button'
-              touchAction='none'
-              type='button'
-            >
-              {candidate.name}
-            </Box>
-          ))}
-        </Box>
-      ) : null}
-    </Box>
+            return area ? <WidgetSlot area={area} key={widget.id} widget={widget} /> : null;
+          })}
+        </LayoutGrid>
+        {document.pages.length > 1 ? (
+          <Box className={styles.tabs} cssVariables={applyTokens(page.tokens)} display='flex' tagName='nav'>
+            {document.pages.map(candidate => (
+              <Box
+                {...pressHandlers(() => onPageChange(candidate.id))}
+                appearance='none'
+                aria-current={candidate.id === page.id ? 'page' : undefined}
+                backgroundColor='transparent'
+                className={styles.tab}
+                cursor='pointer'
+                flexBasis='fluid'
+                flexGrow='1'
+                key={candidate.id}
+                tagName='button'
+                touchAction='none'
+                type='button'
+              >
+                {candidate.name}
+              </Box>
+            ))}
+          </Box>
+        ) : null}
+      </Box>
+    </PageNavigationProvider>
   );
 }
 

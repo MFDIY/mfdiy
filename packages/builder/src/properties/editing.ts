@@ -1,8 +1,8 @@
 import type { Catalogue } from '../palette/choices.js';
-import type { Area, Binding, Grid, Layout, Page, WidgetInstance } from '@mfdiy/schema';
+import type { Area, Binding, Grid, Layout, Page, WidgetActionRef, WidgetInstance } from '@mfdiy/schema';
 
 import { acceptsSignal, type WidgetManifest } from '@mfdiy/instruments';
-import { scaleLayout, withArea } from '@mfdiy/schema';
+import { gameActionOf, scaleLayout, withArea } from '@mfdiy/schema';
 
 import { widgetMinSize } from '../canvas/widgetInfo.js';
 
@@ -33,8 +33,8 @@ export function withOption(
   return Object.keys(options).length > 0 ? { ...rest, options } : rest;
 }
 
-/** The widget with an action, or none with `undefined`. */
-export function withAction(widget: WidgetInstance, action: string | undefined): WidgetInstance {
+/** The widget with an action, a game action or a page to show, or none with `undefined`. */
+export function withAction(widget: WidgetInstance, action: WidgetActionRef | undefined): WidgetInstance {
   const { action: _action, ...rest } = widget;
 
   return action ? { ...rest, action } : rest;
@@ -83,9 +83,10 @@ export function swapType(
     if (to.actionable) {
       next = withAction(next, widget.action);
     } else {
-      const action = catalogue.actions.find(candidate => candidate.id === widget.action);
+      const id = gameActionOf(widget);
+      const action = catalogue.actions.find(candidate => candidate.id === id);
 
-      lost.push(`Action: ${action?.label ?? widget.action}`);
+      lost.push(`Action: ${action?.label ?? id ?? 'Show a page'}`);
     }
   }
 

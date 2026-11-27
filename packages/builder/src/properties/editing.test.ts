@@ -1,10 +1,10 @@
 import type { Catalogue } from '../palette/choices.js';
-import type { Layout, Page } from '@mfdiy/schema';
+import type { Layout, Page, WidgetInstance } from '@mfdiy/schema';
 
 import { barManifest, buttonManifest, lightManifest, readoutManifest } from '@mfdiy/instruments';
 import { describe, expect, it } from 'vitest';
 
-import { placeWidget, resizeGrid, swapType, withBinding, withOption } from './editing.js';
+import { placeWidget, resizeGrid, swapType, withAction, withBinding, withOption } from './editing.js';
 
 const catalogue: Catalogue = {
   signals: [
@@ -88,5 +88,15 @@ describe('resizeGrid', () => {
 
     expect(next.layouts[0]?.grid).toEqual({ columns: 12, rows: 8 });
     expect(next.layouts[0]?.areas['bar']).toEqual({ column: 11, row: 1, columnSpan: 2, rowSpan: 2 });
+  });
+});
+
+describe('withAction', () => {
+  it('sets a game action, a page to show, or none (0018)', () => {
+    const widget: WidgetInstance = { id: 'button-1', type: 'button', action: 'lights-toggle' };
+
+    expect(withAction(widget, { page: 'combat' }).action).toEqual({ page: 'combat' });
+    expect(withAction(widget, 'gear-toggle').action).toBe('gear-toggle');
+    expect(withAction(widget, undefined)).toEqual({ id: 'button-1', type: 'button' });
   });
 });

@@ -30,6 +30,17 @@ export const BindingSchema = v.object({
 
 export type Binding = v.InferOutput<typeof BindingSchema>;
 
+/** A page's id, unique within its profile. */
+export const PageIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
+
+/**
+ * What pressing a widget does (0010): trigger a game action, by its id, or show a page of the same
+ * profile, which makes the widget a page button (0018).
+ */
+export const WidgetActionSchema = v.union([IdSchema, v.object({ page: PageIdSchema })]);
+
+export type WidgetActionRef = v.InferOutput<typeof WidgetActionSchema>;
+
 export const WidgetInstanceSchema = v.object({
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
   /** Widget type from the manifest registry, e.g. `light`. */
@@ -37,13 +48,23 @@ export const WidgetInstanceSchema = v.object({
   /** Static, non-bound options declared by the widget manifest (e.g. its label). */
   options: v.optional(v.record(v.string(), v.union([v.string(), v.number(), v.boolean()]))),
   bindings: v.optional(v.record(v.string(), BindingSchema)),
-  /** Game action triggered when the widget is pressed. */
-  action: v.optional(IdSchema),
+  /** What pressing the widget does: a game action, or showing a page (0018). */
+  action: v.optional(WidgetActionSchema),
   /** Per-widget theme overrides. */
   tokens: v.optional(TokenValuesSchema)
 });
 
 export type WidgetInstance = v.InferOutput<typeof WidgetInstanceSchema>;
+
+/** The game action a widget triggers, if that's what it does. */
+export function gameActionOf(widget: WidgetInstance): string | undefined {
+  return typeof widget.action === 'string' ? widget.action : undefined;
+}
+
+/** The page a page button shows, if that's what it does (0018). */
+export function pageActionOf(widget: WidgetInstance): string | undefined {
+  return typeof widget.action === 'object' ? widget.action.page : undefined;
+}
 
 export const MAX_GRID_SIZE = 48;
 
@@ -75,7 +96,7 @@ export const MAX_PAGE_NAME_LENGTH = 32;
 
 export const PageSchema = v.pipe(
   v.object({
-    id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+    id: PageIdSchema,
     name: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_PAGE_NAME_LENGTH)),
     widgets: v.array(WidgetInstanceSchema),
     /** Version 1 uses exactly one layout; orientation variants come later (0006). */

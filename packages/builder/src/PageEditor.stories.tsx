@@ -4,7 +4,7 @@ import type { Page, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
-import { addWidget, createBlankDocument, shapeRatio } from '@mfdiy/schema';
+import { addWidget, createBlankDocument, gameActionOf, shapeRatio } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
 import { expect, screen, waitFor, within } from 'storybook/test';
@@ -24,7 +24,7 @@ function renderWidget(widget: WidgetInstance) {
   const manifest = widgetManifests[widget.type];
   const binding = widget.bindings?.['value'];
   const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
-  const action = catalogue.actions.find(candidate => candidate.id === widget.action);
+  const action = catalogue.actions.find(candidate => candidate.id === gameActionOf(widget));
 
   return manifest ? (
     <manifest.Component

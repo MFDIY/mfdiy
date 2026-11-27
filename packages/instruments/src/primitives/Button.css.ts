@@ -32,6 +32,10 @@ export const button = style({
     '&[data-status="pending"]': {
       animation: `${pulse} 0.8s ease-in-out infinite`
     },
+    '&[aria-current="page"]': {
+      borderColor: token('status.on'),
+      color: token('status.on')
+    },
     '&[data-status="ok"]': {
       borderColor: token('status.on'),
       boxShadow: glow(token('status.on'))
