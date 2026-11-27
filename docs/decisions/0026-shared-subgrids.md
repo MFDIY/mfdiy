@@ -40,5 +40,4 @@ With no chrome on the MFD beyond the header (0009), whatever a player needs on e
 - The MFD stacks shared subgrids above a page's widgets, so they take the touches where they overlap (0006). Shared subgrids that overlap each other stack like widgets: later ones on top, and moving one brings it to the front.
 - "Shared subgrid" is in the glossary (0025).
 - **Shared subgrids are in the first public beta** (0020), as the way to switch pages.
-
 - The canvas needs a neutral hatching beside `canvas.overlap`, and the editor holds which subgrid is entered apart from the page shown.
