@@ -25,8 +25,8 @@ const twoPages: readonly TabsItem[] = [
 type DemoProps = ComponentProps<typeof EditorHeader>;
 
 /**
- * Placed as the builder places it: a hairline under the whole header, padded at the sides, so the
- * active tab's line sits on it. Holds the pages and the page shown, so tabs can be
+ * Placed as the builder places it: a hairline under the whole header, so the active tab's line
+ * sits on it. Holds the pages and the page shown, so tabs can be
  * switched and added in Storybook.
  */
 function Demo({ onAddPage, onPageChange, pageId: initialPageId, pages: initialPages, ...restProps }: DemoProps) {
@@ -34,13 +34,7 @@ function Demo({ onAddPage, onPageChange, pageId: initialPageId, pages: initialPa
   const [pageId, setPageId] = useState(initialPageId);
 
   return (
-    <Box
-      backgroundColor='surface'
-      borderBottomColor='line'
-      borderBottomStyle='solid'
-      borderBottomWidth='hairline'
-      paddingInline='3x'
-    >
+    <Box backgroundColor='surface' borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline'>
       <EditorHeader
         {...restProps}
         onAddPage={() => {
@@ -125,7 +119,7 @@ export const ManyPages = {
   globals: tablet
 } satisfies Story;
 
-/** On a phone, the logomark gives way, and undo, redo and Save move into `⋯`, so the tabs have the row. */
+/** On a phone, the logomark gives way, and undo and redo move into `⋯`, so the tabs have the row. */
 export const Phone = { args: { pageId: 'flight', pages: twoPages }, globals: phone } satisfies Story;
 
 export const PhoneUnsaved = {
@@ -133,13 +127,13 @@ export const PhoneUnsaved = {
   globals: phone
 } satisfies Story;
 
-/** On a phone, `⋯` holds Save first, then the other profile actions, then undo and redo. */
+/** On a phone, `⋯` holds the other profile actions, then undo and redo. */
 export const PhoneMenu = {
   args: { canUndo: true, dirty: true, pageId: 'flight', pages: twoPages },
   globals: phone,
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'More' }));
-    await expect(await screen.findByRole('menuitem', { name: 'Save' })).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(await screen.findByRole('menuitem', { name: 'Undo' })).not.toHaveAttribute('aria-disabled', 'true');
     await expect(screen.getByRole('menuitem', { name: 'Redo' })).toHaveAttribute('aria-disabled', 'true');
   }
 } satisfies Story;
@@ -155,7 +149,7 @@ export const AddingAPage = {
   }
 } satisfies Story;
 
-/** Every profile action but Save is in `⋯`; undo, redo and Save only join it on a phone. */
+/** Every profile action but Save is in `⋯`; undo and redo only join it on a phone. */
 export const MoreMenu = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'More' }));

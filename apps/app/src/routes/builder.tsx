@@ -199,13 +199,7 @@ function Editor({ id }: { id: string }) {
       tagName='main'
     >
       {page ? (
-        <Box
-          borderBottomColor='line'
-          borderBottomStyle='solid'
-          borderBottomWidth='hairline'
-          flexShrink='0'
-          paddingInline='3x'
-        >
+        <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline' flexShrink='0'>
           <EditorHeader
             accent={pageToken('accent', document.tokens, page.tokens)}
             canRedo={current.future.length > 0}

@@ -37,7 +37,7 @@ export type EditorHeaderProps = {
  * The builder's header, in one row exactly a control high (0008): the logomark, Back between two
  * dividers, the page tabs with "+", then undo, redo, Save and a `⋯` menu with every other profile
  * action, side by side. Save shows whether there's anything to save. On narrower screens the
- * logomark gives way, and on a phone undo, redo and Save move into `⋯`, so the tabs have the row.
+ * logomark gives way, and on a phone undo and redo move into `⋯`, so the tabs have the row.
  * Spans the page, and answers to its width: the row and the menu, which opens outside the header,
  * change together. It draws no hairline: what it's placed in does.
  */
@@ -60,9 +60,7 @@ export function EditorHeader({
   return (
     <Box alignItems='center' display='flex' tagName='header'>
       <Box alignItems='center' display={{ default: 'none', 900: 'flex' }} flexShrink='0'>
-        <Box paddingRight='4x'>
-          <Logomark color={accent} />
-        </Box>
+        <Logomark color={accent} />
         <Divider />
       </Box>
       <IconButton icon='chevron_left' label='All profiles' onClick={onBack} />
@@ -79,16 +77,13 @@ export function EditorHeader({
       <Box display={{ default: 'none', 600: 'flex' }} flexShrink='0'>
         <IconButton disabled={!canUndo} icon='undo' label='Undo' onClick={onUndo} />
         <IconButton disabled={!canRedo} icon='redo' label='Redo' onClick={onRedo} />
+      </Box>
+      <Box flexShrink='0'>
         <Button disabled={!dirty || saving} onClick={onSave} variant={dirty ? 'primary' : 'quiet'}>
           Save
         </Button>
       </Box>
       <Menu trigger={<IconButton icon='more_horiz' label='More' />}>
-        <PhoneOnly>
-          <MenuItem disabled={!dirty || saving} onClick={onSave}>
-            Save
-          </MenuItem>
-        </PhoneOnly>
         {menu}
         <PhoneOnly>
           <MenuSeparator />
