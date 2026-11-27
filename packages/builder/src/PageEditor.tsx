@@ -20,6 +20,7 @@ import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { DragLabel } from './palette/DragLabel.js';
 import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
 import { PropertiesPanel } from './properties/PropertiesPanel.js';
+import { propertiesTitle } from './properties/title.js';
 
 export type PageEditorProps = Omit<
   CanvasProps,
@@ -120,9 +121,10 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
     if (widgetId !== null) {
       setMarked(null);
       library.reset();
+      setOpenSheet('end');
+    } else if (openSheet === 'end') {
+      setOpenSheet(null);
     }
-
-    setOpenSheet(widgetId === null ? null : 'end');
 
     onSelect(widgetId);
   }
@@ -280,10 +282,16 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
               selectedId={selectedId}
             />
           ),
-          title: 'Properties'
+          peek: true,
+          title: propertiesTitle(page, selectedId, catalogue)
         }}
         onSheetClose={() => {
           setOpenSheet(null);
+          setMarked(null);
+          library.reset();
+        }}
+        onSheetOpen={side => {
+          setOpenSheet(side);
           setMarked(null);
           library.reset();
         }}

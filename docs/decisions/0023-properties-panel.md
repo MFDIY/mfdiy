@@ -47,7 +47,11 @@ Changes show on the canvas as they're made. A pick or a toggle is one undo step;
 
 ### On a phone
 
-The sheet's content scrolls, so everything is reachable while it's half-open; half-open only keeps the canvas in view to stay oriented, like a map app's sheet. There is no separate set of essentials.
+The sheet's content scrolls, so everything is reachable while it's half-open; half-open only keeps the canvas in view to stay oriented, like a map app's sheet. There is no separate set of essentials. The sheet never fully closes: it peeks with its title, so the page's properties are always within reach and closing it never deselects (0008). The sheet's title names the widget, so the panel doesn't repeat it. Choosing a type, data or action stacks a modal sheet on it.
+
+### Nothing jumps
+
+The panel avoids layout shifts: a message never appears or disappears below a field. A temporary state shows inside the control instead ("Not connected" in an empty data row), a value that can't be right can't be entered (a threshold's levels limit each other, so it always warns before it turns critical), and an emptied page name comes back on leaving the field. Help text is either always shown or never. Switching a threshold side on still shows its fields below it, for now.
 
 ## Open questions
 

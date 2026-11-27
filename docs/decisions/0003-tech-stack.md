@@ -18,7 +18,7 @@
 | `apps/app`                      | Builder and display. React Router 7 in SPA mode (no SSR).                                                         |
 | `apps/bridge`                   | Node app on the gaming PC: game gRPC → WebSocket. Also serves the built `apps/app` on the LAN (see consequences). |
 | `packages/builder`              | The builder's canvas, and later its palette and properties. Independent of the page hosting it (0008).            |
-| `packages/ui`                   | Builder chrome design system: Bonsai's styling contract, interactive parts on Base UI.                           |
+| `packages/ui`                   | Builder chrome design system: Bonsai's styling contract, interactive parts on Base UI.                            |
 | `packages/instruments`          | MFD primitives, widget manifests and the MFD theme contract.                                                      |
 | `packages/schema`               | Valibot schemas and version migrations for documents, themes and signals.                                         |
 | `packages/adapter-star-citizen` | Maps the game's telemetry to MFDIY's game-agnostic signal catalogue and actions.                                  |

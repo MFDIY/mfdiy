@@ -33,3 +33,19 @@ export const popup = style({
     }
   }
 });
+
+export const backdrop = style({
+  transition: `opacity ${uiVars['duration.long']} cubic-bezier(0.32, 0.72, 0, 1)`,
+
+  selectors: {
+    '&[data-starting-style], &[data-ending-style]': {
+      opacity: 0
+    }
+  },
+
+  '@media': {
+    '(prefers-reduced-motion: reduce)': {
+      transition: 'none'
+    }
+  }
+});

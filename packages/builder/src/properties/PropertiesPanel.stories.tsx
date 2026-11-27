@@ -95,22 +95,37 @@ const page: PageData = {
       id: 'low-fuel',
       type: 'light',
       options: { label: 'Low fuel' },
-      bindings: { value: { signal: 'fuel', thresholds: { low: { warning: 10, critical: 20 } } } }
+      bindings: { value: { signal: 'fuel', thresholds: { low: { warning: 20, critical: 10 } } } }
     }
   ]
 };
 
 type DemoProps = { catalogue: Catalogue; selectedId: string | null; themeName: string };
 
-/** The panel at the width of the sidebar, keeping its own page and selection so it can be used. */
+/**
+ * The panel fills whatever it's given; the container here starts at the sidebar's width and can be
+ * resized from its corner. It keeps its own page and selection, so it can be used.
+ */
 function Demo({ catalogue, selectedId: initialSelection, themeName }: DemoProps) {
   const [current, setCurrent] = useState(page);
   const [selectedId, setSelectedId] = useState(initialSelection);
   const [currentLayout = layout] = current.layouts;
 
   return (
-    <div style={{ height: '720px', maxHeight: '100dvh' }}>
-      <Box backgroundColor='surface' height='full' padding='4x' width='panel'>
+    <div
+      data-resizable
+      style={{
+        height: '720px',
+        maxHeight: '100dvh',
+        maxWidth: '100vw',
+        minWidth: '200px',
+        outline: '1px dashed #9996',
+        overflow: 'hidden',
+        resize: 'both',
+        width: '280px'
+      }}
+    >
+      <Box backgroundColor='surface' height='full' padding='4x'>
         <PropertiesPanel
           catalogue={catalogue}
           documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
@@ -153,7 +168,7 @@ export const ReadoutOfAChoice: Story = { args: { selectedId: 'mode' } };
 /** A light on an on/off signal, which also triggers an action: a lit button. */
 export const LightWithAction: Story = { args: { selectedId: 'gear' } };
 
-/** A light on a number, with critical set above warning, so it never warns first. */
+/** A light on a number: off while normal, amber and red as it crosses its thresholds. */
 export const LightOnANumber: Story = { args: { selectedId: 'low-fuel' } };
 
 /** A button has no data, only an action. */
@@ -202,7 +217,7 @@ export const PickingDataCopiesDefaults: Story = {
   play: async ({ canvasElement, userEvent }) => {
     const panel = within(canvasElement);
 
-    await userEvent.click(panel.getByRole('button', { name: 'Value: none' }));
+    await userEvent.click(panel.getByRole('button', { name: 'Value: Not connected' }));
     await userEvent.click(await panel.findByRole('option', { name: /^G-force/ }));
 
     await expect(panel.getByRole('switch', { name: 'Warn when high' })).toBeChecked();

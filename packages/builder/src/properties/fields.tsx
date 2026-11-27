@@ -31,23 +31,17 @@ export function useTyping<T>(scope: string, current: T) {
 type TypingProps = {
   children: ReactNode;
   onBlur: (event: FocusEvent<HTMLElement>) => void;
-  /** Takes an equal share of a row of fields in `Columns`. */
-  share?: boolean | undefined;
 };
 
 /** The bounds of one field's visit; see `useTyping`. */
-export function Typing({ children, onBlur, share = false }: TypingProps) {
-  return share ? (
-    <Box flexBasis='fluid' flexGrow='1' minWidth='none' onBlur={onBlur}>
-      {children}
-    </Box>
-  ) : (
-    <Box onBlur={onBlur}>{children}</Box>
-  );
+export function Typing({ children, onBlur }: TypingProps) {
+  return <Box onBlur={onBlur}>{children}</Box>;
 }
 
 type OpensRowProps = {
   description?: string | undefined;
+  /** Shown in the row while nothing is chosen, e.g. "Not connected". */
+  empty: string;
   label: string;
   onOpen: () => void;
   /** What's chosen, or undefined for nothing yet. */
@@ -55,18 +49,18 @@ type OpensRowProps = {
 };
 
 /** A field whose choice is made in a side task that replaces the panel (0008, 0023). */
-export function OpensRow({ description, label, onOpen, value }: OpensRowProps) {
+export function OpensRow({ description, empty, label, onOpen, value }: OpensRowProps) {
   return (
     <Field description={description} label={label}>
       <Button
-        aria-label={`${label}: ${value ?? 'none'}`}
+        aria-label={`${label}: ${value ?? empty}`}
         icon='chevron_right'
         iconPosition='trailing'
         justifyContent='flex-start'
         onClick={onOpen}
         width='full'
       >
-        {value ?? 'Choose'}
+        {value ?? empty}
       </Button>
     </Field>
   );

@@ -35,6 +35,8 @@ export {
   type PanelSide
 } from './PanelLayout/PanelLayout.js';
 
+export { PanelTask, type PanelTaskProps, type Task as PanelTaskContent } from './PanelLayout/PanelTask.js';
+
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
@@ -68,7 +70,7 @@ export {
 
 export { Select, type SelectItem, type SelectProps } from './Select/Select.js';
 
-export { Sheet, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
+export { Sheet, SheetPeekSpace, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
 
 export {
   SearchList,

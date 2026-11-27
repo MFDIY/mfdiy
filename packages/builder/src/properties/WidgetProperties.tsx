@@ -12,11 +12,14 @@ import {
   Dialog,
   IconButton,
   NumberField,
+  PanelTask,
   ScrollContainer,
   Stack,
   Switch,
   Text,
-  TextField
+  TextField,
+  usePanelForm,
+  type PanelTaskContent
 } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
@@ -26,6 +29,7 @@ import { PickList } from './PickList.js';
 import { ThresholdFields } from './ThresholdFields.js';
 import { placeWidget, swapType, updateWidget, withAction, withBinding, withOption, type TypeSwap } from './editing.js';
 import { OpensRow, Section, Typing, useTyping } from './fields.js';
+import { widgetTitle } from './title.js';
 
 export type WidgetPropertiesProps = {
   catalogue: Catalogue;
@@ -45,19 +49,6 @@ const manifests = Object.values(widgetManifests).sort((a, b) => a.label.localeCo
 
 const NO_ACTION = 'none';
 
-/** What the widget is called on screen: its label, or what it shows or does, or its type. */
-function widgetTitle(widget: WidgetInstance, manifest: WidgetManifest, catalogue: Catalogue): string {
-  const label = widget.options?.['label'];
-  const signal = Object.values(widget.bindings ?? {})[0]?.signal;
-
-  return (
-    (typeof label === 'string' && label) ||
-    catalogue.signals.find(candidate => candidate.id === signal)?.label ||
-    catalogue.actions.find(candidate => candidate.id === widget.action)?.label ||
-    manifest.label
-  );
-}
-
 /** The properties of one widget (0023), generated from its manifest. Key it by the widget's id. */
 export function WidgetProperties({
   catalogue,
@@ -73,7 +64,8 @@ export function WidgetProperties({
   const [swap, setSwap] = useState<TypeSwap | null>(null);
   const area = layout.areas[widget.id];
   const typing = useTyping(widget.id, area);
-  const title = widgetTitle(widget, manifest, catalogue);
+  const title = widgetTitle(widget, catalogue);
+  const sidebar = usePanelForm() === 'sidebars';
   const tokens = { documentTokens, pageTokens: page.tokens };
 
   function change(next: (current: WidgetInstance) => WidgetInstance, merge?: string) {
@@ -113,81 +105,92 @@ export function WidgetProperties({
     change(current => withAction(current, id === NO_ACTION ? undefined : id));
   }
 
-  if (picking?.kind === 'type') {
-    const shown = catalogue.signals.find(candidate => candidate.id === Object.values(widget.bindings ?? {})[0]?.signal);
-    const items = manifests.map((candidate): PickItem => {
-      const { lost } = swapType(widget, manifest, candidate, catalogue);
-      const fits = shown && Object.values(candidate.inputs).some(spec => spec.accepts.includes(shown.kind));
+  function pickTask(current: Picking): PanelTaskContent {
+    if (current.kind === 'type') {
+      const shown = catalogue.signals.find(
+        candidate => candidate.id === Object.values(widget.bindings ?? {})[0]?.signal
+      );
+      const items = manifests.map((candidate): PickItem => {
+        const { lost } = swapType(widget, manifest, candidate, catalogue);
+        const fits = shown && Object.values(candidate.inputs).some(spec => spec.accepts.includes(shown.kind));
+
+        return {
+          id: candidate.type,
+          label: candidate.label,
+          description:
+            candidate.type === widget.type ? 'Current' : lost.length > 0 ? `Drops ${lost.join(', ')}` : undefined,
+          preview: (
+            <WidgetPreview
+              {...tokens}
+              label={fits ? shown.label : undefined}
+              manifest={candidate}
+              signal={fits ? shown : undefined}
+            />
+          )
+        };
+      });
 
       return {
-        id: candidate.type,
-        label: candidate.label,
-        description:
-          candidate.type === widget.type ? 'Current' : lost.length > 0 ? `Drops ${lost.join(', ')}` : undefined,
-        preview: (
-          <WidgetPreview
-            {...tokens}
-            label={fits ? shown.label : undefined}
-            manifest={candidate}
-            signal={fits ? shown : undefined}
+        title: 'Type',
+        content: (
+          <PickList
+            back={title}
+            emptyText='No widgets.'
+            items={items}
+            label='Widget type'
+            onBack={() => setPicking(null)}
+            onPick={pickType}
           />
         )
       };
-    });
+    }
 
-    return (
-      <PickList
-        back={title}
-        emptyText='No widgets.'
-        items={items}
-        label='Widget type'
-        onBack={() => setPicking(null)}
-        onPick={pickType}
-      />
-    );
-  }
+    if (current.kind === 'signal') {
+      const spec = manifest.inputs[current.input];
+      const items = catalogue.signals
+        .filter(signal => spec?.accepts.includes(signal.kind))
+        .map((signal): PickItem => ({
+          id: signal.id,
+          label: signal.label,
+          group: signal.group,
+          preview: <WidgetPreview {...tokens} label={signal.label} manifest={manifest} signal={signal} />
+        }));
+      const input = current.input;
 
-  if (picking?.kind === 'signal') {
-    const spec = manifest.inputs[picking.input];
-    const items = catalogue.signals
-      .filter(signal => spec?.accepts.includes(signal.kind))
-      .map((signal): PickItem => ({
-        id: signal.id,
-        label: signal.label,
-        group: signal.group,
-        preview: <WidgetPreview {...tokens} label={signal.label} manifest={manifest} signal={signal} />
-      }));
-    const input = picking.input;
+      return {
+        title: spec?.label ?? 'Data',
+        content: (
+          <PickList
+            back={title}
+            emptyText='Nothing to connect this to. Is the bridge running?'
+            items={items}
+            label={spec?.label ?? 'Data'}
+            onBack={() => setPicking(null)}
+            onPick={id => pickSignal(input, id)}
+          />
+        )
+      };
+    }
 
-    return (
-      <PickList
-        back={title}
-        emptyText='Nothing to connect this to. Is the bridge running?'
-        items={items}
-        label={spec?.label ?? 'Data'}
-        onBack={() => setPicking(null)}
-        onPick={id => pickSignal(input, id)}
-      />
-    );
-  }
-
-  if (picking?.kind === 'action') {
     const optional = Object.keys(manifest.inputs).length > 0;
     const items: PickItem[] = [
       ...(optional ? [{ id: NO_ACTION, label: 'No action', description: 'Only shows its data' }] : []),
       ...catalogue.actions.map(({ id, label, group }) => ({ id, label, group }))
     ];
 
-    return (
-      <PickList
-        back={title}
-        emptyText='No actions to trigger. Is the bridge running?'
-        items={items}
-        label='Action'
-        onBack={() => setPicking(null)}
-        onPick={pickAction}
-      />
-    );
+    return {
+      title: 'Action',
+      content: (
+        <PickList
+          back={title}
+          emptyText='No actions to trigger. Is the bridge running?'
+          items={items}
+          label='Action'
+          onBack={() => setPicking(null)}
+          onPick={pickAction}
+        />
+      )
+    };
   }
 
   const inputs = Object.entries(manifest.inputs);
@@ -241,7 +244,7 @@ export function WidgetProperties({
 
   function placeField(field: keyof Area, label: string) {
     return (
-      <Typing onBlur={typing.onBlur} share>
+      <Typing onBlur={typing.onBlur}>
         <NumberField
           label={label}
           max={field === 'column' || field === 'columnSpan' ? layout.grid.columns : layout.grid.rows}
@@ -260,134 +263,152 @@ export function WidgetProperties({
   }
 
   return (
-    <Box display='flex' flexDirection='column' height='full' minHeight='none'>
-      <Box alignItems='center' display='flex' flexShrink='0' gap='2x' paddingBottom='4x'>
-        <Box flexGrow='1' minWidth='none'>
-          <Text tagName='h2' truncate variant='heading'>
-            {title}
-          </Text>
-        </Box>
-        <IconButton
-          icon='content_copy'
-          label='Duplicate'
-          onClick={() => {
-            const copy = duplicateWidget(page, layout, widget.id);
-
-            onChange(copy.page);
-            onSelect(copy.id);
-          }}
-        />
-        <IconButton
-          icon='delete'
-          label='Remove'
-          onClick={() => {
-            onChange(removeWidget(page, widget.id));
-            onSelect(null);
-          }}
-        />
-      </Box>
-      <ScrollContainer>
-        <Box>
-          <Stack dividers spacing='5x'>
-            <OpensRow label='Type' onOpen={() => setPicking({ kind: 'type' })} value={manifest.label} />
-            {inputs.length > 0 ? (
-              <Section title='Data'>
-                {inputs.map(([name, spec]) => {
-                  const binding = widget.bindings?.[name];
-                  const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
-
-                  return (
-                    <Stack key={name} spacing='4x'>
-                      <OpensRow
-                        description={binding ? undefined : 'Not connected yet.'}
-                        label={spec.label}
-                        onOpen={() => setPicking({ kind: 'signal', input: name })}
-                        value={signal?.label ?? binding?.signal}
-                      />
-                      {binding && signal?.kind === 'number' ? (
-                        <ThresholdFields
-                          input={name}
-                          merge={typing.merge}
-                          onBlur={typing.onBlur}
-                          onChange={(thresholds, merge) =>
-                            change(
-                              current =>
-                                withBinding(current, name, {
-                                  signal: binding.signal,
-                                  ...(thresholds ? { thresholds } : {})
-                                }),
-                              merge
-                            )
-                          }
-                          signal={signal}
-                          thresholds={binding.thresholds}
-                        />
-                      ) : null}
-                    </Stack>
-                  );
-                })}
-              </Section>
-            ) : null}
-            {manifest.actionable ? (
-              <Section title='Action'>
-                <OpensRow
-                  description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
-                  label='Action'
-                  onOpen={() => setPicking({ kind: 'action' })}
-                  value={action?.label ?? widget.action}
-                />
-              </Section>
-            ) : null}
-            {options.length > 0 ? (
-              <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>
-            ) : null}
-            {area ? (
-              <Section title='Place'>
-                <Columns spacing='3x'>
-                  {placeField('column', 'Column')}
-                  {placeField('row', 'Row')}
-                </Columns>
-                <Columns spacing='3x'>
-                  {placeField('columnSpan', 'Width')}
-                  {placeField('rowSpan', 'Height')}
-                </Columns>
-              </Section>
-            ) : null}
-          </Stack>
-        </Box>
-      </ScrollContainer>
-      {swap ? (
-        <Dialog
-          actions={
-            <>
-              <Button
-                onClick={() => {
-                  change(() => swap.widget);
-                  setSwap(null);
-                }}
-                variant='primary'
-              >
-                Change to {widgetManifests[swap.widget.type]?.label}
-              </Button>
-              <Button onClick={() => setSwap(null)}>Cancel</Button>
-            </>
-          }
-          onClose={() => setSwap(null)}
-          title={`Change to ${widgetManifests[swap.widget.type]?.label ?? swap.widget.type}?`}
-        >
-          <Stack spacing='3x'>
-            <Text variant='body'>It can&apos;t keep:</Text>
-            {swap.lost.map(lost => (
-              <Text key={lost} variant='body'>
-                {lost}
+    <PanelTask onClose={() => setPicking(null)} task={picking ? pickTask(picking) : null}>
+      <Box display='flex' flexDirection='column' height='full' minHeight='none'>
+        <Box alignItems='center' display='flex' flexShrink='0' gap='2x' paddingBottom='4x'>
+          <Box flexGrow='1' minWidth='none'>
+            {sidebar ? (
+              <Text tagName='h2' truncate variant='heading'>
+                {title}
               </Text>
-            ))}
-            <Text color='text.dim' variant='body'>
-              Undo brings it back.
-            </Text>
-          </Stack>
-        </Dialog>
-      ) : null}
-    </Box>
+            ) : null}
+          </Box>
+          <IconButton
+            icon='content_copy'
+            label='Duplicate'
+            onClick={() => {
+              const copy = duplicateWidget(page, layout, widget.id);
+
+              onChange(copy.page);
+              onSelect(copy.id);
+            }}
+          />
+          <IconButton
+            icon='delete'
+            label='Remove'
+            onClick={() => {
+              onChange(removeWidget(page, widget.id));
+              onSelect(null);
+            }}
+          />
+        </Box>
+        <ScrollContainer>
+          <Box>
+            <Stack dividers spacing='5x'>
+              <OpensRow
+                empty={widget.type}
+                label='Type'
+                onOpen={() => setPicking({ kind: 'type' })}
+                value={manifest.label}
+              />
+              {inputs.length > 0 ? (
+                <Section title='Data'>
+                  {inputs.map(([name, spec]) => {
+                    const binding = widget.bindings?.[name];
+                    const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
+
+                    return (
+                      <Stack key={name} spacing='4x'>
+                        <OpensRow
+                          empty='Not connected'
+                          label={spec.label}
+                          onOpen={() => setPicking({ kind: 'signal', input: name })}
+                          value={signal?.label ?? binding?.signal}
+                        />
+                        {binding && signal?.kind === 'number' ? (
+                          <ThresholdFields
+                            input={name}
+                            merge={typing.merge}
+                            onBlur={typing.onBlur}
+                            onChange={(thresholds, merge) =>
+                              change(
+                                current =>
+                                  withBinding(current, name, {
+                                    signal: binding.signal,
+                                    ...(thresholds ? { thresholds } : {})
+                                  }),
+                                merge
+                              )
+                            }
+                            signal={signal}
+                            thresholds={binding.thresholds}
+                          />
+                        ) : null}
+                      </Stack>
+                    );
+                  })}
+                </Section>
+              ) : null}
+              {manifest.actionable ? (
+                <Section title='Action'>
+                  <OpensRow
+                    description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
+                    empty={inputs.length > 0 ? 'No action' : 'Not connected'}
+                    label='Action'
+                    onOpen={() => setPicking({ kind: 'action' })}
+                    value={action?.label ?? widget.action}
+                  />
+                </Section>
+              ) : null}
+              {options.length > 0 ? (
+                <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>
+              ) : null}
+              {area ? (
+                <Section title='Place'>
+                  <Columns spacing='3x'>
+                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                      {placeField('column', 'Column')}
+                    </Box>
+                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                      {placeField('row', 'Row')}
+                    </Box>
+                  </Columns>
+                  <Columns spacing='3x'>
+                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                      {placeField('columnSpan', 'Width')}
+                    </Box>
+                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                      {placeField('rowSpan', 'Height')}
+                    </Box>
+                  </Columns>
+                </Section>
+              ) : null}
+            </Stack>
+          </Box>
+        </ScrollContainer>
+        {swap ? (
+          <Dialog
+            actions={
+              <>
+                <Button
+                  onClick={() => {
+                    change(() => swap.widget);
+                    setSwap(null);
+                  }}
+                  variant='primary'
+                >
+                  Change to {widgetManifests[swap.widget.type]?.label}
+                </Button>
+                <Button onClick={() => setSwap(null)}>Cancel</Button>
+              </>
+            }
+            onClose={() => setSwap(null)}
+            title={`Change to ${widgetManifests[swap.widget.type]?.label ?? swap.widget.type}?`}
+          >
+            <Stack spacing='3x'>
+              <Text variant='body'>It can&apos;t keep:</Text>
+              {swap.lost.map(lost => (
+                <Text key={lost} variant='body'>
+                  {lost}
+                </Text>
+              ))}
+              <Text color='text.dim' variant='body'>
+                Undo brings it back.
+              </Text>
+            </Stack>
+          </Dialog>
+        ) : null}
+      </Box>
+    </PanelTask>
   );
 }

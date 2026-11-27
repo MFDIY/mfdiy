@@ -2,11 +2,13 @@ import type { Merge } from './fields.js';
 import type { NumberSignal, ThresholdLevels, Thresholds } from '@mfdiy/schema';
 import type { FocusEvent } from 'react';
 
-import { Columns, NumberField, Stack, Switch } from '@mfdiy/ui/components';
+import { Box, Columns, NumberField, Stack, Switch } from '@mfdiy/ui/components';
 
 import { Typing } from './fields.js';
 
 type Side = 'high' | 'low';
+
+type Level = 'critical' | 'warning';
 
 type ThresholdFieldsProps = {
   /** Which input they belong to, to tell its fields apart. */
@@ -38,17 +40,15 @@ function startingLevels(signal: NumberSignal, side: Side): ThresholdLevels {
   return { warning: towards(0.25), critical: towards(0.1) };
 }
 
-/** Says when critical comes before warning, which would hide the warning. */
-function orderError(side: Side, { critical, warning }: ThresholdLevels): string | undefined {
-  if (critical === undefined || warning === undefined) {
-    return undefined;
-  }
+/**
+ * How far a level can go: within the signal's range, and never past the other level, so a value
+ * always warns before it turns critical. Limiting the field means no message has to appear (0023).
+ */
+function limits(signal: NumberSignal, side: Side, level: Level, levels: ThresholdLevels) {
+  const other = level === 'warning' ? levels.critical : levels.warning;
+  const aboveOther = (side === 'low') === (level === 'warning');
 
-  if (side === 'low' && critical > warning) {
-    return 'Critical is above warning, so it never warns first.';
-  }
-
-  return side === 'high' && critical < warning ? 'Critical is below warning, so it never warns first.' : undefined;
+  return aboveOther ? { min: other ?? signal.min, max: signal.max } : { min: signal.min, max: other ?? signal.max };
 }
 
 /** A binding's thresholds (0023): a low and a high side, each with a warning and a critical level. */
@@ -77,26 +77,26 @@ export function ThresholdFields({ input, merge, onBlur, onChange, signal, thresh
             {levels ? (
               <Columns spacing='3x'>
                 {(['warning', 'critical'] as const).map(level => (
-                  <Typing key={level} onBlur={onBlur} share>
-                    <NumberField
-                      error={level === 'critical' ? orderError(side, levels) : undefined}
-                      label={level === 'warning' ? 'Warning' : 'Critical'}
-                      max={signal.max}
-                      min={signal.min}
-                      onChange={value => {
-                        const { [level]: _replaced, ...others } = levels;
+                  <Box flexBasis='fluid' flexGrow='1' key={level} minWidth='none'>
+                    <Typing onBlur={onBlur}>
+                      <NumberField
+                        {...limits(signal, side, level, levels)}
+                        label={level === 'warning' ? 'Warning' : 'Critical'}
+                        onChange={value => {
+                          const { [level]: _replaced, ...others } = levels;
 
-                        setSide(
-                          side,
-                          value === null ? others : { ...others, [level]: value },
-                          merge(`${input} ${side} ${level}`)
-                        );
-                      }}
-                      step={step}
-                      unit={signal.unit}
-                      value={levels[level] ?? null}
-                    />
-                  </Typing>
+                          setSide(
+                            side,
+                            value === null ? others : { ...others, [level]: value },
+                            merge(`${input} ${side} ${level}`)
+                          );
+                        }}
+                        step={step}
+                        unit={signal.unit}
+                        value={levels[level] ?? null}
+                      />
+                    </Typing>
+                  </Box>
                 ))}
               </Columns>
             ) : null}

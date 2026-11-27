@@ -3,10 +3,10 @@ import type { Page, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
-import { createBlankDocument } from '@mfdiy/schema';
+import { addWidget, createBlankDocument } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
-import { expect, screen, within } from 'storybook/test';
+import { expect, screen, waitFor, within } from 'storybook/test';
 
 import { PageEditor } from './PageEditor.js';
 
@@ -29,30 +29,60 @@ function renderWidget(widget: WidgetInstance) {
     <manifest.Component
       action={action && { available: true, label: action.label, status: 'idle', trigger: () => undefined }}
       inputs={signal ? { value: resolveInput(signal, signal.kind === 'boolean' ? true : 64, binding) } : {}}
-      options={Object.fromEntries(Object.entries(manifest.options).map(([key, spec]) => [key, spec.default]))}
+      options={Object.fromEntries(
+        Object.entries(manifest.options).map(([key, spec]) => [key, widget.options?.[key] ?? spec.default])
+      )}
     />
   ) : null;
 }
 
-type DemoProps = { catalogue: Catalogue; themeName: string };
+const blankPage = createBlankDocument('Demo', 'demo').pages[0] as Page;
+const [blankLayout] = blankPage.layouts;
 
-function Demo({ catalogue, themeName }: DemoProps) {
-  const [page, setPage] = useState(createBlankDocument('Demo', 'demo').pages[0] as Page);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+/** A page with one fuel bar on it, to select. */
+const pageWithBar: Page = blankLayout
+  ? addWidget(
+      blankPage,
+      blankLayout,
+      { id: 'fuel', type: 'bar', bindings: { value: { signal: 'fuel' } } },
+      { column: 3, row: 3, columnSpan: 6, rowSpan: 4 }
+    )
+  : blankPage;
+
+type DemoProps = {
+  catalogue: Catalogue;
+  page?: Page | undefined;
+  /** At a phone's width, where the panels are sheets (0008). */
+  phone?: boolean | undefined;
+  selectedId?: string | null | undefined;
+  themeName: string;
+};
+
+function Demo({
+  catalogue,
+  page: initialPage = blankPage,
+  phone = false,
+  selectedId: initialSelection = null,
+  themeName
+}: DemoProps) {
+  const [page, setPage] = useState(initialPage);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelection);
   const [layout] = page.layouts;
 
   return layout ? (
     <Box backgroundColor='surface' height='viewport' padding='5x'>
-      <PageEditor
-        catalogue={catalogue}
-        documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
-        layout={layout}
-        onChange={setPage}
-        onSelect={setSelectedId}
-        page={page}
-        renderWidget={renderWidget}
-        selectedId={selectedId}
-      />
+      <div style={{ height: '100%', maxWidth: phone ? '390px' : undefined }}>
+        <PageEditor
+          catalogue={catalogue}
+          documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
+          layout={layout}
+          onChange={setPage}
+          onSelect={setSelectedId}
+          page={page}
+          renderWidget={renderWidget}
+          selectedId={selectedId}
+        />
+      </div>
     </Box>
   ) : null;
 }
@@ -113,7 +143,7 @@ export const AddByMarkingACell: Story = {
 
     await expect(within(canvasElement).getByRole('button', { name: 'Light' })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Lit by: none' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Lit by: Not connected' }));
     await userEvent.click(await screen.findByRole('option', { name: /^Gear/ }));
 
     await expect(within(canvasElement).getByRole('button', { name: 'Light gear' })).toBeInTheDocument();
@@ -159,5 +189,50 @@ export const SearchFindsWidgets: Story = {
 
     await expect(screen.getAllByRole('option')).toHaveLength(1);
     await expect(screen.getByRole('option', { name: /^Readout/ })).toBeInTheDocument();
+  }
+};
+
+/** On a phone, the properties sheet never leaves: with nothing to edit, it peeks with its title (0008). */
+export const PhonePeeking: Story = {
+  args: { page: pageWithBar, phone: true }
+};
+
+/** Selecting a widget opens its properties half way, keeping the canvas in view above. */
+export const PhoneSelecting: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, phone: true },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Bar fuel' }));
+
+    await expect(await screen.findByRole('button', { name: 'Close' })).toBeInTheDocument();
+    await expect(screen.getByRole('dialog', { name: 'Fuel' })).toBeInTheDocument();
+  }
+};
+
+/** A widget's properties on a phone, half open, with the canvas above: the sheet's title names it. */
+export const PhoneEditing: Story = {
+  args: { page: pageWithBar, phone: true, selectedId: 'fuel' },
+  play: async ({ userEvent }) => {
+    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+
+    const sheet = await screen.findByRole('dialog', { name: 'Fuel' });
+
+    await screen.findByRole('button', { name: 'Close' });
+    await Promise.all(sheet.getAnimations().map(animation => animation.finished));
+  }
+};
+
+/** Choosing a widget's data on a phone stacks a modal sheet on the properties (0008). */
+export const PhonePickingData: Story = {
+  args: { page: pageWithBar, phone: true, selectedId: 'fuel' },
+  play: async ({ userEvent }) => {
+    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Value: Fuel' }));
+
+    const task = await screen.findByRole('dialog', { name: 'Value' });
+
+    await waitFor(() => expect(task).not.toHaveAttribute('data-starting-style'));
+    await Promise.all(task.getAnimations().map(animation => animation.finished));
+    await expect(within(task).getByRole('option', { name: /^Speed/ })).toBeInTheDocument();
   }
 };

@@ -59,6 +59,7 @@ function SheetOnAPage({ open: initiallyOpen, onClose, ...restProps }: ComponentP
           setOpen(false);
           onClose();
         }}
+        onOpen={() => setOpen(true)}
         open={open}
       />
     </>
@@ -87,12 +88,14 @@ const meta = {
   args: {
     children: undefined,
     defaultStop: undefined,
+    modal: false,
     onClose: fn(),
     open: false,
+    peek: false,
     title: 'Sheet'
   },
   // Keyed, so changing a control starts the story over with it.
-  render: args => <SheetOnAPage key={`${args.open}-${args.defaultStop}`} {...args} />
+  render: args => <SheetOnAPage key={`${args.open}-${args.defaultStop}-${args.peek}-${args.modal}`} {...args} />
 } satisfies Meta<typeof Sheet>;
 
 export default meta;
@@ -148,4 +151,38 @@ export const ClosesOnEscape = {
     await waitFor(() => expect(args.onClose).toHaveBeenCalled());
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   }
+} satisfies Story;
+
+/** Waits until the sheet has stopped moving. */
+async function settled() {
+  const sheet = await screen.findByRole('dialog');
+
+  await waitFor(() => expect(sheet).not.toHaveAttribute('data-starting-style'));
+  await Promise.all(sheet.getAnimations().map(animation => animation.finished));
+}
+
+/** Closed, a peeking sheet rests at the bottom with only its title in view, to drag up again. */
+export const Peeking = {
+  args: { children: <WidgetList />, peek: true, title: 'Properties' },
+  play: settled
+} satisfies Story;
+
+/** Expanding a peeking sheet opens it; closing it again leaves it peeking. */
+export const PeekingOpensAndCloses = {
+  tags: ['!dev', '!visual'],
+  args: { children: <WidgetList />, peek: true, title: 'Properties' },
+  play: async () => {
+    await settled();
+    await expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Close' }));
+    await expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument());
+  }
+} satisfies Story;
+
+/** Modal, e.g. a side task stacked on another sheet: what's behind it is darkened and can't be pressed. */
+export const Modal = {
+  args: { children: <WidgetList />, modal: true, title: 'Choose data' },
+  play: openSheet
 } satisfies Story;
