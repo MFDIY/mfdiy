@@ -17,7 +17,14 @@ const meta = {
   args: {
     children: 'Widgets keep their share of the page when the grid changes.',
     label: 'About Grid'
-  }
+  },
+  decorators: [
+    Story => (
+      <div style={{ paddingTop: '120px' }}>
+        <Story />
+      </div>
+    )
+  ]
 } satisfies Meta<typeof Toggletip>;
 
 export default meta;
@@ -26,7 +33,7 @@ type Story = StoryObj<typeof meta>;
 /** A small info button; its hint stays out of the way until asked for. */
 export const Default = {} satisfies Story;
 
-/** Pressed (or tapped, or hovered with a mouse), it shows its hint. */
+/** Pressed (or tapped, or hovered with a mouse), it shows its hint above it. */
 export const Open = {
   play: async () => {
     await userEvent.click(screen.getByRole('button', { name: 'About Grid' }));

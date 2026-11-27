@@ -55,6 +55,7 @@ export type ToggletipProps = {
 /**
  * A hint behind a small info button, built on Base UI's Popover (0003, 0022): it opens on hover
  * with a mouse, and on a tap or Enter, which also closes it, as do Escape and a press elsewhere.
+ * The hint shows above the button, or below it where there's no room above.
  * Unlike a tooltip it works on touch screens. It holds hints only, never something the user must
  * see, like an error. Put it next to what it explains, such as a label; a field keeps the same text
  * as its description for assistive technology. The icon stays small; its hit area is a control's
@@ -67,7 +68,7 @@ export function Toggletip({ children, label }: ToggletipProps) {
         <Icon name='info' size='small' />
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner className={styles.positioner} sideOffset={OFFSET}>
+        <Popover.Positioner className={styles.positioner} side='top' sideOffset={OFFSET}>
           <Popover.Popup className={popupClass}>
             <Text variant='body'>{children}</Text>
           </Popover.Popup>
