@@ -13,6 +13,7 @@ import {
 } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
+import { onRaisedSurface } from '../../styles/surface.css.js';
 import { Box } from '../Box/Box.js';
 import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
 import { Text } from '../Text/Text.js';
@@ -309,7 +310,13 @@ export function Sheet({
             </Box>
             <Drawer.Content className={contentClass}>
               <ScrollContainer>
-                <Box backgroundColor='surface.raised' paddingBottom='5x' paddingInline='5x' paddingTop='3x'>
+                <Box
+                  backgroundColor='surface.raised'
+                  className={onRaisedSurface}
+                  paddingBottom='5x'
+                  paddingInline='5x'
+                  paddingTop='3x'
+                >
                   <SheetStackContext value={{ onStop: moveTo, popups: [...(ancestors ?? []), popupRef], stop }}>
                     {children}
                   </SheetStackContext>

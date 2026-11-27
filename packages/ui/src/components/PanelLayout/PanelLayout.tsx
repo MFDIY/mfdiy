@@ -1,6 +1,7 @@
 import { createContext, use, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { useMatchesMediaQuery } from '../../hooks/useMatchesMediaQuery/useMatchesMediaQuery.js';
+import { onSurface } from '../../styles/surface.css.js';
 import { Box } from '../Box/Box.js';
 import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
 import { Sheet, SheetPeekSpace } from '../Sheet/Sheet.js';
@@ -138,9 +139,10 @@ function Sidebar({ children, side }: { children: ReactNode; side: PanelSide }) {
       tagName='aside'
       width='panel'
     >
-      <ScrollContainer>
+      <ScrollContainer hideEdges>
         <Box
           backgroundColor='surface'
+          className={onSurface}
           paddingLeft={side === 'end' ? '4x' : undefined}
           paddingRight={side === 'start' ? '4x' : undefined}
         >

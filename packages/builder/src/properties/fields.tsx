@@ -1,6 +1,6 @@
 import type { FocusEvent, ReactNode } from 'react';
 
-import { Box, Button, Field, Stack, Text, Toggletip } from '@mfdiy/ui/components';
+import { Box, Button, Field } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 
 /** Merges what's typed into one undo step per visit to a field (0023). */
@@ -44,46 +44,30 @@ type OpensRowProps = {
   empty: string;
   label: string;
   onOpen: () => void;
+  /** Without a choice the widget doesn't work: nothing chosen shows as an error, in the row itself. */
+  required?: boolean | undefined;
   /** What's chosen, or undefined for nothing yet. */
   value: string | undefined;
 };
 
 /** A field whose choice is made in a side task that replaces the panel (0008, 0023). */
-export function OpensRow({ description, empty, label, onOpen, value }: OpensRowProps) {
+export function OpensRow({ description, empty, label, onOpen, required = false, value }: OpensRowProps) {
+  const missing = required && value === undefined;
+
   return (
     <Field description={description} label={label}>
       <Button
+        aria-invalid={missing || undefined}
         aria-label={`${label}: ${value ?? empty}`}
         icon='chevron_right'
         iconPosition='trailing'
         justifyContent='flex-start'
         onClick={onOpen}
+        variant={missing ? 'danger' : 'default'}
         width='full'
       >
         {value ?? empty}
       </Button>
     </Field>
-  );
-}
-
-type SectionProps = {
-  children: ReactNode;
-  /** A hint about the whole group, in a toggletip by its title (0022). */
-  description?: string | undefined;
-  title: string;
-};
-
-/** A titled group of fields. */
-export function Section({ children, description, title }: SectionProps) {
-  return (
-    <Stack spacing='4x'>
-      <Box alignItems='center' display='flex' gap='1x'>
-        <Text color='text' tagName='h3' variant='label'>
-          {title}
-        </Text>
-        {description ? <Toggletip label={`About ${title}`}>{description}</Toggletip> : null}
-      </Box>
-      {children}
-    </Stack>
   );
 }

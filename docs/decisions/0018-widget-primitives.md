@@ -29,6 +29,7 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 
 ### Later
 
+- **Steadier numbers:** fast-changing values (speed in particular) are hard to read. Smoothing or throttling them must not lag the information; animating a change (the old value sliding out as the new one slides in) may help. Visual polish for the widget redesign.
 - **Group:** a titled frame around several widgets: a nested grid that moves as a unit.
 - **List-style widgets** with built-in paging (0007).
 - **Slider, knob and XY pad:** analogue controls, reserved for the virtual input device channel (0011).

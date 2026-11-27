@@ -1,3 +1,7 @@
+export { Accordion, type AccordionItem, type AccordionProps } from './Accordion/Accordion.js';
+
+export { Bleed, bleedSpacings, type BleedProps, type BleedSpacing } from './Bleed/Bleed.js';
+
 export { Box, tagNames as boxTagNames, type BoxProps } from './Box/Box.js';
 
 export { Button, iconPositions as buttonIconPositions, type ButtonProps } from './Button/Button.js';
@@ -11,6 +15,8 @@ export { Dialog, type DialogProps } from './Dialog/Dialog.js';
 export { Divider, type DividerProps } from './Divider/Divider.js';
 
 export { Field, type FieldProps } from './Field/Field.js';
+
+export { Group, type GroupProps } from './Group/Group.js';
 
 export { Icon, iconNames, iconSizes, type IconName, type IconProps, type IconSize } from './Icon/Icon.js';
 

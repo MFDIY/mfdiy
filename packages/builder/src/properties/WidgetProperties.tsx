@@ -3,13 +3,16 @@ import type { Merge } from './fields.js';
 import type { Catalogue } from '../palette/choices.js';
 import type { Area, Layout, Page, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
-import { widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
+import { acceptsSignal, widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
 import { bindingFor, duplicateWidget, removeWidget } from '@mfdiy/schema';
 import {
+  Accordion,
+  Bleed,
   Box,
   Button,
   Columns,
   Dialog,
+  Group,
   IconButton,
   NumberField,
   PanelTask,
@@ -24,10 +27,11 @@ import { useState } from 'react';
 
 import { WidgetPreview } from '../palette/WidgetPreview.js';
 
+import { InputFields } from './InputFields.js';
 import { PickList } from './PickList.js';
-import { ThresholdFields } from './ThresholdFields.js';
 import { placeWidget, swapType, updateWidget, withAction, withBinding, withOption, type TypeSwap } from './editing.js';
-import { OpensRow, Section, Typing, useTyping } from './fields.js';
+import { OpensRow, Typing, useTyping } from './fields.js';
+import { inputSummary } from './inputs.js';
 import { widgetTitle } from './title.js';
 
 export type WidgetPropertiesProps = {
@@ -123,7 +127,7 @@ export function WidgetProperties({
       );
       const items = manifests.map((candidate): PickItem => {
         const { lost } = swapType(widget, manifest, candidate, catalogue);
-        const fits = shown && Object.values(candidate.inputs).some(spec => spec.accepts.includes(shown.kind));
+        const fits = shown && Object.values(candidate.inputs).some(spec => acceptsSignal(spec, shown));
 
         return {
           id: candidate.type,
@@ -159,7 +163,7 @@ export function WidgetProperties({
     if (current.kind === 'signal') {
       const spec = manifest.inputs[current.input];
       const items = catalogue.signals
-        .filter(signal => spec?.accepts.includes(signal.kind))
+        .filter(signal => spec !== undefined && acceptsSignal(spec, signal))
         .map((signal): PickItem => ({
           id: signal.id,
           label: signal.label,
@@ -302,84 +306,82 @@ export function WidgetProperties({
             </Columns>
           )}
         </Box>
-        <Stack dividers spacing='5x'>
-          <OpensRow
-            empty={widget.type}
-            label='Type'
-            onOpen={() => setPicking({ kind: 'type' })}
-            value={manifest.label}
-          />
+        <Stack spacing='5x'>
+          <Group title='Widget'>
+            <Stack spacing='4x'>
+              {options.filter(([key]) => key === 'label').map(([key, spec]) => optionField(key, spec, typing.merge))}
+              <OpensRow
+                empty={widget.type}
+                label='Type'
+                onOpen={() => setPicking({ kind: 'type' })}
+                value={manifest.label}
+              />
+              {options.filter(([key]) => key !== 'label').map(([key, spec]) => optionField(key, spec, typing.merge))}
+            </Stack>
+          </Group>
           {inputs.length > 0 ? (
-            <Section title='Data'>
-              {inputs.map(([name, spec]) => {
-                const binding = widget.bindings?.[name];
-                const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
+            <Group title='Data'>
+              <Bleed bottom='3x' horizontal='3x'>
+                <Accordion
+                  defaultOpen={inputs.length === 1 ? inputs.map(([name]) => name) : []}
+                  items={inputs.map(([name, spec]) => {
+                    const binding = widget.bindings?.[name];
+                    const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
 
-                return (
-                  <Stack key={name} spacing='4x'>
-                    <OpensRow
-                      empty='Not connected'
-                      label={spec.label}
-                      onOpen={() => setPicking({ kind: 'signal', input: name })}
-                      value={signal?.label ?? binding?.signal}
-                    />
-                    {binding && signal?.kind === 'number' ? (
-                      <ThresholdFields
-                        input={name}
-                        merge={typing.merge}
-                        onBlur={typing.onBlur}
-                        onChange={(thresholds, merge) =>
-                          change(
-                            current =>
-                              withBinding(current, name, {
-                                signal: binding.signal,
-                                ...(thresholds ? { thresholds } : {})
-                              }),
-                            merge
-                          )
-                        }
-                        signal={signal}
-                        thresholds={binding.thresholds}
-                      />
-                    ) : null}
-                  </Stack>
-                );
-              })}
-            </Section>
+                    return {
+                      content: (
+                        <InputFields
+                          binding={binding}
+                          input={name}
+                          merge={typing.merge}
+                          onBlur={typing.onBlur}
+                          onChange={(next, merge) => change(current => withBinding(current, name, next), merge)}
+                          onPick={() => setPicking({ kind: 'signal', input: name })}
+                          required={spec.required}
+                          signal={signal}
+                        />
+                      ),
+                      invalid: spec.required && binding === undefined,
+                      label: spec.label,
+                      summary: inputSummary(binding, signal),
+                      value: name
+                    };
+                  })}
+                />
+              </Bleed>
+            </Group>
           ) : null}
           {manifest.actionable ? (
-            <Section title='Action'>
-              <OpensRow
-                description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
-                empty={inputs.length > 0 ? 'No action' : 'Not connected'}
-                label='Action'
-                onOpen={() => setPicking({ kind: 'action' })}
-                value={action?.label ?? widget.action}
-              />
-            </Section>
-          ) : null}
-          {options.length > 0 ? (
-            <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>
+            <OpensRow
+              description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
+              empty={inputs.length > 0 ? 'No action' : 'Not connected'}
+              label='Action'
+              onOpen={() => setPicking({ kind: 'action' })}
+              required={inputs.length === 0}
+              value={action?.label ?? widget.action}
+            />
           ) : null}
           {area ? (
-            <Section title='Place'>
-              <Columns spacing='3x'>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('column', 'Column')}
-                </Box>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('row', 'Row')}
-                </Box>
-              </Columns>
-              <Columns spacing='3x'>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('columnSpan', 'Width')}
-                </Box>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('rowSpan', 'Height')}
-                </Box>
-              </Columns>
-            </Section>
+            <Group title='Place'>
+              <Stack spacing='4x'>
+                <Columns spacing='3x'>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('column', 'Column')}
+                  </Box>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('row', 'Row')}
+                  </Box>
+                </Columns>
+                <Columns spacing='3x'>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('columnSpan', 'Width')}
+                  </Box>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('rowSpan', 'Height')}
+                  </Box>
+                </Columns>
+              </Stack>
+            </Group>
           ) : null}
         </Stack>
         {swap ? (

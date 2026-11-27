@@ -27,6 +27,7 @@ const meta = {
         </Stack>
       </Box>
     ),
+    hideEdges: false,
     onOverflowBottom: fn(),
     onOverflowTop: fn(),
     scrollRef: undefined,

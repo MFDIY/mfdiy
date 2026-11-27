@@ -8,10 +8,15 @@ import {
 } from '../../contexts/IntersectionObserverProvider/IntersectionObserverProvider.js';
 import { Box, type ViewTransitionNameProp } from '../Box/Box.js';
 
-import * as styles from './ScrollContainer.css.js';
 import { ScrollContent } from './ScrollContent.js';
 
 export type ScrollContainerProps = PropsWithChildren<{
+  /**
+   * Leaves out the hairlines where content is scrolled out of view, for a scroll area with nothing
+   * fixed above or below it, such as a sidebar: a hairline marks where something stays put and
+   * content scrolls under it (0022).
+   */
+  hideEdges?: boolean | undefined;
   /** Sets a callback to handle changes to whether content is overflowing at the bottom of the scroll container. */
   onOverflowBottom?: ((overflowing: boolean) => void) | undefined;
   /** Sets a callback to handle changes to whether content is overflowing at the top of the scroll container. */
@@ -24,6 +29,7 @@ export type ScrollContainerProps = PropsWithChildren<{
 
 export function ScrollContainer({
   children,
+  hideEdges = false,
   onOverflowBottom,
   onOverflowTop,
   scrollRef,
@@ -35,7 +41,6 @@ export function ScrollContainer({
 
   return (
     <Box
-      className={styles.root}
       display='flex'
       flexDirection='column'
       flexGrow='1'
@@ -46,7 +51,12 @@ export function ScrollContainer({
       viewTransitionName={viewTransitionName}
     >
       <IntersectionObserverProvider intersectionObserver={intersectionObserver}>
-        <ScrollContent onOverflowBottom={onOverflowBottom} onOverflowTop={onOverflowTop} ref={mergedRef}>
+        <ScrollContent
+          hideEdges={hideEdges}
+          onOverflowBottom={onOverflowBottom}
+          onOverflowTop={onOverflowTop}
+          ref={mergedRef}
+        >
           {children}
         </ScrollContent>
       </IntersectionObserverProvider>

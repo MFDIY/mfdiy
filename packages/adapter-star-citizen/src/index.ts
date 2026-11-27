@@ -47,8 +47,26 @@ const signals: SignalDefinition[] = [
   percent('shields.right', 'Shield right', 'Shields', runningLow),
   percent('fuel.hydrogen', 'Hydrogen fuel', 'Fuel', runningLow),
   percent('fuel.quantum', 'Quantum fuel', 'Fuel', runningLow),
-  { id: 'flight.speed', label: 'Speed', group: 'Flight', kind: 'number', min: 0, max: 1400, unit: 'm/s' },
-  { id: 'flight.altitude', label: 'Altitude', group: 'Flight', kind: 'number', min: 0, max: 100_000, unit: 'm' },
+  {
+    id: 'flight.speed',
+    label: 'Speed',
+    group: 'Flight',
+    kind: 'number',
+    min: 0,
+    max: 1400,
+    unit: 'm/s',
+    unbounded: true
+  },
+  {
+    id: 'flight.altitude',
+    label: 'Altitude',
+    group: 'Flight',
+    kind: 'number',
+    min: 0,
+    max: 100_000,
+    unit: 'm',
+    unbounded: true
+  },
   {
     id: 'flight.g-force',
     label: 'G-force',
@@ -80,7 +98,15 @@ const signals: SignalDefinition[] = [
   flag('vehicle.power', 'Power', 'Vehicle'),
   percent('player.health', 'Health', 'Player', runningLow),
   percent('player.oxygen', 'Oxygen', 'Player', runningLow),
-  { id: 'player.balance', label: 'aUEC balance', group: 'Player', kind: 'number', min: 0, max: 1_000_000_000 }
+  {
+    id: 'player.balance',
+    label: 'aUEC balance',
+    group: 'Player',
+    kind: 'number',
+    min: 0,
+    max: 1_000_000_000,
+    unbounded: true
+  }
 ];
 
 const action = (id: string, label: string, group: string, holdable = false): ActionDefinition => ({

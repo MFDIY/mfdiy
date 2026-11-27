@@ -13,7 +13,8 @@ export { amberCrt, builtInThemes, phosphor, type PrimitiveTokenValues } from './
 export { token } from './theme/token.js';
 
 export { formatValue, normalise } from './widgets/format.js';
-export { resolveInput } from './widgets/manifest.js';
+export { acceptsSignal, resolveInput } from './widgets/manifest.js';
+export { useHeldStates } from './widgets/useHeldStates.js';
 export type {
   InputSpec,
   OptionSpec,
