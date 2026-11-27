@@ -6,3 +6,4 @@ export { PropertiesPanel, type PropertiesPanelProps } from './properties/Propert
 export type { Catalogue } from './palette/choices.js';
 export { ShapeField, shapePresets, type ShapeFieldProps } from './properties/ShapeField.js';
 export type { ProfileSettings } from './properties/ProfileProperties.js';
+export { subgridWidgetId } from './subgrids/subgrids.js';

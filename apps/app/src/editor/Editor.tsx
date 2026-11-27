@@ -3,9 +3,9 @@ import type { Edit } from '../documents/edit.js';
 import type { ProfileState } from '../routes/profile.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
-import { EditorHeader, PageEditor, type CanvasView } from '@mfdiy/builder';
+import { EditorHeader, PageEditor, subgridWidgetId, type CanvasView } from '@mfdiy/builder';
 import { pageToken } from '@mfdiy/instruments';
-import { addPage, duplicatePage, removePage, shapeRatio } from '@mfdiy/schema';
+import { addPage, duplicatePage, pagesWithSubgridOverlap, removePage, shapeRatio } from '@mfdiy/schema';
 import { Box, Button, Dialog, MenuItem, MenuSeparator, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate } from 'react-router';
@@ -53,6 +53,8 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   /** Back was pressed with changes to save. */
   const [askingToLeave, setAskingToLeave] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** The shared subgrid entered, kept apart from the page shown, so switching pages stays inside (0026). */
+  const [subgridId, setSubgridId] = useState<string | null>(null);
   /** A page just duplicated, whose name is focused when it's shown (0023). */
   const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
 
@@ -92,7 +94,13 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   // Version 1 has exactly one layout per page (0006).
   const layout = page?.layouts[0];
   const conflict = saving || !dirty ? null : findConflict(edit, watched);
-  const selected = page?.widgets.some(widget => widget.id === selectedId) ? selectedId : null;
+  const subgrids = document.subgrids ?? [];
+  const entered = subgrids.find(subgrid => subgrid.id === subgridId);
+  const selectable = entered
+    ? entered.widgets.map(widget => widget.id)
+    : [...(page?.widgets.map(widget => widget.id) ?? []), ...subgrids.map(subgrid => subgridWidgetId(subgrid.id))];
+  const selected = selectedId !== null && selectable.includes(selectedId) ? selectedId : null;
+  const overlapping = pagesWithSubgridOverlap(document);
 
   /** Every change but the delete it undoes makes the Undo of a page's delete out of date. */
   function setEditAndDismiss(next: Edit) {
@@ -262,7 +270,11 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             onSave={() => (conflict ? setDialog('conflict') : void save())}
             onUndo={() => handleTimeTravel(undo)}
             pageId={page.id}
-            pages={document.pages.map(candidate => ({ label: candidate.name, value: candidate.id }))}
+            pages={document.pages.map(candidate => ({
+              label: candidate.name,
+              mark: overlapping.has(candidate.id) ? 'Overlap' : undefined,
+              value: candidate.id
+            }))}
             saving={saving}
           />
         </Box>
@@ -273,14 +285,22 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             aspectRatio={shapeRatio(document.shape)}
             catalogue={hello ?? emptyCatalogue}
             documentTokens={document.tokens}
+            enteredSubgridId={entered?.id ?? null}
             focusPageName={focusNameOf === page.id}
             key={page.id}
             layout={layout}
             onChange={handleChange}
             onDeletePage={document.pages.length > 1 ? () => handleDeletePage(page) : undefined}
             onDuplicatePage={() => handleDuplicatePage(page.id)}
+            onEnterSubgrid={id => {
+              setSubgridId(id);
+              setSelectedId(null);
+            }}
             onProfileChange={(profile, merge) => setEditAndDismiss(change(current, { ...document, ...profile }, merge))}
             onSelect={setSelectedId}
+            onSubgridsChange={(next, merge) =>
+              setEditAndDismiss(change(current, { ...document, subgrids: next }, merge))
+            }
             page={page}
             pages={document.pages}
             profile={{ fit: document.fit, name: document.name, shape: document.shape }}
@@ -290,6 +310,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
               </PageNavigationProvider>
             )}
             selectedId={selected}
+            subgrids={subgrids}
             viewRef={viewRef}
           />
         ) : null}

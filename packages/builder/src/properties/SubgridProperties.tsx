@@ -1,0 +1,100 @@
+import type { SharedSubgrid } from '@mfdiy/schema';
+
+import { MAX_GRID_SIZE, pageToSubgrid, subgridAsPage } from '@mfdiy/schema';
+import { Box, Button, Columns, Group, IconButton, NumberField, Stack, Text, usePanelForm } from '@mfdiy/ui/components';
+
+import { resizeGrid } from './editing.js';
+import { Typing, useTyping } from './fields.js';
+
+export type SubgridPropertiesProps = {
+  /** Whether the subgrid is entered: its widgets are being edited (0026). */
+  entered: boolean;
+  /** `merge` names a run of typing in one field; changes with the same one are one undo step (0023). */
+  onChange: (subgrid: SharedSubgrid, merge?: string) => void;
+  /** Enters the subgrid, to edit its widgets; offered while it isn't entered. */
+  onEnter?: (() => void) | undefined;
+  /** Leaves the subgrid; offered while it's entered. */
+  onExit?: (() => void) | undefined;
+  /** Removes the subgrid from every page; offered while it isn't entered. */
+  onRemove?: (() => void) | undefined;
+  subgrid: SharedSubgrid;
+};
+
+/**
+ * A shared subgrid's properties (0026): its columns × rows, and Edit subgrid to enter it, or Exit
+ * subgrid while it's entered and nothing in it is selected.
+ */
+export function SubgridProperties({ entered, onChange, onEnter, onExit, onRemove, subgrid }: SubgridPropertiesProps) {
+  const typing = useTyping(subgrid.id, subgrid);
+  const sidebar = usePanelForm() === 'sidebars';
+
+  function gridField(axis: 'columns' | 'rows', label: string) {
+    return (
+      <Typing onBlur={typing.onBlur}>
+        <NumberField
+          label={label}
+          max={MAX_GRID_SIZE}
+          min={1}
+          onChange={value => {
+            const base = typing.base();
+            const page = subgridAsPage(base);
+            const [layout] = page.layouts;
+
+            if (value !== null && layout) {
+              onChange(
+                pageToSubgrid(base, resizeGrid(page, layout, { ...layout.grid, [axis]: value })),
+                typing.merge(axis)
+              );
+            }
+          }}
+          value={subgrid.grid[axis]}
+        />
+      </Typing>
+    );
+  }
+
+  return (
+    <Box>
+      <Box flexShrink='0' paddingBottom='4x'>
+        {sidebar ? (
+          <Box alignItems='center' display='flex' gap='2x' height='control'>
+            <Box flexGrow='1' minWidth='none'>
+              <Text tagName='h2' truncate variant='heading'>
+                Shared subgrid
+              </Text>
+            </Box>
+            {onRemove ? <IconButton icon='delete' label='Remove' onClick={onRemove} /> : null}
+          </Box>
+        ) : onRemove ? (
+          <Button icon='delete' onClick={onRemove} width='full'>
+            Remove
+          </Button>
+        ) : null}
+      </Box>
+      <Stack spacing='5x'>
+        <Text color='text.dim' variant='body'>
+          Shows on every page, in the same place.
+        </Text>
+        {entered ? (
+          <Button onClick={onExit} width='full'>
+            Exit subgrid
+          </Button>
+        ) : (
+          <Button onClick={onEnter} variant='primary' width='full'>
+            Edit subgrid
+          </Button>
+        )}
+        <Group description='Its widgets keep their share of it when the grid changes.' title='Grid'>
+          <Columns spacing='3x'>
+            <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+              {gridField('columns', 'Columns')}
+            </Box>
+            <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+              {gridField('rows', 'Rows')}
+            </Box>
+          </Columns>
+        </Group>
+      </Stack>
+    </Box>
+  );
+}

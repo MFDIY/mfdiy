@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Button } from '../Button/Button.js';
+import { Icon } from '../Icon/Icon.js';
 import { Menu, MenuItem } from '../Menu/Menu.js';
 import { Text } from '../Text/Text.js';
 import { Tooltip, TooltipGroup } from '../Tooltip/Tooltip.js';
@@ -28,6 +29,7 @@ const tabClass = (active: boolean) =>
     display: 'flex',
     flexShrink: '0',
     fontFamily: 'inherit',
+    gap: '2x',
     height: 'control',
     maxWidth: 'tab',
     outlineColor: 'focus',
@@ -40,6 +42,11 @@ const tabClass = (active: boolean) =>
 
 export type TabsItem = {
   label: string;
+  /**
+   * Marks the tab with a warning and says why, e.g. "Overlap": in its tooltip and to assistive
+   * technology.
+   */
+  mark?: string | undefined;
   value: string;
 };
 
@@ -122,9 +129,7 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
               }}
               tagName='span'
             >
-              <Text truncate variant='body'>
-                {item.label}
-              </Text>
+              <TabLabel item={item} />
             </Box>
           ))}
           <Box ref={moreRef} tagName='span'>
@@ -136,11 +141,13 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
         <BaseTabs.List aria-label={label} className={listClass}>
           <TooltipGroup>
             {shown.map(item => (
-              <Tooltip key={item.value} label={item.label}>
-                <BaseTabs.Tab className={tabClass(item.value === value)} value={item.value}>
-                  <Text truncate variant='body'>
-                    {item.label}
-                  </Text>
+              <Tooltip key={item.value} label={item.mark ? `${item.label} · ${item.mark}` : item.label}>
+                <BaseTabs.Tab
+                  aria-label={item.mark ? `${item.label}, ${item.mark}` : undefined}
+                  className={tabClass(item.value === value)}
+                  value={item.value}
+                >
+                  <TabLabel item={item} />
                 </BaseTabs.Tab>
               </Tooltip>
             ))}
@@ -151,8 +158,12 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
       {overflow.length > 0 ? (
         <Menu trigger={open => <MoreButton count={overflow.length} open={open} />}>
           {overflow.map(item => (
-            <MenuItem key={item.value} onClick={() => onValueChange(item.value)}>
-              {item.label}
+            <MenuItem
+              icon={item.mark ? 'warning' : undefined}
+              key={item.value}
+              onClick={() => onValueChange(item.value)}
+            >
+              {item.mark ? `${item.label} · ${item.mark}` : item.label}
             </MenuItem>
           ))}
         </Menu>
@@ -163,6 +174,21 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
         </Box>
       ) : null}
     </Box>
+  );
+}
+
+function TabLabel({ item }: { item: TabsItem }) {
+  return (
+    <>
+      <Text truncate variant='body'>
+        {item.label}
+      </Text>
+      {item.mark ? (
+        <Box color='status.critical' flexShrink='0'>
+          <Icon name='warning' size='small' />
+        </Box>
+      ) : null}
+    </>
   );
 }
 

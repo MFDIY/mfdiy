@@ -56,6 +56,8 @@ export const chromeTokens = {
   'canvas.ghost': alpha(EDIT, '40'),
   'canvas.overlap': mfdiy['critical.8'],
   'canvas.overlap.fill': alpha(mfdiy['critical.8'], '73'),
+  /** A shared subgrid's hatching: neutral, so it doesn't read as overlap (0026). */
+  'canvas.shared.fill': alpha(mfdiy['neutral.7'], '66'),
   'canvas.handle': '#ffffff',
   'canvas.dot': alpha(mfdiy['neutral.7'], '88'),
   'canvas.halo': '0 0 0 1px #000b',

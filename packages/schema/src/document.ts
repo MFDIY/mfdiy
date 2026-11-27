@@ -117,6 +117,46 @@ export const PageSchema = v.pipe(
 
 export type Page = v.InferOutput<typeof PageSchema>;
 
+/** Where a shared subgrid sits: the cells it covered on the page it was placed on (0026). */
+export const SubgridPlaceSchema = v.pipe(
+  v.object({ area: AreaSchema, grid: GridSchema }),
+  v.check(
+    place =>
+      validateLayout({ orientation: 'any', grid: place.grid, areas: { place: place.area } }, [{ id: 'place' }])
+        .length === 0,
+    'A shared subgrid must lie within the grid it was placed on.'
+  )
+);
+
+export type SubgridPlace = v.InferOutput<typeof SubgridPlaceSchema>;
+
+/**
+ * A grid of widgets placed once that shows on every page, in the same place, above the page's own
+ * widgets (0026). It has its own columns and rows, and its widgets work as they do on a page.
+ */
+export const SharedSubgridSchema = v.pipe(
+  v.object({
+    /** Area per widget id, on its own grid. */
+    areas: v.record(v.string(), AreaSchema),
+    grid: GridSchema,
+    id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+    /** Kept as a share of the profile's shape, which every page has; see `subgridArea`. */
+    place: SubgridPlaceSchema,
+    widgets: v.array(WidgetInstanceSchema)
+  }),
+  v.check(
+    subgrid => new Set(subgrid.widgets.map(widget => widget.id)).size === subgrid.widgets.length,
+    'Widget ids must be unique within a shared subgrid.'
+  ),
+  v.check(
+    subgrid =>
+      validateLayout({ orientation: 'any', grid: subgrid.grid, areas: subgrid.areas }, subgrid.widgets).length === 0,
+    'Invalid layout.'
+  )
+);
+
+export type SharedSubgrid = v.InferOutput<typeof SharedSubgridSchema>;
+
 export const MAX_DOCUMENT_NAME_LENGTH = 64;
 
 /**
@@ -155,6 +195,16 @@ export const MfdDocumentSchema = v.object({
   ),
   /** The shape the builder shows its pages in, and displays keep unless told to stretch (0006). */
   shape: v.optional(ShapeSchema, DEFAULT_SHAPE),
+  /** Shown on every page, above its widgets; later ones on top (0026). */
+  subgrids: v.optional(
+    v.pipe(
+      v.array(SharedSubgridSchema),
+      v.check(
+        subgrids => new Set(subgrids.map(subgrid => subgrid.id)).size === subgrids.length,
+        'Shared subgrid ids must be unique.'
+      )
+    )
+  ),
   /** Document-wide theme overrides. */
   tokens: v.optional(TokenValuesSchema)
 });

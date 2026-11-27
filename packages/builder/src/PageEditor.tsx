@@ -1,10 +1,22 @@
-import type { CanvasHandle, CanvasProps, CanvasView } from './canvas/Canvas.js';
+import type { CanvasHandle, CanvasProps, CanvasSurround, CanvasView } from './canvas/Canvas.js';
 import type { Catalogue } from './palette/choices.js';
 import type { ProfileSettings } from './properties/ProfileProperties.js';
-import type { Area, GridPoint, Page } from '@mfdiy/schema';
+import type { Area, GridPoint, Layout, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
 
-import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
-import { addWidget, formatShape, growArea, newWidgetId, placeArea } from '@mfdiy/schema';
+import { applyTokens, LayoutArea, widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
+import {
+  addSubgrid,
+  addWidget,
+  formatShape,
+  growArea,
+  newWidgetId,
+  pageToSubgrid,
+  placeArea,
+  removeSubgrid,
+  subgridArea,
+  subgridAsPage,
+  withSubgrid
+} from '@mfdiy/schema';
 import {
   Box,
   PanelLayout,
@@ -14,15 +26,26 @@ import {
   type PanelSide,
   type SearchListProps
 } from '@mfdiy/ui/components';
-import { useEffect, useImperativeHandle, useRef, useState, type PointerEvent, type Ref } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type PointerEvent, type ReactNode, type Ref } from 'react';
 
+import * as styles from './canvas/Canvas.css.js';
 import { Canvas } from './canvas/Canvas.js';
 import { CanvasLabel } from './canvas/CanvasLabel.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { DragLabel } from './palette/DragLabel.js';
 import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
 import { PropertiesPanel } from './properties/PropertiesPanel.js';
+import { SubgridProperties } from './properties/SubgridProperties.js';
 import { propertiesTitle, type PageChoice } from './properties/title.js';
+import {
+  splitSubgridsFromPage,
+  SUBGRID_TYPE,
+  SubgridContents,
+  subgridIdOf,
+  subgridManifest,
+  subgridWidgetId,
+  withSubgridsOnPage
+} from './subgrids/subgrids.js';
 
 export type PageEditorProps = Omit<
   CanvasProps,
@@ -36,8 +59,11 @@ export type PageEditorProps = Omit<
   | 'onOutsideTap'
   | 'onPanHint'
   | 'reveal'
+  | 'surround'
 > & {
   catalogue: Catalogue;
+  /** The shared subgrid entered, if any: its widgets are edited instead of the page's (0026). */
+  enteredSubgridId?: string | null | undefined;
   /**
    * Opens the page's properties with its name field focused when the editor is shown, e.g. on a page
    * just duplicated (0023).
@@ -49,8 +75,12 @@ export type PageEditorProps = Omit<
   onDeletePage?: (() => void) | undefined;
   /** Duplicates the page; greyed out without it. */
   onDuplicatePage?: (() => void) | undefined;
+  /** Enters a shared subgrid, or leaves it with `null` (0026). */
+  onEnterSubgrid?: ((id: string | null) => void) | undefined;
   /** Changes the profile's name, shape or fit, from its settings (0006). */
   onProfileChange?: ((profile: ProfileSettings, merge?: string) => void) | undefined;
+  /** Changes the profile's shared subgrids; without it, none can be added (0026). */
+  onSubgridsChange?: ((subgrids: SharedSubgrid[], merge?: string) => void) | undefined;
   /** The profile's pages, which a page button can show (0018). Without them, only this page. */
   pages?: readonly PageChoice[] | undefined;
   /**
@@ -58,8 +88,19 @@ export type PageEditorProps = Omit<
    * which opens its settings. Without it, there's no label.
    */
   profile?: ProfileSettings | undefined;
+  /** The profile's shared subgrids, shown above the page's widgets on every page (0026). */
+  subgrids?: readonly SharedSubgrid[] | undefined;
   /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
   viewRef?: Ref<CanvasView> | undefined;
+};
+
+/** What the canvas edits: the page, with its shared subgrids standing on it, or the subgrid entered. */
+type Edited = {
+  layout: Layout;
+  onChange: (page: Page, merge?: string) => void;
+  page: Page;
+  renderWidget: (widget: WidgetInstance) => ReactNode;
+  surround?: CanvasSurround | undefined;
 };
 
 /** A row being dragged out of the library. */
@@ -95,17 +136,37 @@ const PAN_HINT = 'Use two fingers to move or zoom the page.';
  */
 export function PageEditor({
   catalogue,
+  enteredSubgridId = null,
   focusPageName = false,
   onDeletePage,
   onDuplicatePage,
+  onEnterSubgrid,
   onProfileChange,
+  onSubgridsChange,
   pages: pagesProp,
   profile,
+  subgrids = [],
   viewRef,
   ...canvasProps
 }: PageEditorProps) {
-  const { page, layout, documentTokens, onChange, onSelect, selectedId } = canvasProps;
+  const {
+    page,
+    layout: pageLayout,
+    documentTokens,
+    onChange: onPageChange,
+    onSelect,
+    renderWidget,
+    selectedId
+  } = canvasProps;
   const pages = pagesProp ?? [page];
+  const entered = subgrids.find(subgrid => subgrid.id === enteredSubgridId);
+  const edited = entered
+    ? editSubgrid(entered, page, pageLayout, subgrids, renderWidget, (next, merge) =>
+        onSubgridsChange?.(withSubgrid(subgrids, next), merge)
+      )
+    : editPage(page, pageLayout, subgrids, renderWidget, onPageChange, onSubgridsChange);
+  const { layout } = edited;
+  const selectedSubgrid = entered ? undefined : subgrids.find(subgrid => subgridWidgetId(subgrid.id) === selectedId);
   const [marked, setMarked] = useState<GridPoint | null>(null);
   const [openSheet, setOpenSheet] = useState<PanelSide | null>(focusPageName ? 'end' : null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -119,7 +180,36 @@ export function PageEditor({
   const idleClicksRef = useRef(0);
 
   const toast = useToast();
-  const library = useWidgetLibrary({ documentTokens, pageTokens: page.tokens });
+  const library = useWidgetLibrary({
+    documentTokens,
+    extra: onSubgridsChange && !entered ? [subgridManifest] : [],
+    pageTokens: page.tokens
+  });
+
+  // Escape leaves a subgrid, as pressing outside it does (0026); not while typing or in a popup.
+  useEffect(() => {
+    if (!enteredSubgridId || !onEnterSubgrid) {
+      return;
+    }
+
+    const leave = onEnterSubgrid;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target instanceof Element ? event.target : null;
+
+      if (
+        event.key === 'Escape' &&
+        !event.defaultPrevented &&
+        !target?.closest('input, textarea, select, [contenteditable], [role="dialog"], [role="menu"], [role="listbox"]')
+      ) {
+        leave(null);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [enteredSubgridId, onEnterSubgrid]);
 
   useImperativeHandle(viewRef, () => ({
     fit: () => canvasRef.current?.fit(),
@@ -139,7 +229,7 @@ export function PageEditor({
 
   function place(type: string, point: GridPoint): Area {
     const smallest = smallestPlace(point);
-    const manifest = widgetManifests[type];
+    const manifest = type === SUBGRID_TYPE ? subgridManifest : widgetManifests[type];
 
     return manifest
       ? growArea(
@@ -151,11 +241,23 @@ export function PageEditor({
       : smallest;
   }
 
-  /** Adds a widget of a type, without data yet (0006); its properties ask for that next. */
+  /**
+   * Adds a widget of a type, without data yet (0006); its properties ask for that next. A shared
+   * subgrid starts empty, asking nothing (0026).
+   */
   function add(type: string, point: GridPoint) {
-    const id = newWidgetId(page, type);
+    if (type === SUBGRID_TYPE) {
+      const added = addSubgrid(subgrids, place(type, point), pageLayout.grid);
 
-    onChange(addWidget(page, layout, { id, type }, place(type, point)));
+      onSubgridsChange?.(added.subgrids);
+      handleSelect(subgridWidgetId(added.id));
+
+      return;
+    }
+
+    const id = newWidgetId(edited.page, type);
+
+    edited.onChange(addWidget(edited.page, layout, { id, type }, place(type, point)));
     handleSelect(id);
   }
 
@@ -177,7 +279,10 @@ export function PageEditor({
     setOpenSheet('start');
   }
 
-  /** A click in the white space around the page lets go of whatever is active: a widget, the profile, a marked cell. */
+  /**
+   * A click in the white space around the page, or on the hatching around an entered subgrid, lets
+   * go of whatever is active: a widget, the profile, a marked cell, and then the subgrid (0026).
+   */
   function handleOutsideTap() {
     if (selectedId !== null) {
       handleSelect(null);
@@ -186,6 +291,8 @@ export function PageEditor({
       setMarked(null);
       library.reset();
       setOpenSheet(null);
+    } else if (entered) {
+      onEnterSubgrid?.(null);
     }
   }
 
@@ -353,18 +460,39 @@ export function PageEditor({
     <>
       <PanelLayout
         end={{
-          content: (
+          content: selectedSubgrid ? (
+            <SubgridProperties
+              entered={false}
+              key={selectedSubgrid.id}
+              onChange={(next, merge) => onSubgridsChange?.(withSubgrid(subgrids, next), merge)}
+              onEnter={() => onEnterSubgrid?.(selectedSubgrid.id)}
+              onRemove={() => {
+                onSubgridsChange?.(removeSubgrid(subgrids, selectedSubgrid.id));
+                handleSelect(null);
+              }}
+              subgrid={selectedSubgrid}
+            />
+          ) : entered && selectedId === null ? (
+            <SubgridProperties
+              entered
+              key={entered.id}
+              onChange={(next, merge) => onSubgridsChange?.(withSubgrid(subgrids, next), merge)}
+              onExit={() => onEnterSubgrid?.(null)}
+              subgrid={entered}
+            />
+          ) : (
             <PropertiesPanel
               catalogue={catalogue}
               documentTokens={documentTokens}
               focusPageName={focusPageName}
-              layout={layout}
-              onChange={onChange}
+              key={entered?.id ?? page.id}
+              layout={entered ? layout : pageLayout}
+              onChange={entered ? edited.onChange : onPageChange}
               onDelete={onDeletePage}
               onDuplicate={onDuplicatePage}
               onProfileChange={onProfileChange}
               onSelect={handleSelect}
-              page={page}
+              page={entered ? edited.page : page}
               pages={pages}
               profile={profileShown ? profile : undefined}
               selectedId={selectedId}
@@ -372,9 +500,11 @@ export function PageEditor({
           ),
           peek: true,
           title:
-            profileShown && profile && selectedId === null
-              ? 'Profile'
-              : propertiesTitle(page, selectedId, catalogue, pages)
+            selectedSubgrid || (entered && selectedId === null)
+              ? 'Shared subgrid'
+              : profileShown && profile && selectedId === null
+                ? 'Profile'
+                : propertiesTitle(edited.page, selectedId, catalogue, pages)
         }}
         onSheetClose={() => {
           setOpenSheet(null);
@@ -407,26 +537,118 @@ export function PageEditor({
             label={
               profile ? (
                 <CanvasLabel
-                  detail={`${formatShape(profile.shape)} · ${layout.grid.columns} × ${layout.grid.rows}`}
+                  detail={`${formatShape(profile.shape)} · ${pageLayout.grid.columns} × ${pageLayout.grid.rows}`}
                   onPress={handleShowProfile}
                   pressed={profileShown && selectedId === null}
                   title={`${profile.name} · ${page.name}`}
                 />
               ) : undefined
             }
+            layout={layout}
             newWidgetArea={smallestPlace}
+            onChange={edited.onChange}
             onDragChange={setWidgetDragging}
             onEmptyTap={handleEmptyTap}
             onOutsideTap={handleOutsideTap}
             onPanHint={() => toast.show(PAN_HINT, { id: PAN_HINT })}
             onSelect={handleSelect}
+            page={edited.page}
+            renderWidget={edited.renderWidget}
             reveal={(selectedId === null ? null : layout.areas[selectedId]) ?? (marked ? ghost : null)}
+            surround={edited.surround}
           />
         </Box>
       </PanelLayout>
       {drag?.dragging ? <DragLabel label={drag.manifest.label} x={drag.x} y={drag.y} /> : null}
     </>
   );
+}
+
+/**
+ * The page, with the profile's shared subgrids standing on it as widgets above its own, under a
+ * neutral hatching (0026). A change goes to the page or to the subgrids, whichever it touched.
+ */
+function editPage(
+  page: Page,
+  layout: Layout,
+  subgrids: readonly SharedSubgrid[],
+  renderWidget: (widget: WidgetInstance) => ReactNode,
+  onPageChange: (page: Page, merge?: string) => void,
+  onSubgridsChange: ((subgrids: SharedSubgrid[], merge?: string) => void) | undefined
+): Edited {
+  const combined = withSubgridsOnPage(page, layout, subgrids);
+
+  return {
+    layout: combined.layout,
+    onChange: (next, merge) => {
+      const split = splitSubgridsFromPage(next, page, layout, subgrids);
+
+      if (split.page) {
+        onPageChange(split.page, merge);
+      } else if (split.subgrids) {
+        onSubgridsChange?.(split.subgrids, merge);
+      }
+    },
+    page: combined.page,
+    renderWidget: widget => {
+      const subgrid = subgrids.find(candidate => candidate.id === subgridIdOf(widget.id));
+
+      return subgrid ? <SubgridContents renderWidget={renderWidget} subgrid={subgrid} /> : renderWidget(widget);
+    }
+  };
+}
+
+/**
+ * An entered shared subgrid, edited as a page, with the page around it under a hatching that covers
+ * everything but the subgrid (0026).
+ */
+function editSubgrid(
+  subgrid: SharedSubgrid,
+  page: Page,
+  layout: Layout,
+  subgrids: readonly SharedSubgrid[],
+  renderWidget: (widget: WidgetInstance) => ReactNode,
+  onChange: (subgrid: SharedSubgrid, merge?: string) => void
+): Edited {
+  const asPage: Page = { ...subgridAsPage(subgrid), tokens: page.tokens };
+
+  return {
+    layout: asPage.layouts[0] ?? layout,
+    onChange: (next, merge) => onChange(pageToSubgrid(subgrid, next), merge),
+    page: asPage,
+    renderWidget,
+    surround: {
+      area: subgridArea(subgrid.place, layout.grid),
+      content: (
+        <>
+          {page.widgets.map(widget => {
+            const area = layout.areas[widget.id];
+
+            return area ? (
+              <LayoutArea
+                area={area}
+                className={styles.content}
+                cssVariables={applyTokens(widget.tokens)}
+                key={widget.id}
+                minHeight='none'
+                minWidth='none'
+              >
+                {renderWidget(widget)}
+              </LayoutArea>
+            ) : null;
+          })}
+          {subgrids
+            .filter(other => other !== subgrid)
+            .map(other => (
+              <LayoutArea area={subgridArea(other.place, layout.grid)} key={other.id} minHeight='none' minWidth='none'>
+                <SubgridContents renderWidget={renderWidget} subgrid={other} />
+              </LayoutArea>
+            ))}
+        </>
+      ),
+      grid: layout.grid
+    }
+  };
 }
 
 /** The library's list; rows only drag out of a sidebar, never a sheet (0008). */

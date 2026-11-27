@@ -108,6 +108,17 @@ export const PageAccentAmber = {
   args: { accent: accents['Amber CRT'], pageId: 'flight', pages: twoPages }
 } satisfies Story;
 
+/** A page where shared subgrids overlap its widgets is marked, so room can be made (0026). */
+export const PageWithOverlap = {
+  args: {
+    pageId: 'flight',
+    pages: [
+      { label: 'Flight', value: 'flight' },
+      { label: 'Combat', mark: 'Overlap', value: 'combat' }
+    ]
+  }
+} satisfies Story;
+
 /** Tabs that don't fit go into a menu; the page shown is always one of those in view. */
 export const ManyPages = {
   args: {

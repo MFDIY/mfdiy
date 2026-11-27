@@ -3,8 +3,14 @@ import type { CellSize, Grid, WidgetInstance } from '@mfdiy/schema';
 import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
 import { gameActionOf, pageActionOf } from '@mfdiy/schema';
 
+import { subgridManifest } from '../subgrids/subgrids.js';
+
 /** A name for screen readers, e.g. "Light Gear". */
 export function widgetName(widget: WidgetInstance): string {
+  if (widget.type === subgridManifest.type) {
+    return subgridManifest.label;
+  }
+
   const type = widgetManifests[widget.type]?.label ?? widget.type;
   const label =
     widget.options?.['label'] ||
