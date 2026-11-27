@@ -611,7 +611,7 @@ export function Canvas({
         top='none'
       >
         <Box
-          aria-label={`Canvas, page ${page.name}`}
+          aria-label={`Page ${page.name}`}
           className={styles.page}
           cssVariables={applyTokens(page.tokens)}
           height='full'

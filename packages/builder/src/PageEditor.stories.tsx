@@ -117,7 +117,7 @@ export const NothingToChooseFrom: Story = { args: { catalogue: { signals: [], ac
 
 /** The canvas's grid, to press or drop on. */
 function gridOf(canvasElement: HTMLElement) {
-  const grid = within(canvasElement).getByRole('group', { name: /^Canvas/ }).firstElementChild;
+  const grid = within(canvasElement).getByRole('group', { name: /^Page / }).firstElementChild;
 
   if (!(grid instanceof HTMLElement)) {
     throw new Error('No grid to press');

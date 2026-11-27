@@ -51,7 +51,7 @@ export const Default = {} satisfies Story;
 export const Confirm = {
   args: {
     title: 'Save changes to “Fighter”?',
-    children: <Text variant='body'>Displays keep showing the saved version.</Text>,
+    children: <Text variant='body'>MFDs keep showing the saved version.</Text>,
     actions: (
       <>
         <Button variant='primary'>Save</Button>

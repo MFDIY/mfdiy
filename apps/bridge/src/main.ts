@@ -89,7 +89,7 @@ const lanAddresses = Object.values(networkInterfaces())
   .filter(address => address && address.family === 'IPv4' && !address.internal)
   .map(address => `http://${address?.address}${suffix}`);
 
-console.log(`MFDIY bridge (${source.adapter.game.name}, ${source.kind})`);
+console.log(`MFDIY bridge, ${source.kind === 'simulator' ? 'simulating' : 'connected to'} ${source.adapter.game.name}`);
 console.log(serveApp ? `Open the MFD on any device on your network:` : 'Telemetry WebSocket available at /ws on:');
 for (const address of [`http://localhost${suffix}`, ...lanAddresses]) {
   console.log(`  ${address}`);

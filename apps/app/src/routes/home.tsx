@@ -37,8 +37,9 @@ export default function Home() {
         </Text>
         <Text variant='body'>Build your MFD. No code required.</Text>
         <Text color='text.dim' role='status' variant='body'>
-          {statusText[status]}
-          {status === 'open' && hello ? ` to ${hello.game.name} (${hello.source})` : null}
+          {status === 'open' && hello
+            ? `${hello.source === 'simulator' ? 'Simulating' : 'Connected to'} ${hello.game.name}`
+            : statusText[status]}
         </Text>
         <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
           <Text tagName='h2' variant='heading'>

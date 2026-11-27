@@ -30,6 +30,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0022: One design language for the brand and the MFDs](docs/decisions/0022-one-design-language.md)
 - [0023: The properties panel](docs/decisions/0023-properties-panel.md)
 - [0024: Panning and zooming the canvas](docs/decisions/0024-canvas-pan-and-zoom.md)
+- [0025: Vocabulary](docs/decisions/0025-vocabulary.md)
 
 ## Working with the maintainer
 
@@ -87,6 +88,7 @@ Before committing, follow the `verify` skill (`.claude/skills/verify`).
 
 ## Code rules
 
+- Anything a player reads (the app, the builder, the bridge's output, the landing page) uses the words in the glossary, [0025](docs/decisions/0025-vocabulary.md): one word per thing (profile, MFD, page, screen, device), never a synonym. A new term goes into 0025 before it goes into the interface.
 - Validate all external input (bridge messages, shared themes and documents) with the schemas in `@mfdiy/schema`.
 - In `apps/app`, `packages/builder` and `packages/instruments`, use `Box` and other Bonsai components instead of native elements, and style props instead of CSS (0003). `className` or `style` on a Bonsai component is a code smell (0022): check `packages/ui/src/styles/properties.ts`, and if a style or scale value is missing, raise it with the maintainer rather than work around it. Allowed: MFD looks from `--mfd-*` tokens through `className`, and values computed from the document, wrapped in components such as `LayoutGrid` and `LayoutArea`.
 - Style Base UI's parts (inside `packages/ui` only) with `className={designSystem({ … })}`, or a function of the part's state (`state => designSystem({ backgroundColor: state.highlighted ? 'hover' : 'transparent' })`), so they reuse Sprinkles' classes. A `.css.ts` is only for what Sprinkles can't express, such as Base UI's CSS variables and `data-*` transition attributes.

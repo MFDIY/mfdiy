@@ -69,7 +69,7 @@ export function ProfileProperties({ onChange, profile }: ProfilePropertiesProps)
           />
         </Typing>
         <SegmentedControl
-          description='On a screen of another shape, a display keeps this shape with bars beside or above it, or stretches the pages to fill the screen.'
+          description='On a screen of another shape, keep this shape with bars beside or above it, or stretch the pages to fill the screen.'
           items={fitItems}
           label='Other screens'
           onChange={fit => onChange({ ...profile, fit: fit === 'stretch' ? 'stretch' : 'contain' })}
