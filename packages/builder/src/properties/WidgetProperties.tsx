@@ -337,9 +337,11 @@ export function WidgetProperties({
                           onBlur={typing.onBlur}
                           onChange={(next, merge) => change(current => withBinding(current, name, next), merge)}
                           onPick={() => setPicking({ kind: 'signal', input: name })}
+                          required={spec.required}
                           signal={signal}
                         />
                       ),
+                      invalid: spec.required && binding === undefined,
                       label: spec.label,
                       summary: inputSummary(binding, signal),
                       value: name
@@ -355,6 +357,7 @@ export function WidgetProperties({
               empty={inputs.length > 0 ? 'No action' : 'Not connected'}
               label='Action'
               onOpen={() => setPicking({ kind: 'action' })}
+              required={inputs.length === 0}
               value={action?.label ?? widget.action}
             />
           ) : null}

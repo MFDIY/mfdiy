@@ -29,7 +29,7 @@ With nothing selected, the panel shows the page's properties: its name and grid 
 
 ### Type first, data later
 
-A widget is added as a type, without data (0006). Its Data rows start empty, and the panel shows that it isn't connected yet; the canvas shows such a widget with its type's name and no value.
+A widget is added as a type, without data (0006). Its Data rows start empty, and the panel shows that it isn't connected yet as an error, since the widget doesn't work like that: the Signal row reads "Not connected" in the critical colour, as does its accordion row's summary, inside the controls so nothing shifts. The same goes for a Button without an action; a Light's action is optional, so "No action" is no error; the canvas shows such a widget with its type's name and no value.
 
 Swapping the type keeps as much as possible: the label always; each binding if the new type has an input of the same name that accepts the signal; the action if the new type takes one. When a swap would drop anything, a dialog first says what would be lost and asks to confirm. One undo brings it all back.
 

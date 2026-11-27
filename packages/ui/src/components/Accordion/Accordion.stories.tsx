@@ -9,7 +9,7 @@ import { Accordion } from './Accordion.js';
 const items = [
   { content: <Placeholder height={80} />, label: 'Front', summary: 'Shield front · low 25 / 10 %', value: 'front' },
   { content: <Placeholder height={80} />, label: 'Rear', summary: 'Shield rear · low 25 / 10 %', value: 'rear' },
-  { content: <Placeholder height={80} />, label: 'Left', summary: 'Not connected', value: 'left' }
+  { content: <Placeholder height={80} />, invalid: true, label: 'Left', summary: 'Not connected', value: 'left' }
 ];
 
 const meta = {

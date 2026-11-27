@@ -18,16 +18,24 @@ type InputFieldsProps = {
   /** Fires with the changed binding; `merge` names a run of typing (0023). */
   onChange: (binding: Binding, merge?: string) => void;
   onPick: () => void;
+  /** Whether the widget needs this input to work, so having no signal is an error. */
+  required: boolean;
   signal: SignalDefinition | undefined;
 };
 
 /** Everything about one of a widget's inputs (0023): its signal, thresholds, Hold state for and Reset. */
-export function InputFields({ binding, input, merge, onBlur, onChange, onPick, signal }: InputFieldsProps) {
+export function InputFields({ binding, input, merge, onBlur, onChange, onPick, required, signal }: InputFieldsProps) {
   const numeric = binding && signal?.kind === 'number' ? signal : undefined;
 
   return (
     <Stack spacing='4x'>
-      <OpensRow empty='Not connected' label='Signal' onOpen={onPick} value={signal?.label ?? binding?.signal} />
+      <OpensRow
+        empty='Not connected'
+        label='Signal'
+        onOpen={onPick}
+        required={required}
+        value={signal?.label ?? binding?.signal}
+      />
       {binding && numeric ? (
         <>
           <ThresholdFields

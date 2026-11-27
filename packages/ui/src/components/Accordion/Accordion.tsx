@@ -34,6 +34,8 @@ const triggerClass = [
 
 export type AccordionItem = {
   content: ReactNode;
+  /** Something inside needs fixing: the summary says so in the critical colour. */
+  invalid?: boolean | undefined;
   /** Names the item, e.g. a widget's input. */
   label: string;
   /** What's inside, at a glance, shown dimmed after the label while it's closed or open. */
@@ -57,7 +59,7 @@ export type AccordionProps = {
 export function Accordion({ defaultOpen = [], items }: AccordionProps) {
   return (
     <BaseAccordion.Root defaultValue={[...defaultOpen]} multiple>
-      {items.map(({ content, label, summary, value }) => (
+      {items.map(({ content, invalid = false, label, summary, value }) => (
         <BaseAccordion.Item className={styles.item} key={value} value={value}>
           <BaseAccordion.Header render={<Box margin='none' tagName='h4' />}>
             <BaseAccordion.Trigger className={triggerClass}>
@@ -68,7 +70,7 @@ export function Accordion({ defaultOpen = [], items }: AccordionProps) {
               </Box>
               <Box flexGrow='1' minWidth='none'>
                 {summary ? (
-                  <Text color='text.dim' truncate variant='body'>
+                  <Text color={invalid ? 'status.critical' : 'text.dim'} truncate variant='body'>
                     {summary}
                   </Text>
                 ) : null}

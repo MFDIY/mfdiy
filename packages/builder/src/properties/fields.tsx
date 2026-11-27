@@ -44,20 +44,26 @@ type OpensRowProps = {
   empty: string;
   label: string;
   onOpen: () => void;
+  /** Without a choice the widget doesn't work: nothing chosen shows as an error, in the row itself. */
+  required?: boolean | undefined;
   /** What's chosen, or undefined for nothing yet. */
   value: string | undefined;
 };
 
 /** A field whose choice is made in a side task that replaces the panel (0008, 0023). */
-export function OpensRow({ description, empty, label, onOpen, value }: OpensRowProps) {
+export function OpensRow({ description, empty, label, onOpen, required = false, value }: OpensRowProps) {
+  const missing = required && value === undefined;
+
   return (
     <Field description={description} label={label}>
       <Button
+        aria-invalid={missing || undefined}
         aria-label={`${label}: ${value ?? empty}`}
         icon='chevron_right'
         iconPosition='trailing'
         justifyContent='flex-start'
         onClick={onOpen}
+        variant={missing ? 'danger' : 'default'}
         width='full'
       >
         {value ?? empty}
