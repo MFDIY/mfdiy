@@ -37,7 +37,7 @@ What's in a panel touches its edges; the sidebar or sheet around it pads it and 
 
 ### Sheets have no buttons of their own
 
-Open, a sheet is only a handle and its content: no title, no expand or close buttons. Flicking and dragging move it between its stops, Escape closes it, and its content closes it where that makes sense (choosing something, Back). Its title still names it for assistive technology. Every row the header took is given to the content, which matters most on a phone.
+A sheet is only a header and its content: no expand or close buttons. The header is its handle with its title under it in label text, a control's height, the same whether the sheet peeks or is open, so nothing shifts when it's let go; the content doesn't repeat the title. Flicking and dragging move it between its stops, Escape closes it, and its content closes it where that makes sense (choosing something, Back). Its title still names it for assistive technology. Every row the header took is given to the content, which matters most on a phone.
 
 ### Preview mode
 

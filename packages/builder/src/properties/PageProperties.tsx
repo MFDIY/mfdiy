@@ -1,7 +1,7 @@
 import type { Layout, Page } from '@mfdiy/schema';
 
 import { MAX_GRID_SIZE } from '@mfdiy/schema';
-import { Box, Columns, NumberField, Stack, Text, TextField } from '@mfdiy/ui/components';
+import { Box, Columns, NumberField, Stack, Text, TextField, usePanelForm } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { resizeGrid } from './editing.js';
@@ -18,6 +18,7 @@ const MAX_PAGE_NAME_LENGTH = 32;
 /** What the panel shows while no widget is selected (0023): the page's name and grid. */
 export function PageProperties({ layout, onChange, page }: PagePropertiesProps) {
   const typing = useTyping(page.id, page);
+  const sidebar = usePanelForm() === 'sidebars';
   /** The name as typed; an empty one isn't saved, as a page always has a name, and goes on leaving. */
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -44,13 +45,15 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
 
   return (
     <Box>
-      <Box flexShrink='0' paddingBottom='4x'>
-        <Box alignItems='center' display='flex' height='control'>
-          <Text tagName='h2' truncate variant='heading'>
-            Page
-          </Text>
+      {sidebar ? (
+        <Box flexShrink='0' paddingBottom='4x'>
+          <Box alignItems='center' display='flex' height='control'>
+            <Text tagName='h2' truncate variant='heading'>
+              Page
+            </Text>
+          </Box>
         </Box>
-      </Box>
+      ) : null}
       <Stack dividers spacing='5x'>
         <Box
           onBlur={event => {

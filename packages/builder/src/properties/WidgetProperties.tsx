@@ -17,6 +17,7 @@ import {
   Switch,
   Text,
   TextField,
+  usePanelForm,
   type PanelTaskContent
 } from '@mfdiy/ui/components';
 import { useState } from 'react';
@@ -63,6 +64,7 @@ export function WidgetProperties({
   const area = layout.areas[widget.id];
   const typing = useTyping(widget.id, area);
   const title = widgetTitle(widget, catalogue);
+  const sidebar = usePanelForm() === 'sidebars';
   const tokens = { documentTokens, pageTokens: page.tokens };
 
   function change(next: (current: WidgetInstance) => WidgetInstance, merge?: string) {
@@ -265,9 +267,11 @@ export function WidgetProperties({
         <Box flexShrink='0' paddingBottom='4x'>
           <Box alignItems='center' display='flex' gap='2x' height='control'>
             <Box flexGrow='1' minWidth='none'>
-              <Text tagName='h2' truncate variant='heading'>
-                {title}
-              </Text>
+              {sidebar ? (
+                <Text tagName='h2' truncate variant='heading'>
+                  {title}
+                </Text>
+              ) : null}
             </Box>
             <IconButton
               icon='content_copy'

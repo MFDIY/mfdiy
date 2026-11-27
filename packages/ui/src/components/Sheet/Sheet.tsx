@@ -115,12 +115,12 @@ export type SheetProps = PropsWithChildren<{
   /** Shows the sheet. It slides in and out as this changes; with `peek`, it slides down to peek. */
   open: boolean;
   /**
-   * Closed, the sheet doesn't leave: it rests at the bottom, a control's height tall, with its
-   * handle and its title, to be dragged up again or opened by pressing it, like a map's sheet.
+   * Closed, the sheet doesn't leave: it rests at the bottom with only its handle and title in
+   * view, to be dragged up again or opened by pressing them, like a map's sheet.
    * Reserve its room with `SheetPeekSpace`.
    */
   peek?: boolean | undefined;
-  /** Names the sheet. It's shown only while the sheet peeks; open, the content can say it instead. */
+  /** Names the sheet, in small text under its handle, peeking or open. */
   title: string;
 }>;
 
@@ -140,8 +140,8 @@ export function SheetPeekSpace() {
 /**
  * A sheet that slides up from the bottom of the screen, built on Base UI's Drawer (0003, 0008).
  * It isn't modal: what's above it stays in view and can still be pressed, like a map above a
- * place's details. It rests at half or full height, and only its content scrolls. Open, it has no
- * title or buttons of its own, only a handle: it's dragged or flicked between its stops, Escape
+ * place's details. It rests at half or full height, and only its content scrolls. It has no buttons
+ * of its own, only a handle with its title under it, the same peeking or open: it's dragged or flicked between its stops, Escape
  * closes it, and its content closes it where that makes sense (0008). Opening it focuses the sheet
  * itself, never a field, so no on-screen keyboard covers it until a field is tapped.
  */
@@ -271,54 +271,43 @@ export function Sheet({
         {nested ? null : <Drawer.Backdrop className={backdropClass} data-modal={modal ? '' : undefined} />}
         <Drawer.Viewport className={viewportClass}>
           <Drawer.Popup aria-label={title} className={popupClass} initialFocus={popupRef} ref={popupCallbackRef}>
-            {peeking ? (
+            <Box
+              aria-label={peeking ? `Open ${title}` : undefined}
+              cursor={peeking ? 'pointer' : 'grab'}
+              flexShrink='0'
+              onClick={peeking ? onOpen : undefined}
+              onKeyDown={
+                peeking
+                  ? event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onOpen?.();
+                      }
+                    }
+                  : undefined
+              }
+              role={peeking ? 'button' : undefined}
+              tabIndex={peeking ? 0 : undefined}
+              touchAction='none'
+              userSelect='none'
+            >
               <Box
-                aria-label={`Open ${title}`}
-                className={styles.safeBottom}
-                cursor='pointer'
-                flexShrink='0'
-                onClick={onOpen}
-                onKeyDown={event => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    onOpen?.();
-                  }
-                }}
-                role='button'
-                tabIndex={0}
-                touchAction='none'
-                userSelect='none'
+                alignItems='center'
+                display='flex'
+                flexDirection='column'
+                gap='2x'
+                height='control'
+                justifyContent='center'
+                paddingInline='5x'
               >
-                <Box
-                  alignItems='center'
-                  display='flex'
-                  flexDirection='column'
-                  gap='2x'
-                  height='control'
-                  justifyContent='center'
-                  paddingInline='5x'
-                >
-                  <Box backgroundColor='line.strong' flexShrink='0' height='1x' width='6x' />
-                  <Box maxWidth='full' minWidth='none'>
-                    <Text color='text.dim' truncate variant='label'>
-                      {title}
-                    </Text>
-                  </Box>
+                <Box backgroundColor='line.strong' flexShrink='0' height='1x' width='6x' />
+                <Box maxWidth='full' minWidth='none'>
+                  <Text color='text.dim' truncate variant='label'>
+                    {title}
+                  </Text>
                 </Box>
               </Box>
-            ) : (
-              <Box
-                cursor='grab'
-                display='flex'
-                flexShrink='0'
-                justifyContent='center'
-                paddingBlock='3x'
-                touchAction='none'
-                userSelect='none'
-              >
-                <Box backgroundColor='line.strong' height='1x' width='6x' />
-              </Box>
-            )}
+            </Box>
             <Box pointerEvents='none' position='absolute' ref={peekRef} top='none' width='full'>
               <SheetPeekSpace />
             </Box>
