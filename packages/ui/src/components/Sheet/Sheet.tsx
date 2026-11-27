@@ -14,6 +14,7 @@ import {
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
+import { Text } from '../Text/Text.js';
 
 import * as styles from './Sheet.css.js';
 
@@ -67,11 +68,13 @@ const popupClass = [
 ].join(' ');
 
 /**
- * Scrolls on its own; the page never does (0007). Children can fill it, to scroll a part of their
- * own. Not while peeking, so a drag anywhere on a peeking sheet moves the sheet.
+ * Pads and scrolls its content, with the padding inside, so the scrollbar is at the sheet's edge;
+ * the page never scrolls (0007). Content doesn't scroll itself: a part that stays in view, like a
+ * search field, sticks, on the sheet's own background.
  */
 const contentClass = [
   designSystem({
+    backgroundColor: 'inherit',
     display: 'flex',
     flexDirection: 'column',
     flexBasis: 'auto',
@@ -82,7 +85,7 @@ const contentClass = [
     overscrollBehavior: 'none',
     touchAction: 'auto'
   }),
-  styles.content
+  styles.safeBottom
 ].join(' ');
 
 /** Until the peeking shape is measured: about its height with a mouse. */
@@ -112,27 +115,24 @@ export type SheetProps = PropsWithChildren<{
   /** Shows the sheet. It slides in and out as this changes; with `peek`, it slides down to peek. */
   open: boolean;
   /**
-   * Closed, the sheet doesn't leave: it rests at the bottom with its handle and the first row of
-   * its content in view, to be dragged up again or opened by pressing the handle, like a map's
-   * sheet. Reserve its room with `SheetPeekSpace`.
+   * Closed, the sheet doesn't leave: it rests at the bottom, a control's height tall, with its
+   * handle and its title, to be dragged up again or opened by pressing it, like a map's sheet.
+   * Reserve its room with `SheetPeekSpace`.
    */
   peek?: boolean | undefined;
-  /** Names the sheet for assistive technology; it isn't shown, so the content can say it instead. */
+  /** Names the sheet. It's shown only while the sheet peeks; open, the content can say it instead. */
   title: string;
 }>;
 
 /**
- * Takes up as much room as a peeking sheet covers: its handle and the first row of its content,
- * such as a panel's heading and buttons. Put it under the main content, so that stops above the
- * sheet rather than running underneath. The sheet measures the same shape, so the two always match.
+ * Takes up as much room as a peeking sheet covers: a control's height, a touch target on phones,
+ * and what the phone keeps clear at the bottom. Put it under the main content, so that stops above
+ * the sheet rather than running underneath. The sheet measures the same shape, so the two match.
  */
 export function SheetPeekSpace() {
   return (
-    <Box aria-hidden flexShrink='0' paddingBottom='3x'>
-      <Box paddingBlock='3x'>
-        <Box height='1x' />
-      </Box>
-      <Box height='control' marginTop='3x' />
+    <Box aria-hidden className={styles.safeBottom} flexShrink='0'>
+      <Box height='control' />
     </Box>
   );
 }
@@ -140,7 +140,7 @@ export function SheetPeekSpace() {
 /**
  * A sheet that slides up from the bottom of the screen, built on Base UI's Drawer (0003, 0008).
  * It isn't modal: what's above it stays in view and can still be pressed, like a map above a
- * place's details. It rests at half or full height, and only its content scrolls. It has no
+ * place's details. It rests at half or full height, and only its content scrolls. Open, it has no
  * title or buttons of its own, only a handle: it's dragged or flicked between its stops, Escape
  * closes it, and its content closes it where that makes sense (0008). Opening it focuses the sheet
  * itself, never a field, so no on-screen keyboard covers it until a field is tapped.
@@ -226,7 +226,7 @@ export function Sheet({
     observer.observe(shape);
 
     return () => observer.disconnect();
-  }, [peek]);
+  }, [peek, popupElement]);
 
   const peekPoint = `${peekHeight}px`;
   const peeking = peek && !open;
@@ -270,47 +270,67 @@ export function Sheet({
       <Drawer.Portal>
         {nested ? null : <Drawer.Backdrop className={backdropClass} data-modal={modal ? '' : undefined} />}
         <Drawer.Viewport className={viewportClass}>
-          <Drawer.Popup
-            aria-label={title}
-            className={popupClass}
-            data-peeking={peeking ? '' : undefined}
-            initialFocus={popupRef}
-            ref={popupCallbackRef}
-          >
-            <Box
-              cursor='grab'
-              display='flex'
-              flexShrink='0'
-              justifyContent='center'
-              touchAction='none'
-              userSelect='none'
-            >
+          <Drawer.Popup aria-label={title} className={popupClass} initialFocus={popupRef} ref={popupCallbackRef}>
+            {peeking ? (
               <Box
-                aria-label={peeking ? `Open ${title}` : undefined}
-                onClick={peeking ? onOpen : undefined}
-                onKeyDown={
-                  peeking
-                    ? event => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          onOpen?.();
-                        }
-                      }
-                    : undefined
-                }
+                aria-label={`Open ${title}`}
+                className={styles.safeBottom}
+                cursor='pointer'
+                flexShrink='0'
+                onClick={onOpen}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onOpen?.();
+                  }
+                }}
+                role='button'
+                tabIndex={0}
+                touchAction='none'
+                userSelect='none'
+              >
+                <Box
+                  alignItems='center'
+                  display='flex'
+                  flexDirection='column'
+                  gap='2x'
+                  height='control'
+                  justifyContent='center'
+                  paddingInline='5x'
+                >
+                  <Box backgroundColor='line.strong' flexShrink='0' height='1x' width='6x' />
+                  <Box maxWidth='full' minWidth='none'>
+                    <Text color='text.dim' truncate variant='label'>
+                      {title}
+                    </Text>
+                  </Box>
+                </Box>
+              </Box>
+            ) : (
+              <Box
+                cursor='grab'
+                display='flex'
+                flexShrink='0'
+                justifyContent='center'
                 paddingBlock='3x'
-                paddingInline='6x'
-                role={peeking ? 'button' : undefined}
-                tabIndex={peeking ? 0 : undefined}
+                touchAction='none'
+                userSelect='none'
               >
                 <Box backgroundColor='line.strong' height='1x' width='6x' />
               </Box>
-            </Box>
+            )}
             <Box pointerEvents='none' position='absolute' ref={peekRef} top='none' width='full'>
               <SheetPeekSpace />
             </Box>
             <Drawer.Content className={contentClass}>
-              <Box flexGrow='1' minHeight='none' paddingBottom='5x' paddingInline='5x' paddingTop='3x'>
+              <Box
+                backgroundColor='inherit'
+                flexGrow='1'
+                minHeight='none'
+                paddingBottom='5x'
+                paddingInline='5x'
+                paddingTop='3x'
+              >
                 <SheetStackContext value={{ onStop: moveTo, popups: [...(ancestors ?? []), popupRef], stop }}>
                   {children}
                 </SheetStackContext>

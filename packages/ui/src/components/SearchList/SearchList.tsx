@@ -58,13 +58,7 @@ type Group = { value: string; items: SearchListItem[] };
  */
 
 /** Scrolls on its own, below the search field. */
-const listClass = designSystem({
-  flexBasis: 'auto',
-  flexGrow: '1',
-  flexShrink: '1',
-  minHeight: 'none',
-  overflowY: 'auto'
-});
+const listClass = designSystem({ backgroundColor: 'inherit' });
 
 const itemClass = (highlighted: boolean, draggable: boolean) =>
   designSystem({
@@ -114,7 +108,7 @@ export function SearchList({
   const items: Group[] = groups.map((group, index) => ({ value: group.label ?? `${index}`, items: [...group.items] }));
 
   return (
-    <Box display='flex' flexDirection='column' height='full' minHeight='none'>
+    <Box backgroundColor='inherit'>
       <Autocomplete.Root
         autoHighlight
         filter={null}
@@ -131,7 +125,7 @@ export function SearchList({
         open
         value={query}
       >
-        <Box flexShrink='0' paddingBottom='3x'>
+        <Box backgroundColor='inherit' paddingBottom='3x' position='sticky' top='none' zIndex='1'>
           <Stack spacing='3x'>
             {back ? (
               <Box alignItems='center' display='flex' gap='2x'>

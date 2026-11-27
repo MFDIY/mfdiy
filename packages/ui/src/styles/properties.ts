@@ -47,6 +47,7 @@ export const backgroundColor = {
   'critical.pressed': v['critical.pressed'],
   'canvas.ghost': v['canvas.ghost'],
   'canvas.handle': v['canvas.handle'],
+  inherit: 'inherit',
   transparent: 'transparent'
 } as const;
 

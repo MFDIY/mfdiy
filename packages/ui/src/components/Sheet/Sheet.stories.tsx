@@ -97,6 +97,11 @@ function Stackable({ levels }: { levels: number }) {
   );
 }
 
+/** What a sheet holds in most stories: a list, kept from the sheet's edges. */
+function Content({ repeat = 1 }: { repeat?: number }) {
+  return <WidgetList repeat={repeat} />;
+}
+
 /** Waits until nothing on the page moves any more. */
 async function stillness() {
   await waitFor(() => expect(document.querySelector('[data-starting-style]')).toBeNull());
@@ -154,18 +159,18 @@ export const Default = {} satisfies Story;
 
 /** Half open: what's above it stays in view and can still be pressed. */
 export const Half = {
-  args: { children: <WidgetList />, title: 'Add a widget' },
+  args: { children: <Content />, title: 'Add a widget' },
   play: openSheet
 } satisfies Story;
 
 export const Full = {
-  args: { children: <WidgetList />, defaultStop: 'full', title: 'Add a widget' },
+  args: { children: <Content />, defaultStop: 'full', title: 'Add a widget' },
   play: openSheet
 } satisfies Story;
 
 /** Only the content scrolls, inside the visible part of the sheet. */
 export const LongContent = {
-  args: { children: <WidgetList repeat={6} />, title: 'Add a widget' },
+  args: { children: <Content repeat={6} />, title: 'Add a widget' },
   play: openSheet
 } satisfies Story;
 
@@ -199,14 +204,14 @@ async function settled() {
 
 /** Closed, a peeking sheet rests at the bottom with only its title in view, to drag up again. */
 export const Peeking = {
-  args: { children: <WidgetList />, peek: true, title: 'Properties' },
+  args: { children: <Content />, peek: true, title: 'Properties' },
   play: settled
 } satisfies Story;
 
 /** Pressing a peeking sheet's handle opens it; closing it again leaves it peeking. */
 export const PeekingOpensAndCloses = {
   tags: ['!dev', '!visual'],
-  args: { children: <WidgetList />, peek: true, title: 'Properties' },
+  args: { children: <Content />, peek: true, title: 'Properties' },
   play: async () => {
     await settled();
     await userEvent.click(screen.getByRole('button', { name: 'Open Properties' }));
@@ -218,7 +223,7 @@ export const PeekingOpensAndCloses = {
 
 /** Modal, e.g. a side task stacked on another sheet: what's behind it is darkened and can't be pressed. */
 export const Modal = {
-  args: { children: <WidgetList />, modal: true, title: 'Choose data' },
+  args: { children: <Content />, modal: true, title: 'Choose data' },
   play: openSheet
 } satisfies Story;
 

@@ -17,7 +17,7 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 ### Narrow screens (phones)
 
 - The canvas takes almost the whole screen, under a thin toolbar.
-- The **properties sheet never fully closes**: closed, it **peeks** at the bottom with its handle and the panel's first row (the selected widget's name with Duplicate and Remove, or "Page") in view, to drag up again or open by pressing the handle, like a map's sheet. The canvas stops above it. Selecting a widget opens it half-way; swiping it down (or Escape) lets it peek again without deselecting, and the page's properties are always within reach. Its content scrolls, so everything is reachable while it's half-open; half-open only keeps the selected widget visible above it. Dragged up, more fits at once.
+- The **properties sheet never fully closes**: closed, it **peeks** at the bottom: a control's height (44 px on touch, above what the phone keeps clear at the bottom) with its handle and its title (the selected widget's name, or "Page") in label text. Pressing anywhere on it opens it, or it's dragged up, like a map's sheet. A 44 px peek keeps the grab area out of the system's swipe-up zone at the bottom of the screen. The canvas stops above it. Selecting a widget opens it half-way; swiping it down (or Escape) lets it peek again without deselecting, and the page's properties are always within reach. Its content scrolls, so everything is reachable while it's half-open; half-open only keeps the selected widget visible above it. Dragged up, more fits at once.
 - Tapping an empty cell opens the **widget library in a bottom sheet**, half-open so the marked cell stays visible above it, and draggable to full height. Unlike the properties sheet, it closes fully, as it's only needed after tapping a cell. One sheet at a time: selecting a widget swaps it for the properties sheet.
 - Opened **by touch**, its search field isn't focused, so no on-screen keyboard covers the list until it's tapped.
 
@@ -31,9 +31,13 @@ Both panels switch between sidebar and sheet together, in one place (`PanelLayou
 
 A side task inside a panel, like choosing a widget's data, replaces a sidebar's contents. On a sheet, it opens as a **modal sheet stacked on top**, at the height the sheet under it rests at. Either way it offers Back, and closes by choosing something in it, Back, or, as a sheet, swiping it down. Stacked on a fully open sheet, it opens fully too: the depth only means something while sheets are half open. The sheets under it **follow it**: they rise just above it, wherever it is and while it's dragged, so coming down from full shows the stack, and they can't be used until it closes. **Dragged or flicked closed**, it leaves the sheet under it half open, rather than taking it down too. **One backdrop** darkens the page under the whole stack, never one per sheet. `PanelTask` in `packages/ui` chooses between the two, so a panel's code doesn't depend on its form.
 
+### Sheets and sidebars pad and scroll their content
+
+What's in a panel touches its edges; the sidebar or sheet around it pads it and scrolls it, with the padding inside the scroll area, so the scrollbar sits at the edge of the screen or sidebar. Nothing inside scrolls on its own: a panel's heading scrolls away with its content, and a search field stays in view by sticking. On a phone, a finger on the content scrolls it, and pulls the sheet down once the content is at its top, like a map's sheet.
+
 ### Sheets have no buttons of their own
 
-A sheet is only a handle and its content: no title, no expand or close buttons. Flicking and dragging move it between its stops, Escape closes it, and its content closes it where that makes sense (choosing something, Back). Its title still names it for assistive technology. Every row the header took is given to the content, which matters most on a phone.
+Open, a sheet is only a handle and its content: no title, no expand or close buttons. Flicking and dragging move it between its stops, Escape closes it, and its content closes it where that makes sense (choosing something, Back). Its title still names it for assistive technology. Every row the header took is given to the content, which matters most on a phone.
 
 ### Preview mode
 

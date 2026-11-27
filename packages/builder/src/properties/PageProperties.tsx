@@ -1,7 +1,7 @@
 import type { Layout, Page } from '@mfdiy/schema';
 
 import { MAX_GRID_SIZE } from '@mfdiy/schema';
-import { Box, Columns, NumberField, ScrollContainer, Stack, Text, TextField } from '@mfdiy/ui/components';
+import { Box, Columns, NumberField, Stack, Text, TextField } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { resizeGrid } from './editing.js';
@@ -43,51 +43,49 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
   }
 
   return (
-    <Box display='flex' flexDirection='column' height='full' minHeight='none'>
+    <Box>
       <Box flexShrink='0' paddingBottom='4x'>
-        <Text tagName='h2' truncate variant='heading'>
-          Page
-        </Text>
-      </Box>
-      <ScrollContainer>
-        <Box>
-          <Stack dividers spacing='5x'>
-            <Box
-              onBlur={event => {
-                setDraft(null);
-                typing.onBlur(event);
-              }}
-            >
-              <TextField
-                label='Name'
-                maxLength={MAX_PAGE_NAME_LENGTH}
-                onChange={name => {
-                  setDraft(name);
-
-                  if (name.trim() !== '') {
-                    onChange({ ...page, name }, typing.merge('name'));
-                  }
-                }}
-                placeholder={page.name}
-                value={draft ?? page.name}
-              />
-            </Box>
-            <Section title='Grid'>
-              <Text color='text.dim' variant='body'>
-                Widgets keep their share of the page when the grid changes.
-              </Text>
-              <Columns spacing='3x'>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {gridField('columns', 'Columns')}
-                </Box>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {gridField('rows', 'Rows')}
-                </Box>
-              </Columns>
-            </Section>
-          </Stack>
+        <Box alignItems='center' display='flex' height='control'>
+          <Text tagName='h2' truncate variant='heading'>
+            Page
+          </Text>
         </Box>
-      </ScrollContainer>
+      </Box>
+      <Stack dividers spacing='5x'>
+        <Box
+          onBlur={event => {
+            setDraft(null);
+            typing.onBlur(event);
+          }}
+        >
+          <TextField
+            label='Name'
+            maxLength={MAX_PAGE_NAME_LENGTH}
+            onChange={name => {
+              setDraft(name);
+
+              if (name.trim() !== '') {
+                onChange({ ...page, name }, typing.merge('name'));
+              }
+            }}
+            placeholder={page.name}
+            value={draft ?? page.name}
+          />
+        </Box>
+        <Section title='Grid'>
+          <Text color='text.dim' variant='body'>
+            Widgets keep their share of the page when the grid changes.
+          </Text>
+          <Columns spacing='3x'>
+            <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+              {gridField('columns', 'Columns')}
+            </Box>
+            <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+              {gridField('rows', 'Rows')}
+            </Box>
+          </Columns>
+        </Section>
+      </Stack>
     </Box>
   );
 }

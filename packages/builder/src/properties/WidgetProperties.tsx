@@ -13,7 +13,6 @@ import {
   IconButton,
   NumberField,
   PanelTask,
-  ScrollContainer,
   Stack,
   Switch,
   Text,
@@ -262,116 +261,114 @@ export function WidgetProperties({
 
   return (
     <PanelTask onClose={() => setPicking(null)} task={picking ? pickTask(picking) : null}>
-      <Box display='flex' flexDirection='column' height='full' minHeight='none'>
-        <Box alignItems='center' display='flex' flexShrink='0' gap='2x' paddingBottom='4x'>
-          <Box flexGrow='1' minWidth='none'>
-            <Text tagName='h2' truncate variant='heading'>
-              {title}
-            </Text>
-          </Box>
-          <IconButton
-            icon='content_copy'
-            label='Duplicate'
-            onClick={() => {
-              const copy = duplicateWidget(page, layout, widget.id);
+      <Box>
+        <Box flexShrink='0' paddingBottom='4x'>
+          <Box alignItems='center' display='flex' gap='2x' height='control'>
+            <Box flexGrow='1' minWidth='none'>
+              <Text tagName='h2' truncate variant='heading'>
+                {title}
+              </Text>
+            </Box>
+            <IconButton
+              icon='content_copy'
+              label='Duplicate'
+              onClick={() => {
+                const copy = duplicateWidget(page, layout, widget.id);
 
-              onChange(copy.page);
-              onSelect(copy.id);
-            }}
-          />
-          <IconButton
-            icon='delete'
-            label='Remove'
-            onClick={() => {
-              onChange(removeWidget(page, widget.id));
-              onSelect(null);
-            }}
-          />
+                onChange(copy.page);
+                onSelect(copy.id);
+              }}
+            />
+            <IconButton
+              icon='delete'
+              label='Remove'
+              onClick={() => {
+                onChange(removeWidget(page, widget.id));
+                onSelect(null);
+              }}
+            />
+          </Box>
         </Box>
-        <ScrollContainer>
-          <Box>
-            <Stack dividers spacing='5x'>
-              <OpensRow
-                empty={widget.type}
-                label='Type'
-                onOpen={() => setPicking({ kind: 'type' })}
-                value={manifest.label}
-              />
-              {inputs.length > 0 ? (
-                <Section title='Data'>
-                  {inputs.map(([name, spec]) => {
-                    const binding = widget.bindings?.[name];
-                    const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
+        <Stack dividers spacing='5x'>
+          <OpensRow
+            empty={widget.type}
+            label='Type'
+            onOpen={() => setPicking({ kind: 'type' })}
+            value={manifest.label}
+          />
+          {inputs.length > 0 ? (
+            <Section title='Data'>
+              {inputs.map(([name, spec]) => {
+                const binding = widget.bindings?.[name];
+                const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
 
-                    return (
-                      <Stack key={name} spacing='4x'>
-                        <OpensRow
-                          empty='Not connected'
-                          label={spec.label}
-                          onOpen={() => setPicking({ kind: 'signal', input: name })}
-                          value={signal?.label ?? binding?.signal}
-                        />
-                        {binding && signal?.kind === 'number' ? (
-                          <ThresholdFields
-                            input={name}
-                            merge={typing.merge}
-                            onBlur={typing.onBlur}
-                            onChange={(thresholds, merge) =>
-                              change(
-                                current =>
-                                  withBinding(current, name, {
-                                    signal: binding.signal,
-                                    ...(thresholds ? { thresholds } : {})
-                                  }),
-                                merge
-                              )
-                            }
-                            signal={signal}
-                            thresholds={binding.thresholds}
-                          />
-                        ) : null}
-                      </Stack>
-                    );
-                  })}
-                </Section>
-              ) : null}
-              {manifest.actionable ? (
-                <Section title='Action'>
-                  <OpensRow
-                    description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
-                    empty={inputs.length > 0 ? 'No action' : 'Not connected'}
-                    label='Action'
-                    onOpen={() => setPicking({ kind: 'action' })}
-                    value={action?.label ?? widget.action}
-                  />
-                </Section>
-              ) : null}
-              {options.length > 0 ? (
-                <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>
-              ) : null}
-              {area ? (
-                <Section title='Place'>
-                  <Columns spacing='3x'>
-                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                      {placeField('column', 'Column')}
-                    </Box>
-                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                      {placeField('row', 'Row')}
-                    </Box>
-                  </Columns>
-                  <Columns spacing='3x'>
-                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                      {placeField('columnSpan', 'Width')}
-                    </Box>
-                    <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                      {placeField('rowSpan', 'Height')}
-                    </Box>
-                  </Columns>
-                </Section>
-              ) : null}
-            </Stack>
-          </Box>
-        </ScrollContainer>
+                return (
+                  <Stack key={name} spacing='4x'>
+                    <OpensRow
+                      empty='Not connected'
+                      label={spec.label}
+                      onOpen={() => setPicking({ kind: 'signal', input: name })}
+                      value={signal?.label ?? binding?.signal}
+                    />
+                    {binding && signal?.kind === 'number' ? (
+                      <ThresholdFields
+                        input={name}
+                        merge={typing.merge}
+                        onBlur={typing.onBlur}
+                        onChange={(thresholds, merge) =>
+                          change(
+                            current =>
+                              withBinding(current, name, {
+                                signal: binding.signal,
+                                ...(thresholds ? { thresholds } : {})
+                              }),
+                            merge
+                          )
+                        }
+                        signal={signal}
+                        thresholds={binding.thresholds}
+                      />
+                    ) : null}
+                  </Stack>
+                );
+              })}
+            </Section>
+          ) : null}
+          {manifest.actionable ? (
+            <Section title='Action'>
+              <OpensRow
+                description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
+                empty={inputs.length > 0 ? 'No action' : 'Not connected'}
+                label='Action'
+                onOpen={() => setPicking({ kind: 'action' })}
+                value={action?.label ?? widget.action}
+              />
+            </Section>
+          ) : null}
+          {options.length > 0 ? (
+            <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>
+          ) : null}
+          {area ? (
+            <Section title='Place'>
+              <Columns spacing='3x'>
+                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                  {placeField('column', 'Column')}
+                </Box>
+                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                  {placeField('row', 'Row')}
+                </Box>
+              </Columns>
+              <Columns spacing='3x'>
+                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                  {placeField('columnSpan', 'Width')}
+                </Box>
+                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                  {placeField('rowSpan', 'Height')}
+                </Box>
+              </Columns>
+            </Section>
+          ) : null}
+        </Stack>
         {swap ? (
           <Dialog
             actions={

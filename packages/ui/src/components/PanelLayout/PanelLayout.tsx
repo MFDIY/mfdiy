@@ -2,6 +2,7 @@ import { createContext, use, useEffect, useLayoutEffect, useRef, useState, type 
 
 import { useMatchesMediaQuery } from '../../hooks/useMatchesMediaQuery/useMatchesMediaQuery.js';
 import { Box } from '../Box/Box.js';
+import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
 import { Sheet, SheetPeekSpace } from '../Sheet/Sheet.js';
 
 export const panelForms = ['sidebars', 'sheets'] as const;
@@ -52,7 +53,8 @@ export type PanelLayoutProps = {
 /**
  * Main content with a panel on either side, written once and shown in the form that suits the
  * screen (0008): sidebars with a mouse or pen and room for them, sheets otherwise, both switching
- * together. Sidebars have a fixed width and a hairline towards the main content. As sheets, the page
+ * together. Sidebars have a fixed width and a hairline towards the main content, and pad and scroll
+ * their content, with the scrollbar at their edge; content doesn't scroll itself. As sheets, the page
  * decides which one is open, so there's only ever one.
  */
 export function PanelLayout({ children, end, onSheetClose, onSheetOpen, openSheet, start }: PanelLayoutProps) {
@@ -128,15 +130,23 @@ function Sidebar({ children, side }: { children: ReactNode; side: PanelSide }) {
       borderRightColor={side === 'start' ? 'line' : undefined}
       borderRightStyle={side === 'start' ? 'solid' : undefined}
       borderRightWidth={side === 'start' ? 'hairline' : undefined}
+      display='flex'
+      flexDirection='column'
       flexShrink='0'
       height='full'
       minHeight='none'
-      paddingLeft={side === 'end' ? '4x' : undefined}
-      paddingRight={side === 'start' ? '4x' : undefined}
       tagName='aside'
       width='panel'
     >
-      {children}
+      <ScrollContainer>
+        <Box
+          backgroundColor='surface'
+          paddingLeft={side === 'end' ? '4x' : undefined}
+          paddingRight={side === 'start' ? '4x' : undefined}
+        >
+          {children}
+        </Box>
+      </ScrollContainer>
     </Box>
   );
 }

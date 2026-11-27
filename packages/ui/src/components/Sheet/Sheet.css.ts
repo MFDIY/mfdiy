@@ -74,8 +74,7 @@ export const backdrop = style({
   }
 });
 
-export const content = style({
-  selectors: {
-    [`${popup}[data-peeking] &`]: { overflowY: 'visible' }
-  }
+/** What a phone keeps clear at the bottom of the screen, such as the home indicator. */
+export const safeBottom = style({
+  paddingBottom: 'env(safe-area-inset-bottom, 0px)'
 });
