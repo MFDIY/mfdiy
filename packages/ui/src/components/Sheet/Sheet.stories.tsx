@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useState, type ComponentProps } from 'react';
-import { expect, fn, screen, userEvent, waitFor } from 'storybook/test';
+import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test';
 
 import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
 import { Button } from '../Button/Button.js';
@@ -10,7 +10,7 @@ import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './Sheet.css.js';
-import { Sheet, stackAppearances, stops } from './Sheet.js';
+import { Sheet, stops } from './Sheet.js';
 
 const widgets = [
   ['Bar', 'A linear gauge for a number signal.'],
@@ -125,7 +125,6 @@ const meta = {
   title: 'Components / Sheet',
   component: Sheet,
   argTypes: {
-    appearance: createArgTypeFromConditionalStyleProp(stackAppearances, undefined, 'scale'),
     children: { control: false },
     defaultStop: createArgTypeFromConditionalStyleProp(stops, undefined, 'half'),
     open: { control: { type: 'boolean' } },
@@ -134,7 +133,6 @@ const meta = {
   args: {
     children: undefined,
     defaultStop: undefined,
-    appearance: undefined,
     modal: false,
     onClose: fn(),
     open: false,
@@ -142,9 +140,7 @@ const meta = {
     title: 'Sheet'
   },
   // Keyed, so changing a control starts the story over with it.
-  render: args => (
-    <SheetOnAPage key={`${args.open}-${args.defaultStop}-${args.peek}-${args.modal}-${args.appearance}`} {...args} />
-  )
+  render: args => <SheetOnAPage key={`${args.open}-${args.defaultStop}-${args.peek}-${args.modal}`} {...args} />
 } satisfies Meta<typeof Sheet>;
 
 export default meta;
@@ -236,28 +232,36 @@ export const Modal = {
   play: openSheet
 } satisfies Story;
 
-/** A sheet stacked on another: the one under it rises and shrinks a little, like stacked toasts. */
-export const StackedScale = {
-  args: { appearance: 'scale', children: <Stackable levels={2} />, title: 'Properties' },
+/** A sheet stacked on another opens where that one rests; the one under it rises just above it. */
+export const Stacked = {
+  args: { children: <Stackable levels={2} />, title: 'Properties' },
   play: () => stack(1)
 } satisfies Story;
 
-/** The same, but the sheet under it only rises. */
-export const StackedRaise = {
-  args: { appearance: 'raise', children: <Stackable levels={2} />, title: 'Properties' },
+/** Two deep: each sheet further back rises half as much as the one in front of it. */
+export const StackedTwoDeep = {
+  args: { children: <Stackable levels={2} />, title: 'Properties' },
+  play: () => stack(2)
+} satisfies Story;
+
+/** Stacked on a fully open sheet, a sheet opens fully too, covering the one under it. */
+export const StackedAtFull = {
+  args: { children: <Stackable levels={2} />, defaultStop: 'full', title: 'Properties' },
   play: () => stack(1)
 } satisfies Story;
 
-/** Two deep, shrinking: each sheet further back steps back as far again. */
-export const StackedTwoDeepScale = {
-  args: { appearance: 'scale', children: <Stackable levels={2} />, title: 'Properties' },
-  play: () => stack(2)
-} satisfies Story;
+/** Brought down from full to half, the top sheet shows the stack under it: they follow it. */
+export const StackedThenCollapsed = {
+  args: { children: <Stackable levels={2} />, defaultStop: 'full', title: 'Properties' },
+  play: async () => {
+    await stack(1);
 
-/** Two deep, only rising: each sheet further back rises half as much as the one in front of it. */
-export const StackedTwoDeepRaise = {
-  args: { appearance: 'raise', children: <Stackable levels={2} />, title: 'Properties' },
-  play: () => stack(2)
+    const top = await screen.findByRole('dialog', { name: 'Stacked 1' });
+
+    await userEvent.click(within(top).getByRole('button', { name: 'Collapse' }));
+    await within(top).findByRole('button', { name: 'Expand' });
+    await stillness();
+  }
 } satisfies Story;
 
 /** Only the top sheet can be used, and one backdrop darkens the page under the whole stack. */

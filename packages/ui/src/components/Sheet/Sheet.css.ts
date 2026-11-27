@@ -12,39 +12,27 @@ const offset = 'calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-m
 /** How many sheets are stacked on this one, as Base UI counts them. */
 const above = 'var(--nested-drawers, 0)';
 
-/** How far a sheet steps back for the first sheet stacked on it. */
+/** How far a sheet rises for the first sheet stacked on it; each further level rises half as much again. */
 const step = uiVars['spacing.4x'];
 
-const raise = createVar();
-const scale = createVar();
+/** Where the top sheet of a stack is, copied onto the sheets under it, which follow it (0008). */
+export const frontOffset = createVar();
 
-/*
- * Stacked sheets are a little shorter than the screen for each sheet under them, so even at full
- * height the sheets under them show above. Sheets under a stacked one rise, never past the top of
- * the screen, and, compared as `scale`, shrink towards the top.
- */
 export const popup = style({
   height: '100dvh',
   // What's below the screen's edge at the half stop isn't part of the visible sheet.
   paddingBottom: `max(0px, ${offset})`,
-  transform: `translateY(max(0px, calc(${offset} - ${raise}))) scale(${scale})`,
-  transformOrigin: '50% 0',
+  transform: `translateY(${offset})`,
   transition: `transform ${uiVars['duration.long']} cubic-bezier(0.32, 0.72, 0, 1)`,
-  vars: { [raise]: '0px', [scale]: '1' },
   willChange: 'transform',
 
   selectors: {
-    '&[data-depth="1"]': { height: `calc(100dvh - 2 * ${step})` },
-    '&[data-depth="2"]': { height: `calc(100dvh - 3 * ${step})` },
-    '&[data-depth="3"]': { height: `calc(100dvh - 3.5 * ${step})` },
-    '&[data-stack-appearance="raise"]': {
-      vars: { [raise]: `calc(2 * ${step} * (1 - pow(0.5, ${above})))` }
-    },
-    '&[data-stack-appearance="scale"]': {
-      vars: { [raise]: `calc(${step} * ${above})`, [scale]: `calc(1 - 0.05 * ${above})` }
-    },
     '&[data-nested-drawer-open]': {
-      pointerEvents: 'none'
+      pointerEvents: 'none',
+      transform: `translateY(max(0px, calc(${frontOffset} - 2 * ${step} * (1 - pow(0.5, ${above})))))`
+    },
+    '&[data-nested-drawer-swiping]': {
+      transition: 'none'
     },
     '&[data-starting-style], &[data-ending-style]': {
       paddingBottom: 0,

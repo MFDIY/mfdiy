@@ -70,14 +70,7 @@ export {
 
 export { Select, type SelectItem, type SelectProps } from './Select/Select.js';
 
-export {
-  Sheet,
-  SheetPeekSpace,
-  stackAppearances as sheetStackAppearances,
-  stops as sheetStops,
-  type SheetProps,
-  type StackAppearance as SheetStackAppearance
-} from './Sheet/Sheet.js';
+export { Sheet, SheetPeekSpace, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
 
 export {
   SearchList,

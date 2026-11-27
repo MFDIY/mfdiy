@@ -1,7 +1,16 @@
 import type { Stop } from './props/Stop.js';
 
 import { Drawer } from '@base-ui/react/drawer';
-import { createContext, use, useLayoutEffect, useRef, useState, type PropsWithChildren } from 'react';
+import {
+  createContext,
+  use,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PropsWithChildren,
+  type RefObject
+} from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
@@ -27,18 +36,17 @@ const backdropClass = [
   styles.backdrop
 ].join(' ');
 
-export const stackAppearances = ['raise', 'scale'] as const;
-
-/** How sheets under a stacked sheet step back. Temporary, to compare the two (0022). */
-export type StackAppearance = (typeof stackAppearances)[number];
-
 /** What a sheet stacked inside another learns from it. */
 type SheetStack = {
-  appearance: StackAppearance;
-  /** How many sheets this one is stacked on. */
-  depth: number;
+  /** Moves the sheets under a stacked one to where it came to rest, so they stay there when it closes. */
+  onStop: (stop: Stop) => void;
+  /** This sheet and the ones it's stacked on, which follow the top sheet. */
+  popups: readonly RefObject<HTMLDivElement | null>[];
   stop: Stop;
 };
+
+/** The custom property name in a `var()` from vanilla-extract, to set it on an element. */
+const frontOffsetName = styles.frontOffset.slice('var('.length, -1);
 
 const SheetStackContext = createContext<SheetStack | null>(null);
 
@@ -81,12 +89,6 @@ const snapPoints = { half: 0.5, full: 1 } as const satisfies Record<Stop, number
 
 export type SheetProps = PropsWithChildren<{
   /**
-   * How the sheets under this one step back while it's stacked on them: raised a little less at
-   * each level, or raised and scaled down, like stacked toasts. Temporary, to compare the two;
-   * sheets stacked inside it follow it. Defaults to `scale`.
-   */
-  appearance?: StackAppearance | undefined;
-  /**
    * Where the sheet first rests; the user can drag it to the other stop. A sheet stacked inside
    * another opens where that one rests, unless this says otherwise.
    */
@@ -94,8 +96,9 @@ export type SheetProps = PropsWithChildren<{
   /**
    * Keeps the user in the sheet until it's closed: what's behind it can't be pressed. Alone, it
    * darkens the page, and pressing outside closes it. Stacked inside another sheet, e.g. for a side
-   * task, it closes only by its own controls (or by choosing something in it), and the sheets under
-   * it step back; the bottom sheet's backdrop darkens the page under the whole stack.
+   * task, it closes only by its own controls (or by choosing something in it). The sheets under it
+   * rise just above it and follow it as it moves, rising half as much again at each level; dragged
+   * closed, it leaves them half open. The bottom sheet's backdrop darkens the page under the stack.
    */
   modal?: boolean | undefined;
   /** Fires when the user closes the sheet: its close button, Escape, or swiping it down. */
@@ -135,7 +138,6 @@ export function SheetPeekSpace() {
  * tapped.
  */
 export function Sheet({
-  appearance: ownAppearance,
   children,
   defaultStop,
   modal = false,
@@ -158,9 +160,47 @@ export function Sheet({
     }
   }
 
-  const appearance = ownAppearance ?? parent?.appearance ?? 'scale';
-  const depth = parent ? parent.depth + 1 : 0;
   const nested = parent !== null;
+  const ancestors = parent?.popups;
+  const [popupElement, setPopupElement] = useState<HTMLDivElement | null>(null);
+  const popupCallbackRef = useCallback((element: HTMLDivElement | null) => {
+    popupRef.current = element;
+    setPopupElement(element);
+  }, []);
+
+  function moveTo(next: Stop) {
+    setStop(next);
+    parent?.onStop(next);
+  }
+
+  useLayoutEffect(() => {
+    if (!ancestors || !open || !popupElement) {
+      return;
+    }
+
+    const front = popupElement;
+
+    function follow() {
+      if (front.hasAttribute('data-nested-drawer-open')) {
+        return;
+      }
+
+      const snap = front.style.getPropertyValue('--drawer-snap-point-offset') || '0px';
+      const swipe = front.style.getPropertyValue('--drawer-swipe-movement-y') || '0px';
+
+      for (const ancestor of ancestors ?? []) {
+        ancestor.current?.style.setProperty(frontOffsetName, `calc(${snap} + ${swipe})`);
+      }
+    }
+
+    follow();
+
+    const observer = new MutationObserver(follow);
+
+    observer.observe(front, { attributeFilter: ['data-nested-drawer-open', 'style'] });
+
+    return () => observer.disconnect();
+  }, [ancestors, open, popupElement]);
   const [peekHeight, setPeekHeight] = useState(FALLBACK_PEEK_HEIGHT);
   const popupRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -187,8 +227,12 @@ export function Sheet({
     <Drawer.Root
       disablePointerDismissal={!modal || nested}
       modal={modal}
-      onOpenChange={next => {
+      onOpenChange={(next, details) => {
         if (!next && open) {
+          if (details.reason === 'swipe') {
+            parent?.onStop('half');
+          }
+
           onClose();
         }
       }}
@@ -203,7 +247,7 @@ export function Sheet({
           return;
         }
 
-        setStop(point === snapPoints.full ? 'full' : 'half');
+        moveTo(point === snapPoints.full ? 'full' : 'half');
 
         if (!open) {
           onOpen?.();
@@ -218,13 +262,7 @@ export function Sheet({
       <Drawer.Portal>
         {nested ? null : <Drawer.Backdrop className={backdropClass} data-modal={modal ? '' : undefined} />}
         <Drawer.Viewport className={viewportClass}>
-          <Drawer.Popup
-            className={popupClass}
-            data-depth={depth}
-            data-stack-appearance={appearance}
-            initialFocus={popupRef}
-            ref={popupRef}
-          >
+          <Drawer.Popup className={popupClass} initialFocus={popupRef} ref={popupCallbackRef}>
             {/* Not a button: a drag can't start on one with a mouse. The chevron moves between the stops instead. */}
             <Box flexShrink='0' paddingBottom='3x' ref={headerRef} touchAction='none' userSelect='none'>
               <Box cursor='grab' display='flex' justifyContent='center' paddingBlock='3x'>
@@ -241,7 +279,7 @@ export function Sheet({
                     if (peeking) {
                       onOpen?.();
                     } else {
-                      setStop(stop === 'half' ? 'full' : 'half');
+                      moveTo(stop === 'half' ? 'full' : 'half');
                     }
                   }}
                 />
@@ -250,7 +288,9 @@ export function Sheet({
             </Box>
             <Drawer.Content className={contentClass}>
               <Box flexGrow='1' minHeight='none' paddingBottom='5x' paddingInline='5x' paddingTop='4x'>
-                <SheetStackContext value={{ appearance, depth, stop }}>{children}</SheetStackContext>
+                <SheetStackContext value={{ onStop: moveTo, popups: [...(ancestors ?? []), popupRef], stop }}>
+                  {children}
+                </SheetStackContext>
               </Box>
             </Drawer.Content>
           </Drawer.Popup>
