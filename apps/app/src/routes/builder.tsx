@@ -205,7 +205,6 @@ function Editor({ id }: { id: string }) {
           borderBottomWidth='hairline'
           flexShrink='0'
           paddingInline='3x'
-          paddingTop='3x'
         >
           <EditorHeader
             accent={pageToken('accent', document.tokens, page.tokens)}
@@ -213,7 +212,6 @@ function Editor({ id }: { id: string }) {
             canUndo={current.past.length > 0}
             dirty={dirty}
             menu={<MenuItem onClick={() => setDialog('save-as-new')}>Save as new…</MenuItem>}
-            name={document.name}
             onAddPage={handleAddPage}
             onBack={() => void navigate('/')}
             onPageChange={handlePageChange}
