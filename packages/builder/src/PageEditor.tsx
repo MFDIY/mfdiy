@@ -33,6 +33,7 @@ export type PageEditorProps = Omit<
   | 'onChange'
   | 'onDragChange'
   | 'onEmptyTap'
+  | 'onOutsideTap'
   | 'onPanHint'
   | 'reveal'
 > & {
@@ -171,6 +172,18 @@ export function PageEditor({
 
     setMarked(point);
     setOpenSheet('start');
+  }
+
+  /** A click in the white space around the page lets go of whatever is active: a widget, the profile, a marked cell. */
+  function handleOutsideTap() {
+    if (selectedId !== null) {
+      handleSelect(null);
+    } else if (profileShown || marked) {
+      setProfileShown(false);
+      setMarked(null);
+      library.reset();
+      setOpenSheet(null);
+    }
   }
 
   function handleSelect(widgetId: string | null) {
@@ -398,6 +411,7 @@ export function PageEditor({
             newWidgetArea={smallestPlace}
             onDragChange={setWidgetDragging}
             onEmptyTap={handleEmptyTap}
+            onOutsideTap={handleOutsideTap}
             onPanHint={() => toast.show(PAN_HINT, { id: PAN_HINT })}
             onSelect={handleSelect}
             reveal={(selectedId === null ? null : layout.areas[selectedId]) ?? (marked ? ghost : null)}

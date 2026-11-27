@@ -204,6 +204,34 @@ export const SearchFindsWidgets: Story = {
   }
 };
 
+/** Clicking the white space around the page lets go of the selected widget, as anywhere else (0024). */
+export const DeselectingOutsideThePage: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, selectedId: 'fuel' },
+  play: async ({ canvasElement, userEvent }) => {
+    const viewport = canvasElement.querySelector('[data-canvas="viewport"]');
+
+    if (!(viewport instanceof HTMLElement)) {
+      throw new Error('No canvas');
+    }
+
+    const { left, top } = viewport.getBoundingClientRect();
+
+    await expect(within(canvasElement).getByRole('button', { name: 'Bar fuel' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: viewport, coords: { clientX: left + 4, clientY: top + 4 } },
+      { keys: '[/MouseLeft]', target: viewport, coords: { clientX: left + 4, clientY: top + 4 } }
+    ]);
+    await expect(within(canvasElement).getByRole('button', { name: 'Bar fuel' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+  }
+};
+
 /** On a phone, the properties sheet never leaves: with nothing to edit, it peeks with its title (0008). */
 export const PhonePeeking: Story = {
   args: { page: pageWithBar, phone: true }

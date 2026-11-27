@@ -64,6 +64,8 @@ type Gesture = {
 /** A press on the empty page or around it, which may become a pan. */
 type BackgroundPress = {
   hinted: boolean;
+  /** On an empty cell, where a tap marks a spot or lets go of the selection itself. */
+  onGrid: boolean;
   onPage: boolean;
   pointerId: number;
   pointerType: string;
@@ -114,6 +116,11 @@ export type CanvasProps = {
    * only lets go of it. Comes with what was used to tap.
    */
   onEmptyTap?: ((point: GridPoint, pointerType: string) => void) | undefined;
+  /**
+   * Fires when the space around the grid is clicked or tapped without moving: around the page, or
+   * in its padding. Like clicking white space anywhere, it should let go of what's selected (0024).
+   */
+  onOutsideTap?: (() => void) | undefined;
   /** Fires when one finger drags across the page, which only two fingers move (0024). */
   onPanHint?: (() => void) | undefined;
   onSelect: (widgetId: string | null) => void;
@@ -146,6 +153,7 @@ export function Canvas({
   ghost,
   newWidgetArea,
   onEmptyTap,
+  onOutsideTap,
   onPanHint,
   renderWidget,
   reveal,
@@ -405,6 +413,7 @@ export function Canvas({
 
     backgroundPressRef.current = {
       hinted: false,
+      onGrid: target.closest('[data-canvas="grid"]') !== null,
       onPage: target.closest('[data-canvas="frame"]') !== null,
       pointerId: event.pointerId,
       pointerType: event.pointerType,
@@ -449,6 +458,21 @@ export function Canvas({
       startPan([[event.pointerId, { x: press.x, y: press.y }]]);
       view.moveDriver(event.pointerId, { x: event.clientX, y: event.clientY });
     }
+  }
+
+  /** A still press off the grid is a click in white space. */
+  function handleViewportPointerUp(event: PointerEvent<HTMLElement>) {
+    const press = backgroundPressRef.current;
+
+    if (
+      press?.pointerId === event.pointerId &&
+      !press.onGrid &&
+      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType)
+    ) {
+      onOutsideTap?.();
+    }
+
+    handleViewportPointerEnd(event);
   }
 
   function handleViewportPointerEnd(event: PointerEvent<HTMLElement>) {
@@ -554,7 +578,7 @@ export function Canvas({
       onPointerDownCapture={handleViewportPointerDownCapture}
       onPointerMove={handleViewportPointerMove}
       onPointerMoveCapture={handleViewportPointerMoveCapture}
-      onPointerUpCapture={handleViewportPointerEnd}
+      onPointerUpCapture={handleViewportPointerUp}
       overflow='hidden'
       overscrollBehavior='none'
       position='relative'
@@ -609,6 +633,7 @@ export function Canvas({
           <LayoutGrid
             className={styles.grid}
             cursor={view.panning ? 'grabbing' : invitation ? 'pointer' : 'grab'}
+            data-canvas='grid'
             grid={layout.grid}
             height='full'
             onClick={handleEmptyClick}

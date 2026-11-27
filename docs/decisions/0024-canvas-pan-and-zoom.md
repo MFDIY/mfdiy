@@ -32,6 +32,10 @@ On a phone, the half-open properties sheet (0008) can cover the widget being edi
 - Panning stops when the page covers less than a quarter of the viewport along either axis (or all of it, if the page is smaller), so there is always some canvas in view. Past that, it stretches and springs back.
 - The page is resized rather than scaled, so the MFD stays sharp and resize handles, outlines and the [+] stay their size on screen.
 
+### Clicking white space lets go
+
+A click or tap that doesn't move, anywhere off the grid (around the page, or in its padding), lets go of whatever is active: the selected widget, the profile's settings, or a marked cell, closing its sheet on a phone. It's what clicking white space does everywhere else, so not doing it feels broken. A drag there still pans. Empty cells keep their own rule (0006): the first tap lets go, the next marks a spot.
+
 ### Momentum
 
 Letting go while moving glides on and slows down, like a scroll view (iOS's deceleration), with fingers, a mouse drag and the trackpad (which brings its own). With reduced motion there's no glide, and moves made for the user are instant.
