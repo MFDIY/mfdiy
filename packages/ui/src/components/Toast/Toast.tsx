@@ -3,6 +3,7 @@ import { toast as sonnerToast, Toaster } from 'sonner';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
+import { Button } from '../Button/Button.js';
 import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
 import { Text } from '../Text/Text.js';
@@ -14,6 +15,8 @@ const toastClass = designSystem({ width: 'full' });
 const DEFAULT_DURATION = 5000;
 
 export type ToastOptions = {
+  /** A button beside the text, e.g. Undo. Pressing it also closes the toast. */
+  action?: { label: string; onClick: () => void } | undefined;
   /**
    * Hides the toast by itself: after 5 seconds when `true` (the default), or after this many
    * milliseconds. `false` keeps it until it's dismissed, so only use that with `dismissible`.
@@ -27,13 +30,13 @@ export type ToastOptions = {
   id?: string | undefined;
 };
 
-type ToastViewProps = Pick<ToastOptions, 'description' | 'dismissible'> & {
+type ToastViewProps = Pick<ToastOptions, 'action' | 'description' | 'dismissible'> & {
   id: string | number;
   title: string;
 };
 
 /** A floating layer, so on the raised surface (0022). Rendered by sonner, which stacks and moves it. */
-function ToastView({ description, dismissible = false, id, title }: ToastViewProps) {
+function ToastView({ action, description, dismissible = false, id, title }: ToastViewProps) {
   return (
     <Box
       alignItems='flex-start'
@@ -60,6 +63,17 @@ function ToastView({ description, dismissible = false, id, title }: ToastViewPro
           ) : null}
         </Stack>
       </Box>
+      {action ? (
+        <Button
+          onClick={() => {
+            sonnerToast.dismiss(id);
+            action.onClick();
+          }}
+          variant='quiet'
+        >
+          {action.label}
+        </Button>
+      ) : null}
       {dismissible ? <IconButton icon='close' label='Dismiss' onClick={() => sonnerToast.dismiss(id)} /> : null}
     </Box>
   );
@@ -113,7 +127,19 @@ export function useToast() {
   const { showing, toasterId } = context;
 
   return {
-    show: (title: string, { autoDismiss = true, description, dismissible = false, id = title }: ToastOptions = {}) => {
+    /** Closes a toast that's on screen, by the id it was shown with. */
+    dismiss: (id: string) => {
+      const sonnerId = showing.get(id);
+
+      if (sonnerId !== undefined) {
+        showing.delete(id);
+        sonnerToast.dismiss(sonnerId);
+      }
+    },
+    show: (
+      title: string,
+      { action, autoDismiss = true, description, dismissible = false, id = title }: ToastOptions = {}
+    ) => {
       const sonnerId = showing.get(id) ?? `${id} ${++created}`;
       const forget = () => {
         if (showing.get(id) === sonnerId) {
@@ -123,7 +149,9 @@ export function useToast() {
 
       showing.set(id, sonnerId);
       sonnerToast.custom(
-        toastId => <ToastView description={description} dismissible={dismissible} id={toastId} title={title} />,
+        toastId => (
+          <ToastView action={action} description={description} dismissible={dismissible} id={toastId} title={title} />
+        ),
         {
           dismissible,
           duration: autoDismiss === true ? DEFAULT_DURATION : autoDismiss === false ? Infinity : autoDismiss,

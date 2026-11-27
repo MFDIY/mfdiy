@@ -71,10 +71,12 @@ export const LayoutSchema = v.object({
 
 export type Layout = v.InferOutput<typeof LayoutSchema>;
 
+export const MAX_PAGE_NAME_LENGTH = 32;
+
 export const PageSchema = v.pipe(
   v.object({
     id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
-    name: v.pipe(v.string(), v.minLength(1), v.maxLength(32)),
+    name: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_PAGE_NAME_LENGTH)),
     widgets: v.array(WidgetInstanceSchema),
     /** Version 1 uses exactly one layout; orientation variants come later (0006). */
     layouts: v.pipe(v.array(LayoutSchema), v.minLength(1), v.maxLength(3)),
@@ -101,7 +103,11 @@ export const MfdDocumentSchema = v.object({
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_DOCUMENT_NAME_LENGTH)),
   /** The game whose signals and actions this document binds to. */
   game: IdSchema,
-  pages: v.pipe(v.array(PageSchema), v.minLength(1)),
+  pages: v.pipe(
+    v.array(PageSchema),
+    v.minLength(1),
+    v.check(pages => new Set(pages.map(page => page.id)).size === pages.length, 'Page ids must be unique.')
+  ),
   /** Document-wide theme overrides. */
   tokens: v.optional(TokenValuesSchema)
 });

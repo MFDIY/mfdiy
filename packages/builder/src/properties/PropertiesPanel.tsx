@@ -3,12 +3,14 @@ import type { Layout, Page, TokenValues } from '@mfdiy/schema';
 
 import { widgetManifests } from '@mfdiy/instruments';
 
-import { PageProperties } from './PageProperties.js';
+import { PageProperties, type PagePropertiesProps } from './PageProperties.js';
 import { WidgetProperties } from './WidgetProperties.js';
 
-export type PropertiesPanelProps = {
+export type PropertiesPanelProps = Pick<PagePropertiesProps, 'onDelete' | 'onDuplicate'> & {
   catalogue: Catalogue;
   documentTokens: TokenValues | undefined;
+  /** Focuses the page's name field while nothing is selected, e.g. on a page just duplicated (0023). */
+  focusPageName?: boolean | undefined;
   layout: Layout;
   /** `merge` names a run of typing in one field; changes with the same one are one undo step (0023). */
   onChange: (page: Page, merge?: string) => void;
@@ -21,7 +23,7 @@ export type PropertiesPanelProps = {
  * The properties panel (0023): the selected widget's, generated from its manifest, or the page's
  * while nothing is selected. Fits any box, as a sidebar or in a sheet (0008).
  */
-export function PropertiesPanel({ selectedId, ...props }: PropertiesPanelProps) {
+export function PropertiesPanel({ focusPageName, onDelete, onDuplicate, selectedId, ...props }: PropertiesPanelProps) {
   const { layout, onChange, page } = props;
   const widget = page.widgets.find(candidate => candidate.id === selectedId);
   const manifest = widget ? widgetManifests[widget.type] : undefined;
@@ -29,6 +31,14 @@ export function PropertiesPanel({ selectedId, ...props }: PropertiesPanelProps) 
   return widget && manifest ? (
     <WidgetProperties {...props} key={widget.id} manifest={manifest} widget={widget} />
   ) : (
-    <PageProperties key={page.id} layout={layout} onChange={onChange} page={page} />
+    <PageProperties
+      focusName={focusPageName}
+      key={page.id}
+      layout={layout}
+      onChange={onChange}
+      onDelete={onDelete}
+      onDuplicate={onDuplicate}
+      page={page}
+    />
   );
 }

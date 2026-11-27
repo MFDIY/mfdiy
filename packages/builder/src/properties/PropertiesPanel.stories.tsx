@@ -100,13 +100,20 @@ const page: PageData = {
   ]
 };
 
-type DemoProps = { catalogue: Catalogue; selectedId: string | null; themeName: string };
+type DemoProps = {
+  catalogue: Catalogue;
+  focusPageName: boolean;
+  /** The profile's only page, which can't be deleted. */
+  onlyPage: boolean;
+  selectedId: string | null;
+  themeName: string;
+};
 
 /**
  * The panel fills whatever it's given; the container here starts at the sidebar's width and can be
  * resized from its corner. It keeps its own page and selection, so it can be used.
  */
-function Demo({ catalogue, selectedId: initialSelection, themeName }: DemoProps) {
+function Demo({ catalogue, focusPageName, onlyPage, selectedId: initialSelection, themeName }: DemoProps) {
   const [current, setCurrent] = useState(page);
   const [selectedId, setSelectedId] = useState(initialSelection);
   const [currentLayout = layout] = current.layouts;
@@ -129,8 +136,11 @@ function Demo({ catalogue, selectedId: initialSelection, themeName }: DemoProps)
         <PropertiesPanel
           catalogue={catalogue}
           documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
+          focusPageName={focusPageName}
           layout={currentLayout}
           onChange={setCurrent}
+          onDelete={onlyPage ? undefined : () => undefined}
+          onDuplicate={() => undefined}
           onSelect={setSelectedId}
           page={current}
           selectedId={selectedId}
@@ -142,7 +152,7 @@ function Demo({ catalogue, selectedId: initialSelection, themeName }: DemoProps)
 
 const meta = {
   title: 'Builder/PropertiesPanel',
-  args: { catalogue, selectedId: null },
+  args: { catalogue, focusPageName: false, onlyPage: false, selectedId: null },
   render: (args, context) => <Demo {...args} themeName={String(context.globals['theme'] ?? '')} />
 } satisfies Meta<Omit<DemoProps, 'themeName'>>;
 
@@ -150,8 +160,19 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** With nothing selected, the panel shows the page: its name and grid. */
+/** With nothing selected, the panel shows the page: its name and grid, with Duplicate and Delete. */
 export const Page: Story = {};
+
+/** A profile always has a page, so its only one can't be deleted. */
+export const OnlyPage: Story = { args: { onlyPage: true } };
+
+/** A page just duplicated: its name is focused and selected, ready to rename (0023). */
+export const PageJustDuplicated: Story = {
+  args: { focusPageName: true },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('textbox', { name: 'Name' })).toHaveFocus();
+  }
+};
 
 /** A fuel bar, warning when low: the signal's default thresholds, copied in when it was picked. */
 export const Bar: Story = { args: { selectedId: 'fuel' } };

@@ -1,22 +1,47 @@
 import type { Layout, Page } from '@mfdiy/schema';
 
-import { MAX_GRID_SIZE } from '@mfdiy/schema';
-import { Box, Columns, Group, NumberField, Stack, Text, TextField, usePanelForm } from '@mfdiy/ui/components';
+import { MAX_GRID_SIZE, MAX_PAGE_NAME_LENGTH } from '@mfdiy/schema';
+import {
+  Box,
+  Button,
+  Columns,
+  Group,
+  IconButton,
+  NumberField,
+  Stack,
+  Text,
+  TextField,
+  usePanelForm
+} from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { resizeGrid } from './editing.js';
 import { Typing, useTyping } from './fields.js';
 
 export type PagePropertiesProps = {
+  /** Focuses the name field when shown, e.g. on a page just duplicated (0023). */
+  focusName?: boolean | undefined;
   layout: Layout;
   onChange: (page: Page, merge?: string) => void;
+  /** Deletes the page; greyed out without it, as on a profile's last page. */
+  onDelete?: (() => void) | undefined;
+  /** Duplicates the page; greyed out without it. */
+  onDuplicate?: (() => void) | undefined;
   page: Page;
 };
 
-const MAX_PAGE_NAME_LENGTH = 32;
-
-/** What the panel shows while no widget is selected (0023): the page's name and grid. */
-export function PageProperties({ layout, onChange, page }: PagePropertiesProps) {
+/**
+ * What the panel shows while no widget is selected (0023): the page's name and grid, with Duplicate
+ * and Delete in its header, as a widget's are.
+ */
+export function PageProperties({
+  focusName = false,
+  layout,
+  onChange,
+  onDelete,
+  onDuplicate,
+  page
+}: PagePropertiesProps) {
   const typing = useTyping(page.id, page);
   const sidebar = usePanelForm() === 'sidebars';
   /** The name as typed; an empty one isn't saved, as a page always has a name, and goes on leaving. */
@@ -45,15 +70,32 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
 
   return (
     <Box>
-      {sidebar ? (
-        <Box flexShrink='0' paddingBottom='4x'>
-          <Box alignItems='center' display='flex' height='control'>
-            <Text tagName='h2' truncate variant='heading'>
-              Page
-            </Text>
+      <Box flexShrink='0' paddingBottom='4x'>
+        {sidebar ? (
+          <Box alignItems='center' display='flex' gap='2x' height='control'>
+            <Box flexGrow='1' minWidth='none'>
+              <Text tagName='h2' truncate variant='heading'>
+                Page
+              </Text>
+            </Box>
+            <IconButton disabled={!onDuplicate} icon='content_copy' label='Duplicate' onClick={onDuplicate} />
+            <IconButton disabled={!onDelete} icon='delete' label='Delete' onClick={onDelete} />
           </Box>
-        </Box>
-      ) : null}
+        ) : (
+          <Columns spacing='3x'>
+            <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+              <Button disabled={!onDuplicate} icon='content_copy' onClick={onDuplicate} width='full'>
+                Duplicate
+              </Button>
+            </Box>
+            <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+              <Button disabled={!onDelete} icon='delete' onClick={onDelete} width='full'>
+                Delete
+              </Button>
+            </Box>
+          </Columns>
+        )}
+      </Box>
       <Stack spacing='5x'>
         <Box
           onBlur={event => {
@@ -62,6 +104,7 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
           }}
         >
           <TextField
+            focus={focusName}
             label='Name'
             maxLength={MAX_PAGE_NAME_LENGTH}
             onChange={name => {
