@@ -27,6 +27,9 @@ export const popup = style({
   willChange: 'transform',
 
   selectors: {
+    '&:not([data-moved])': {
+      transition: 'none'
+    },
     '&[data-nested-drawer-open]': {
       pointerEvents: 'none',
       transform: `translateY(max(0px, calc(${frontOffset} - 2 * ${step} * (1 - pow(0.5, ${above})))))`

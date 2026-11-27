@@ -140,7 +140,9 @@ export function SheetPeekSpace() {
  * place's details. It rests at half or full height, and only its content scrolls. It has no buttons
  * of its own, only a handle with its title under it, the same peeking or open: it's dragged or flicked between its stops, Escape
  * closes it, and its content closes it where that makes sense (0008). Opening it focuses the sheet
- * itself, never a field, so no on-screen keyboard covers it until a field is tapped.
+ * itself, never a field, so no on-screen keyboard covers it until a field is tapped. A sheet that's
+ * already showing when it mounts, such as a peeking one on a page just switched to, appears where
+ * it rests; it slides only once it moves or is touched.
  */
 export function Sheet({
   children,
@@ -163,6 +165,16 @@ export function Sheet({
     if (open && parent) {
       setStop(startingStop);
     }
+  }
+
+  const peeking = peek && !open;
+  const place = peeking ? 'peek' : open ? stop : 'closed';
+  const [lastPlace, setLastPlace] = useState(place);
+  const [moved, setMoved] = useState(false);
+
+  if (place !== lastPlace) {
+    setLastPlace(place);
+    setMoved(true);
   }
 
   const nested = parent !== null;
@@ -226,7 +238,6 @@ export function Sheet({
   }, [peek, popupElement]);
 
   const peekPoint = `${peekHeight}px`;
-  const peeking = peek && !open;
 
   return (
     <Drawer.Root
@@ -267,7 +278,15 @@ export function Sheet({
       <Drawer.Portal>
         {nested ? null : <Drawer.Backdrop className={backdropClass} data-modal={modal ? '' : undefined} />}
         <Drawer.Viewport className={viewportClass}>
-          <Drawer.Popup aria-label={title} className={popupClass} initialFocus={popupRef} ref={popupCallbackRef}>
+          <Drawer.Popup
+            aria-label={title}
+            className={popupClass}
+            data-moved={moved ? '' : undefined}
+            initialFocus={popupRef}
+            onKeyDownCapture={() => setMoved(true)}
+            onPointerDownCapture={() => setMoved(true)}
+            ref={popupCallbackRef}
+          >
             <Box
               aria-label={peeking ? `Open ${title}` : undefined}
               cursor={peeking ? 'pointer' : 'grab'}

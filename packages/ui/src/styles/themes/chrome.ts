@@ -89,6 +89,8 @@ export const chromeTokens = {
   'size.canvas.handle': '24px',
   /** A side panel beside the canvas, such as the widget library (0008). */
   'size.panel': '280px',
+  /** The widest a tab gets; a longer name is cut short with an ellipsis. */
+  'size.tab': '110px',
   'border.hairline': mfdiy['border.width'],
   'border.edit': '2px',
   'focus.width': '1px',

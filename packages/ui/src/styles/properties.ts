@@ -335,6 +335,7 @@ export const width = {
   auto: 'auto',
   control: v['size.control'],
   panel: v['size.panel'],
+  tab: v['size.tab'],
   'canvas.handle': v['size.canvas.handle'],
   'fit-content': 'fit-content',
   full: '100%',

@@ -8,6 +8,7 @@ import { Box } from '../Box/Box.js';
 import { Button } from '../Button/Button.js';
 import { Menu, MenuItem } from '../Menu/Menu.js';
 import { Text } from '../Text/Text.js';
+import { Tooltip, TooltipGroup } from '../Tooltip/Tooltip.js';
 
 import * as styles from './Tabs.css.js';
 import { hiddenTabs } from './hiddenTabs.js';
@@ -28,13 +29,13 @@ const tabClass = (active: boolean) =>
     flexShrink: '0',
     fontFamily: 'inherit',
     height: 'control',
+    maxWidth: 'tab',
     outlineColor: 'focus',
     outlineOffset: 'focus',
     outlineStyle: { default: 'none', focusVisible: 'solid' },
     outlineWidth: 'focus',
     paddingInline: '3x',
-    userSelect: 'none',
-    whiteSpace: 'nowrap'
+    userSelect: 'none'
   });
 
 export type TabsItem = {
@@ -56,8 +57,9 @@ export type TabsProps = {
 /**
  * A row of tabs over a hairline, the active one underlined, built on Base UI's Tabs (0003): arrow
  * keys move between them. Tabs sit flush (0022) and never scroll: those that don't fit go into a
- * menu that says how many there are, and the active tab is always one of those shown. Takes the
- * width of its container. Controlled: the page owns the value.
+ * menu that says how many there are, and the active tab is always one of those shown. A long name
+ * is cut short with an ellipsis, and a tooltip shows it in full. Takes the width of its container.
+ * Controlled: the page owns the value.
  */
 export function Tabs({ after, items, label, onValueChange, value }: TabsProps) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -118,7 +120,9 @@ export function Tabs({ after, items, label, onValueChange, value }: TabsProps) {
               }}
               tagName='span'
             >
-              <Text variant='body'>{item.label}</Text>
+              <Text truncate variant='body'>
+                {item.label}
+              </Text>
             </Box>
           ))}
           <Box ref={moreRef} tagName='span'>
@@ -128,11 +132,17 @@ export function Tabs({ after, items, label, onValueChange, value }: TabsProps) {
       </Box>
       <BaseTabs.Root className={rootClass} onValueChange={next => onValueChange(String(next))} value={value}>
         <BaseTabs.List aria-label={label} className={listClass}>
-          {shown.map(item => (
-            <BaseTabs.Tab className={state => tabClass(state.active)} key={item.value} value={item.value}>
-              <Text variant='body'>{item.label}</Text>
-            </BaseTabs.Tab>
-          ))}
+          <TooltipGroup>
+            {shown.map(item => (
+              <Tooltip key={item.value} label={item.label}>
+                <BaseTabs.Tab className={tabClass(item.value === value)} value={item.value}>
+                  <Text truncate variant='body'>
+                    {item.label}
+                  </Text>
+                </BaseTabs.Tab>
+              </Tooltip>
+            ))}
+          </TooltipGroup>
           <BaseTabs.Indicator className={styles.indicator} />
         </BaseTabs.List>
       </BaseTabs.Root>

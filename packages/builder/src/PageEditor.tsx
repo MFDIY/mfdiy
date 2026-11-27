@@ -24,7 +24,7 @@ import { propertiesTitle } from './properties/title.js';
 
 export type PageEditorProps = Omit<
   CanvasProps,
-  'ghost' | 'newWidgetArea' | 'onChange' | 'onEmptyTap' | 'pointerRef'
+  'ghost' | 'newWidgetArea' | 'onChange' | 'onDragChange' | 'onEmptyTap' | 'pointerRef'
 > & {
   catalogue: Catalogue;
   /**
@@ -66,8 +66,8 @@ const HINT = 'Tap a cell, or drag a widget onto the page.';
  * The canvas between the widget library and the properties panel (0006, 0008), laid out by
  * PanelLayout. A widget is added where a cell was marked, or where it's dropped; never somewhere
  * guessed. As sidebars, the library is there to drag from; as sheets, it opens when a cell is
- * tapped. The properties panel (0023) shows the selected widget, or the page. Use one per page, with
- * the page's id as its key.
+ * tapped. The properties panel (0023) shows the selected widget, or the page; as a sheet, it peeks
+ * while a widget is moved or resized. Use one per page, with the page's id as its key.
  */
 export function PageEditor({
   catalogue,
@@ -80,6 +80,7 @@ export function PageEditor({
   const [marked, setMarked] = useState<GridPoint | null>(null);
   const [openSheet, setOpenSheet] = useState<PanelSide | null>(focusPageName ? 'end' : null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  const [widgetDragging, setWidgetDragging] = useState(false);
   const dragRef = useRef<Drag | null>(null);
   const canvasRef = useRef<CanvasPointer>(null);
   /** A drag that ends on its own row also clicks it; that click mustn't count. */
@@ -313,7 +314,7 @@ export function PageEditor({
           setMarked(null);
           library.reset();
         }}
-        openSheet={openSheet}
+        openSheet={widgetDragging && openSheet === 'end' ? null : openSheet}
         start={{
           content: (
             <LibraryList
@@ -331,6 +332,7 @@ export function PageEditor({
             {...canvasProps}
             ghost={ghost}
             newWidgetArea={smallestPlace}
+            onDragChange={setWidgetDragging}
             onEmptyTap={handleEmptyTap}
             onSelect={handleSelect}
             pointerRef={canvasRef}

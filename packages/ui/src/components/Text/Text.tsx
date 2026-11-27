@@ -45,22 +45,19 @@ export function Text<T extends TagName = 'span'>({
 }: TextProps<T>) {
   const { designSystemClassNames, nativeProps } = useRestProps(restProps);
 
-  const content = truncate ? (
-    <Box className={styles.truncate} tagName='span'>
-      {children}
-    </Box>
-  ) : (
-    children
-  );
-
   return (
     <Box
       {...nativeProps}
-      className={[designSystemClassNames, variant ? styles.variants[variant] : styles.root, className]}
+      className={[
+        designSystemClassNames,
+        variant ? styles.variants[variant] : styles.root,
+        truncate ? styles.truncate : undefined,
+        className
+      ]}
       ref={ref}
       tagName={(tagName as TagName | undefined) ?? 'span'}
     >
-      {content}
+      {children}
     </Box>
   );
 }
