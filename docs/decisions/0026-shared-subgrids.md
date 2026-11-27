@@ -13,7 +13,7 @@ With no chrome on the MFD beyond the header (0009), whatever a player needs on e
 - A shared subgrid has **its own columns and rows** and holds **any widget**. Widgets inside it work as they do on a page; they needn't know they're in one. Shared subgrids **don't nest**: one can't hold another.
 - **Its place follows the page it's placed on:** it snaps to the cells of the page where it's placed or moved, and is kept as a share of the profile's shape, which every page has (0006). On a page with a different grid it covers every cell it touches, even partly.
 - **A page's widgets under it are overlap** (0006), shown in red, and so are other shared subgrids. Adding or moving a shared subgrid shows where room has to be made, and the page tabs mark the pages that have such overlap.
-- **A shared subgrid is added from the widget library**, like any widget, and starts empty.
+- **A shared subgrid is added from the widget library**, like any widget, and starts empty, asking nothing. Its grid starts with **one cell per page cell it covers**, so it lines up with the page it's placed on; its columns and rows are changed in its properties. Resizing it keeps them, and its cells stretch, as a page's do when the profile's shape changes (0006).
 - **A widget belongs to one grid**, a page or a shared subgrid, and stays in it: where it sits never changes which. A page's widget under a subgrid is still the page's, and overlap. Copy and paste (0006) puts a copy of a widget in another grid, a subgrid or another page; there's no move.
 - **Switching pages is a widget like any other**, the page button (0018), placed by the profile's author, usually in a shared subgrid. The MFD adds no tabs of its own. The editor **warns about pages that can't be reached** on the MFD; they stay reachable through the editor (0009).
 
@@ -42,7 +42,3 @@ With no chrome on the MFD beyond the header (0009), whatever a player needs on e
 - **Shared subgrids are in the first public beta** (0020), as the way to switch pages.
 
 - The canvas needs a neutral hatching beside `canvas.overlap`, and the editor holds which subgrid is entered apart from the page shown.
-
-## Open questions
-
-- **How many columns and rows a new shared subgrid starts with**, as a new page's grid is seeded (0006). One cell per page cell it covers would line it up with the page it's placed on. Settled when the widgets are gone over.
