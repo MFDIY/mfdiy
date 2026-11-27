@@ -9,7 +9,7 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### Wide screens (desktop, tablet landscape)
 
-- **Header** (one row exactly a control high, edge to edge, with padding only after `⋯` on a desktop, over a hairline across the whole screen): the **MFDIY logomark** in the accent of the page shown (0022), padded as part of the mark, a full-height divider, **Back**, the page tabs, then undo, redo, **Save** and a **`⋯` menu** side by side with no gaps. The profile's name isn't shown; the library shows it. `⋯` holds every other profile action: Zoom in, Zoom out and Zoom to fit, with their keys (0024), and Save as new (0019); preview shape and the preview toggle join it or the row when they're built. Removing a widget is in its properties (0023).
+- **Header** (one row exactly a control high, edge to edge, with padding only after `⋯` on a desktop, over a hairline across the whole screen): the **MFDIY logomark** in the accent of the page shown (0022), padded as part of the mark, a full-height divider, **Back**, the page tabs, then undo, redo, **Save** and a **`⋯` menu** side by side with no gaps. The profile's name isn't shown; the library shows it. `⋯` holds every other profile action: Copy and Paste, with their keys (0006), Zoom in, Zoom out and Zoom to fit, with their keys (0024), and Save as new (0019); preview shape and the preview toggle join it or the row when they're built. Removing a widget is in its properties (0023).
 - **Properties panel** on the right for the selected widget, or the page when nothing is selected (0023).
 - **Canvas** fills the rest, edge to edge, with the page in the profile's shape and its label (0006) fitted inside it, and pans and zooms (0024).
 - **Widget library** on the left, **always visible**: widget types to add, searchable. Tapping or clicking an empty cell marks the spot, and picking from the library adds the widget there (see "Add" in 0006).
@@ -44,9 +44,9 @@ On Android, the system Back gesture closes the top sheet or dialog instead of le
 
 Within a panel, Back sits in the search field it belongs to, as one control (`‹ | Search… | ×`), named after where it goes ("Back to Fuel").
 
-### Preview mode
+### Leaving the editor
 
-A toggle hides all builder controls and shows the layout full-screen with live data, exactly as the display will render it.
+The editor opens from a profile's Edit button, on the page being shown, and **Back** leaves it for the profile again, on the page being edited (0009). That replaces a preview mode: the profile itself shows the MFD with live data, exactly as it renders.
 
 ## Why
 
@@ -60,6 +60,6 @@ A toggle hides all builder controls and shows the layout full-screen with live d
 - **Properties are written once** and presented as either a side panel or a bottom sheet depending on available width (container queries, not device detection).
 - The builder needs a bottom-sheet component in `packages/ui`, built on Base UI's Drawer (0003): non-modal so the canvas stays usable above it (modal, with a backdrop, for a side task stacked on it), with a half-open and a full-height stop, and a peeking stop for the properties sheet, working with touch, mouse and keyboard, and respecting 0007 (no page scrolling; the sheet's own content may scroll, as it's builder UI, not MFD content).
 - **The library and properties are each written once** and presented as a side panel or a sheet. The command palette is removed once the library replaces it; a keyboard shortcut focuses the library's search instead.
-- The canvas, properties and library must not depend on the surrounding builder page, so they can be reused for in-place editing (0009).
+- The canvas, properties and library must not depend on the surrounding builder page, so they can be developed and tested in Storybook (0021).
 - **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. Tabs have no menu of their own: renaming, duplicating and deleting a page are in the page's properties (0023), next to its grid. "+" adds an empty page at the end, named "Page _n_" with a new page's grid (0006), and shows it.
 - **Save is a plain button**, with everything else in `⋯`. A split button (`[Save|▾]`, perhaps with more parts) was considered and postponed: when it comes, it's a group of quiet Buttons and IconButtons in one frame whose border and dividers react to hover, focus and press together, rather than a component of its own. A **segmented single-choice control** (e.g. a Light's colour when lit) is `SegmentedControl`: a few options in a fixed frame, the chosen one tinted (0022); it replaced Bonsai's.

@@ -14,7 +14,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0006: Builder grid, layouts and interaction](docs/decisions/0006-builder-grid-and-layouts.md)
 - [0007: No scrolling, paging instead](docs/decisions/0007-no-scrolling.md)
 - [0008: Builder interface layout](docs/decisions/0008-builder-interface-layout.md)
-- [0009: In-place editing on the display](docs/decisions/0009-in-place-editing.md) (Proposed)
+- [0009: Showing and editing a profile](docs/decisions/0009-showing-and-editing-a-profile.md)
 - [0010: How actions work on the display](docs/decisions/0010-actions-on-the-display.md)
 - [0011: Virtual input device as a second action channel](docs/decisions/0011-virtual-input-device.md) (Proposed)
 - [0012: Automatic profiles based on game context](docs/decisions/0012-automatic-profiles.md) (Proposed)
@@ -31,6 +31,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 - [0023: The properties panel](docs/decisions/0023-properties-panel.md)
 - [0024: Panning and zooming the canvas](docs/decisions/0024-canvas-pan-and-zoom.md)
 - [0025: Vocabulary](docs/decisions/0025-vocabulary.md)
+- [0026: Shared subgrids](docs/decisions/0026-shared-subgrids.md)
 
 ## Working with the maintainer
 
@@ -40,7 +41,7 @@ Decision records live in [`docs/decisions/`](docs/decisions/). Read them before 
 
 ## Current state
 
-Built: monorepo scaffold, schemas, theme contract v2 (0022), four MFD primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder that adds, moves, resizes and removes widgets, with undo and saving. The builder chrome is rebuilt on the `mfdiy` brand theme (Panel white, 0022), with these components in `packages/ui`, all on Base UI where it has a part: Button (with icons), IconButton, Icon (Material Symbols), Tooltip, Toggletip, Menu, Tabs (overflow into a "+N" menu), Field, TextInput, TextField, NumberField, Switch, Select, SegmentedControl, SearchList, Sheet, Sticky, Accordion, Group, Dialog, Toast (with an action, e.g. Undo), Logomark, PanelLayout and PanelTask. The widget library (0006, 0008) lists widget types, as a sidebar or a sheet through PanelLayout, with the **properties panel** (0023, first version) opposite it: page name and grid with Duplicate and Delete, or a widget's type, data with thresholds, action, options and place, with Duplicate and Remove. As sheets, side tasks stack (`PanelTask`): the sheets under the top one follow it, one step above, and the properties sheet peeks instead of closing (0008). The builder's header (`EditorHeader`, 0008) is one row over a full-width hairline: the logomark in the page's accent (the one coloured part of the chrome, 0022), a divider, Back, page Tabs with "+", undo / redo, Save (the accent while there's something to save) and a `⋯` menu; on a phone undo and redo move into `⋯`. Not built yet: the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code.
+Built: monorepo scaffold, schemas, theme contract v2 (0022), four MFD primitives, bridge with a telemetry **simulator**, a library of profiles saved on the bridge (0019), a display rendering one, and a builder that adds, moves, resizes and removes widgets, with undo and saving. The builder chrome is rebuilt on the `mfdiy` brand theme (Panel white, 0022), with these components in `packages/ui`, all on Base UI where it has a part: Button (with icons), IconButton, Icon (Material Symbols), Tooltip, Toggletip, Menu, Tabs (overflow into a "+N" menu), Field, TextInput, TextField, NumberField, Switch, Select, SegmentedControl, SearchList, Sheet, Sticky, Accordion, Group, Dialog, Toast (with an action, e.g. Undo), Logomark, PanelLayout and PanelTask. The widget library (0006, 0008) lists widget types, as a sidebar or a sheet through PanelLayout, with the **properties panel** (0023, first version) opposite it: page name and grid with Duplicate and Delete, or a widget's type, data with thresholds, action, options and place, with Duplicate and Remove. As sheets, side tasks stack (`PanelTask`): the sheets under the top one follow it, one step above, and the properties sheet peeks instead of closing (0008). The builder's header (`EditorHeader`, 0008) is one row over a full-width hairline: the logomark in the page's accent (the one coloured part of the chrome, 0022), a divider, Back, page Tabs with "+", undo / redo, Save (the accent while there's something to save) and a `⋯` menu; on a phone undo and redo move into `⋯`. Not built yet: the real game connection, tap-to-engage and keep-awake, `mfdiy.local` and the QR code; one address per profile with the header, Edit and Fullscreen (0009), which replaces `/display/:id` and `/builder/:id`; shared subgrids and page buttons (0026), which replace the MFD's built-in page tabs.
 
 Next: **the first public beta (0020)**. Its scope, order and gates are agreed; don't reopen them without new information.
 

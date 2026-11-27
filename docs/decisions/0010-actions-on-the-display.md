@@ -24,7 +24,7 @@
 - Pressing a button never gives it the focus. Otherwise a stray Space or Enter would fire the last pressed action again.
 - Resting a finger on the screen fires actions; layouts should give dangerous actions a guard rather than rely on careful touches.
 - The action configuration in a document needs a hold duration and a "guarded" flag.
-- Changing pages is an action too, so the page tabs also fire on `pointerdown`.
+- Changing pages is an action too, so page buttons (0018, 0026) also fire on `pointerdown`.
 
 ## Open questions
 

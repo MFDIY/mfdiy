@@ -1,7 +1,7 @@
 # 0006: Builder grid, layouts and interaction
 
 - **Status:** Accepted
-- **Date:** 2026-11-24 (shape added 2026-11-27)
+- **Date:** 2026-11-24 (shape added and orientation variants dropped 2026-11-27)
 
 ## Decision
 
@@ -22,12 +22,11 @@
 - When the grid size changes after widgets are placed, widget positions and sizes are **scaled proportionally**, then collisions caused by rounding are resolved where there is room, rather than clipping widgets at the new edge. Widgets that don't fit overlap.
 - A **preview switcher** (phone portrait, tablet landscape, ...) for stretching profiles stays postponed (0020): with a stored shape, the builder already shows what matters.
 
-### Layouts per page, orientation variants later
+### One layout per page, no orientation variants
 
-- A page's widgets (type, options, bindings, action, theme overrides) are separate from their placement. Placement lives in the page's **layouts**: each layout has a grid and an area per widget.
-- Version 1 has exactly one layout per page, matching any orientation.
-- Later, a page can add a **portrait** and/or **landscape** variant. Orientation, not width breakpoints, is the breakpoint that matters for MFDs. Variants share the widgets, so a widget is configured once and only placed differently. The display picks the layout matching its orientation and falls back to the first layout, stretched.
-- The document format supports multiple layouts from the start, so adding variants later needs no migration.
+- A page's widgets (type, options, bindings, action, theme overrides) are separate from their placement. Placement lives in the page's **layout**: a grid and an area per widget.
+- A page has **exactly one layout**, for any orientation. There are no portrait or landscape variants: a profile is made for one screen's shape, and stretching covers other screens. Nobody turns a mounted MFD mid-flight.
+- What shows on every page, such as page buttons or a status line, goes in a **shared subgrid** (0026), placed once for the whole profile.
 
 ### Overlap is allowed, and highlighted
 
@@ -55,18 +54,20 @@ Drag, drop and resize are built in-house on **Pointer Events** with `setPointerC
 - **Before adding:** hovering an empty cell with a mouse or pen outlines what any widget would **cover at least** there, with a **[+]** in the middle: quietly, as it follows the pointer around. It only appears when a click would add one, so not while a widget is selected. Fingers don't hover: after the tap, the same area marks the spot while a widget is picked, filled in. As every widget starts at the same size, it doesn't change while one is highlighted or picked.
 - **Letting go:** with a widget selected, the first tap on an empty cell only deselects; the next one marks the spot to add. Both happen on release, not on press, so a drag on empty cells pans instead (0024).
 - **Duplicate** and **remove** the selected widget from the properties panel's header (0023); **undo / redo** from the toolbar. Undo reaches past a save, and shows the page it changed.
+- **Copy and paste** are in the header's `⋯` menu (0008), with their keys shown, so they work on a tablet without a keyboard. **Copy** takes the selected widget; **Paste** adds a copy of it to the grid being edited: another page, or a shared subgrid that's entered (0026). It's how a widget gets from one grid to another; widgets aren't moved between grids. The copy lands **exactly where the widget was**: the same cells on a grid of the same size, otherwise the same share of the grid, scaled as when a grid's size changes, so it's never outside it. Anything already there shows as overlap, in red. Ctrl+C and Ctrl+V (⌘C and ⌘V on a Mac) are shortcuts for them.
 - **Default sizes:** manifests give default sizes as a **share of the page**, rounded to whole cells when the widget is placed, so a new widget looks the same on any grid density. **Every widget starts at 1/6 of the page's width by 1/4 of its height** (4 × 4 cells on a new 16:10 page), so every widget must work at that size.
 - **Touch screens:** widgets can be dragged directly, since nothing scrolls (0007). Tapping a widget selects it, which opens its properties.
-- **Without dragging (0001):** the properties panel has numeric position and size fields. There is no keyboard editing: an MFD is an input device next to the keyboard, not driven by it.
+- **Without dragging (0001):** the properties panel has numeric position and size fields. Nothing needs a keyboard; its only shortcuts stand in for buttons (copy and paste, and zoom, 0024). An MFD is an input device next to the keyboard, not driven by it.
 
 ## Why
 
 - A grid of cells matches how people think about layouts ("this button is 5 × 3 cells").
 - A stored shape came from seeing the same profile on a phone and a laptop: with the canvas taking the shape of whatever space the builder had, they looked like different pages. Keeping the shape makes a profile look as designed; stretching stays available for "use it anywhere". Seeding square-ish cells gives widgets natural proportions without forcing them, as some layouts want stretched cells.
-- Orientation variants solve the one real failure of stretching (a landscape layout squeezed onto an upright phone) without introducing web-style breakpoints.
+- Orientation variants were planned for a landscape layout squeezed onto an upright phone. With a stored shape, a profile is made for the screen it will be shown on, so variants would add work to every page for a case that hardly happens.
 - Refusing overlap made a full page impossible to rearrange: there was never room to move a widget out of the way for a moment. Highlighting still catches accidents, and overlap makes layering (e.g. a label over a gauge) possible.
 
 ## Consequences
 
 - Breaking change to the document format: widget placement moved from `widget.area` to `page.layouts[].areas` (no documents exist yet, so no migration was needed).
 - The schema validates that every widget has exactly one area per layout and that areas stay within the grid.
+- The document format still holds a list of layouts, each with an orientation, from when variants were planned. It can become a single layout per page.
