@@ -27,6 +27,10 @@ Rows marked `›` open a side task that replaces the panel's contents and offers
 
 With nothing selected, the panel shows the page's properties: its name and grid size, later its layouts. The panel never sits empty, and the canvas doesn't change size with the selection.
 
+- **Rename** by typing in the Name field; there's no separate action.
+- **Duplicate** and **Delete** sit in the header, as a widget's do. Duplicate adds a copy right after the page, named "_Name_ (clone)", shows it, and focuses its Name field with the name selected, ready to rename.
+- **Delete** happens at once and shows a toast with **Undo**, as undo reaches past a save (0006); no dialog asks first. A profile always has a page, so Delete is greyed out on the last one.
+
 ### Type first, data later
 
 A widget is added as a type, without data (0006). Its Data rows start empty, and the panel shows that it isn't connected yet as an error, since the widget doesn't work like that: the Signal row reads "Not connected" in the critical colour, as does its accordion row's summary, inside the controls so nothing shifts. The same goes for a Button without an action; a Light's action is optional, so "No action" is no error; the canvas shows such a widget with its type's name and no value.

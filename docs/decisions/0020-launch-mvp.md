@@ -35,6 +35,7 @@ Several telemetry tools for the game appeared within days of its telemetry becom
 - **The game connection is the critical path**, not the builder. The editor, the connection, and packaging with the QR code can be built in parallel sessions.
 - **First gate:** real ship data on a real tablet. If it isn't met, **drop actions** from the beta.
 - **The beta doesn't launch on simulated data.** Without real data the launch moves.
+  - On 27 November 2026 the game's telemetry feed was removed in a patch, so the first gate can't be met and the launch moves until the feed returns. Meanwhile work continues on the editor's must-haves.
 - A small **private beta** comes before the public one, followed by fixes only.
 - The release is called a **beta**. It supports both game versions where possible; see [the telemetry notes](../research/star-citizen-telemetry.md).
 

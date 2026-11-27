@@ -2,6 +2,8 @@
 
 Collected from community sources in November 2026. **Nothing here has been verified against a live game yet.** The API is undocumented and reverse-engineered by the community; expect details to change between patches. Update this file as soon as real frames have been captured.
 
+**Status, 27 November 2026:** the game developer removed the gRPC telemetry feed in a recent patch. The community expects it to return; until it does, MFDIY runs on the simulator only, and the beta waits (0020).
+
 ## Enabling it
 
 The game runs a local gRPC server when enabled. Commands as reported by community tools:

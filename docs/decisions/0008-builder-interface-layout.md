@@ -9,14 +9,14 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### Wide screens (desktop, tablet landscape)
 
-- **Top toolbar** (slim): profile name, page tabs, Save and Save as new (0019), undo / redo, remove, preview shape, zoom, preview toggle.
+- **Header** (slim, one row): Back, the profile name, page tabs, undo / redo, the save status, **Save**, and a **`⋯` menu** with every other profile action: Save as new (0019) for now; preview shape, zoom and the preview toggle join it or the row when they're built. Removing a widget is in its properties (0023).
 - **Properties panel** on the right for the selected widget, or the page when nothing is selected (0023).
 - **Canvas** fills the rest, centred and fitted to the preview shape.
 - **Widget library** on the left, **always visible**: widget types to add, searchable. Tapping or clicking an empty cell marks the spot, and picking from the library adds the widget there (see "Add" in 0006).
 
 ### Narrow screens (phones)
 
-- The canvas takes almost the whole screen, under a thin toolbar.
+- The canvas takes almost the whole screen, under the same header in one row (on trial: it may feel crowded). The profile name gives way to the page tabs, and a **dot on Save** replaces the save status text (unsaved, or in the critical colour when saving failed); the status still names it for assistive technology.
 - The **properties sheet never fully closes**: closed, it **peeks** at the bottom: a control's height (44 px on touch, above what the phone keeps clear at the bottom) with its handle and its title (the selected widget's name, or "Page") in label text. Pressing anywhere on it opens it, or it's dragged up, like a map's sheet. A 44 px peek keeps the grab area out of the system's swipe-up zone at the bottom of the screen. The canvas stops above it. Selecting a widget opens it half-way; swiping it down (or Escape) lets it peek again without deselecting, and the page's properties are always within reach. Its content scrolls, so everything is reachable while it's half-open; half-open only keeps the selected widget visible above it. Dragged up, more fits at once.
 - Tapping an empty cell opens the **widget library in a bottom sheet**, half-open so the marked cell stays visible above it, and draggable to full height. Unlike the properties sheet, it closes fully, as it's only needed after tapping a cell. One sheet at a time: selecting a widget swaps it for the properties sheet.
 - Opened **by touch**, its search field isn't focused, so no on-screen keyboard covers the list until it's tapped.
@@ -60,4 +60,5 @@ A toggle hides all builder controls and shows the layout full-screen with live d
 - The builder needs a bottom-sheet component in `packages/ui`, built on Base UI's Drawer (0003): non-modal so the canvas stays usable above it (modal, with a backdrop, for a side task stacked on it), with a half-open and a full-height stop, and a peeking stop for the properties sheet, working with touch, mouse and keyboard, and respecting 0007 (no page scrolling; the sheet's own content may scroll, as it's builder UI, not MFD content).
 - **The library and properties are each written once** and presented as a side panel or a sheet. The command palette is removed once the library replaces it; a keyboard shortcut focuses the library's search instead.
 - The canvas, properties and library must not depend on the surrounding builder page, so they can be reused for in-place editing (0009).
-- **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. A **segmented single-choice control** (e.g. a Light's colour when lit) is `SegmentedControl`: a few options in a fixed frame, the chosen one tinted (0022); it replaced Bonsai's.
+- **Page tabs are a Tabs component**: navigation that grows with the pages and holds the "+" to add one, not a segmented control. Tabs have no menu of their own: renaming, duplicating and deleting a page are in the page's properties (0023), next to its grid. "+" adds an empty page at the end, named "Page _n_" with a new page's grid (0006), and shows it.
+- **Save is a plain button**, with everything else in `⋯`. A split button (`[Save|▾]`, perhaps with more parts) was considered and postponed: when it comes, it's a group of quiet Buttons and IconButtons in one frame whose border and dividers react to hover, focus and press together, rather than a component of its own. A **segmented single-choice control** (e.g. a Light's colour when lit) is `SegmentedControl`: a few options in a fixed frame, the chosen one tinted (0022); it replaced Bonsai's.
