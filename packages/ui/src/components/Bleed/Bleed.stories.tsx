@@ -14,13 +14,21 @@ const meta = {
     bottom: { control: { type: 'select' }, options: bleedSpacings },
     children: { control: false },
     horizontal: { control: { type: 'select' }, options: bleedSpacings },
-    top: { control: { type: 'select' }, options: bleedSpacings }
+    left: { control: { type: 'select' }, options: bleedSpacings },
+    right: { control: { type: 'select' }, options: bleedSpacings },
+    top: { control: { type: 'select' }, options: bleedSpacings },
+    uniform: { control: { type: 'select' }, options: bleedSpacings },
+    vertical: { control: { type: 'select' }, options: bleedSpacings }
   },
   args: {
     bottom: undefined,
     children: <Placeholder height={60} />,
     horizontal: undefined,
-    top: undefined
+    left: undefined,
+    right: undefined,
+    top: undefined,
+    uniform: undefined,
+    vertical: undefined
   },
   decorators: [
     Story => (

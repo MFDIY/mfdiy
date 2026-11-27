@@ -79,7 +79,7 @@ export function Accordion({ defaultOpen = [], items }: AccordionProps) {
             </BaseAccordion.Trigger>
           </BaseAccordion.Header>
           <BaseAccordion.Panel>
-            <Box paddingBottom='4x' paddingInline='3x' paddingTop='2x'>
+            <Box paddingBottom='3x' paddingInline='3x' paddingTop='2x'>
               {content}
             </Box>
           </BaseAccordion.Panel>

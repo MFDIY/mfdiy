@@ -6,5 +6,6 @@ const negative = (value: string) => `calc(-1 * ${value})`;
 
 /** How far it reaches out past the padding around it, per side. */
 export const bottom = styleVariants(spacing, value => ({ marginBottom: negative(value) }));
-export const horizontal = styleVariants(spacing, value => ({ marginInline: negative(value) }));
+export const left = styleVariants(spacing, value => ({ marginLeft: negative(value) }));
+export const right = styleVariants(spacing, value => ({ marginRight: negative(value) }));
 export const top = styleVariants(spacing, value => ({ marginTop: negative(value) }));
