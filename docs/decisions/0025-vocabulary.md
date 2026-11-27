@@ -33,4 +33,4 @@ Help text called the same thing a screen, a display and a profile, and the landi
 ## Consequences
 
 - CLAUDE.md asks every session to use these words in anything a player reads, and to add new terms here.
-- Code may use other names (`MfdDocument`, `useWidgetLibrary`, the `/display` route); the interface doesn't.
+- Code may use other names (`MfdDocument`, `useWidgetLibrary`, `MfdRenderer`); the interface doesn't.

@@ -65,6 +65,7 @@ const meta = {
   },
   args: {
     accent: undefined,
+    backLabel: undefined,
     canRedo: false,
     canUndo: false,
     dirty: false,

@@ -14,7 +14,9 @@ const names = [
   'close',
   'content_copy',
   'delete',
+  'edit',
   'fit_screen',
+  'fullscreen',
   'info',
   'keyboard_arrow_down',
   'keyboard_arrow_up',
@@ -23,6 +25,7 @@ const names = [
   'remove',
   'undo',
   'unfold_more',
+  'warning',
   'zoom_in',
   'zoom_out'
 ] as const;

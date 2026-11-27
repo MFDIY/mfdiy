@@ -1,5 +1,6 @@
 import type { WatchedDocument } from '../documents/DocumentStore.js';
 import type { Edit } from '../documents/edit.js';
+import type { ProfileState } from '../routes/profile.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { EditorHeader, PageEditor, type CanvasView } from '@mfdiy/builder';
@@ -7,7 +8,7 @@ import { pageToken } from '@mfdiy/instruments';
 import { addPage, duplicatePage, removePage, shapeRatio } from '@mfdiy/schema';
 import { Box, Button, Dialog, MenuItem, MenuSeparator, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
-import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
+import { useBeforeUnload, useBlocker, useNavigate } from 'react-router';
 
 import { DocumentPlaceholder } from '../documents/DocumentPlaceholder.js';
 import { useDocumentRequest, useWatchedDocument } from '../documents/DocumentsProvider.js';
@@ -17,23 +18,26 @@ import { change, changedPageId, isDirty, redo, saved, startEdit, undo } from '..
 import { MfdWidget } from '../mfd/MfdWidget.js';
 import { useConnection } from '../telemetry/TelemetryProvider.js';
 
-export default function Builder() {
-  const { id = '' } = useParams();
-
-  return <Editor id={id} key={id} />;
-}
-
 /** Says why saving failed, until it's dismissed or saving works. */
 const SAVE_FAILED_TOAST = 'save-failed';
 
 /** Shown after deleting a page, with Undo; the id lets it be closed once anything else changes. */
 const PAGE_DELETED_TOAST = 'page-deleted';
 
+export type EditorProps = {
+  id: string;
+  /** The page shown when the editor opened (0009). */
+  initialPageId: string;
+  /** Leaves the editor for the profile, on the page being edited, once nothing unsaved is in the way (0009). */
+  onLeave: (pageId: string) => void;
+};
+
 /**
  * Edits one profile, under its header (0008). Changes stay in the builder until saved; without any,
- * it follows what other devices save.
+ * it follows what other devices save. Back leaves it for the profile, asking first if anything is
+ * unsaved (0009).
  */
-function Editor({ id }: { id: string }) {
+export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   const watched = useWatchedDocument(id);
   const request = useDocumentRequest();
   const navigate = useNavigate();
@@ -44,7 +48,9 @@ function Editor({ id }: { id: string }) {
   const [lastEdit, setEdit] = useState<Edit | null>(null);
   const [saving, setSaving] = useState(false);
   const [dialog, setDialog] = useState<'conflict' | 'save-as-new' | null>(null);
-  const [pageId, setPageId] = useState<string | null>(null);
+  const [pageId, setPageId] = useState<string | null>(initialPageId);
+  /** Back was pressed with changes to save. */
+  const [askingToLeave, setAskingToLeave] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /** A page just duplicated, whose name is focused when it's shown (0023). */
   const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
@@ -182,11 +188,37 @@ function Editor({ id }: { id: string }) {
     return outcome.status === 'ok';
   }
 
+  function leave() {
+    if (dirty) {
+      setAskingToLeave(true);
+    } else if (page) {
+      onLeave(page.id);
+    }
+  }
+
+  /** Goes where leaving was asked to go: back to the profile, or wherever the browser was headed. */
+  function proceed() {
+    if (askingToLeave) {
+      setAskingToLeave(false);
+
+      if (page) {
+        onLeave(page.id);
+      }
+    } else {
+      blocker.proceed?.();
+    }
+  }
+
+  function stay() {
+    setAskingToLeave(false);
+    blocker.reset?.();
+  }
+
   async function saveAndLeave() {
     if (await save()) {
-      blocker.proceed?.();
+      proceed();
     } else {
-      blocker.reset?.();
+      stay();
     }
   }
 
@@ -203,6 +235,7 @@ function Editor({ id }: { id: string }) {
         <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline' flexShrink='0'>
           <EditorHeader
             accent={pageToken('accent', document.tokens, page.tokens)}
+            backLabel={`Back to ${document.name}`}
             canRedo={current.future.length > 0}
             canUndo={current.past.length > 0}
             dirty={dirty}
@@ -222,7 +255,7 @@ function Editor({ id }: { id: string }) {
               </>
             }
             onAddPage={handleAddPage}
-            onBack={() => void navigate('/')}
+            onBack={leave}
             onPageChange={handlePageChange}
             onRedo={() => handleTimeTravel(redo)}
             onSave={() => (conflict ? setDialog('conflict') : void save())}
@@ -256,20 +289,20 @@ function Editor({ id }: { id: string }) {
         ) : null}
       </Box>
 
-      {blocker.state === 'blocked' ? (
+      {blocker.state === 'blocked' || askingToLeave ? (
         <Dialog
           actions={
             <>
               <Button disabled={saving} onClick={() => void saveAndLeave()} variant='primary'>
                 Save
               </Button>
-              <Button onClick={() => blocker.proceed()} variant='danger'>
+              <Button onClick={proceed} variant='danger'>
                 Discard
               </Button>
-              <Button onClick={() => blocker.reset()}>Keep editing</Button>
+              <Button onClick={stay}>Keep editing</Button>
             </>
           }
-          onClose={() => blocker.reset()}
+          onClose={stay}
           title={`Save changes to “${document.name}”?`}
         />
       ) : null}
@@ -312,7 +345,9 @@ function Editor({ id }: { id: string }) {
           onClose={() => setDialog(null)}
           onDone={newId => {
             leavingRef.current = true;
-            void navigate(`/builder/${newId}`);
+            void navigate(`/${newId}?page=${encodeURIComponent(page?.id ?? '')}`, {
+              state: { edit: true } satisfies ProfileState
+            });
           }}
           onSubmit={name => request({ type: 'document-create', document: { ...document, name } })}
           submitLabel='Save'

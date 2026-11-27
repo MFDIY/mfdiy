@@ -15,6 +15,8 @@ import {
 export type EditorHeaderProps = {
   /** The accent of the page shown, which the logomark takes. */
   accent?: string | undefined;
+  /** Names Back after where it goes, e.g. "Back to Fighter" (0008). */
+  backLabel?: string | undefined;
   canRedo: boolean;
   canUndo: boolean;
   /** There are changes to save: Save turns to the accent and can be pressed. */
@@ -34,15 +36,17 @@ export type EditorHeaderProps = {
 };
 
 /**
- * The builder's header, in one row exactly a control high (0008): the logomark and a divider, Back,
- * the page tabs with "+", then undo, redo, Save and a `⋯` menu with every other profile action,
- * side by side. Save shows whether there's anything to save. On a desktop a little room follows
- * `⋯`; on narrower screens the logomark and its divider give way, and on a phone undo and redo
- * move into `⋯`, so the tabs have the row. Spans the page, and answers to its width: the row and the menu, which opens outside the header,
- * change together. It draws no hairline: what it's placed in does.
+ * The builder's header, in one row exactly a control high (0008): the logomark and a divider, Back
+ * to the profile (0009), the page tabs with "+", then undo, redo, Save and a `⋯` menu with every
+ * other profile action, side by side. Save shows whether there's anything to save. On a desktop a
+ * little room follows `⋯`; on narrower screens the logomark and its divider give way, and on a
+ * phone undo and redo move into `⋯`, so the tabs have the row. Spans the page, and answers to its
+ * width: the row and the menu, which opens outside the header, change together. It draws no
+ * hairline: what it's placed in does.
  */
 export function EditorHeader({
   accent,
+  backLabel = 'Back',
   canRedo,
   canUndo,
   dirty,
@@ -63,7 +67,7 @@ export function EditorHeader({
         <Logomark color={accent} />
         <Divider />
       </Box>
-      <IconButton icon='chevron_left' label='All profiles' onClick={onBack} />
+      <IconButton icon='chevron_left' label={backLabel} onClick={onBack} />
       <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
         <Tabs
           after={<IconButton icon='add' label='Add a page' onClick={onAddPage} />}
