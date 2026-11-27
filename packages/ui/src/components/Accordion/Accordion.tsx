@@ -24,7 +24,8 @@ const triggerClass = [
     outlineOffset: 'focus',
     outlineStyle: { default: 'none', focusVisible: 'solid' },
     outlineWidth: 'focus',
-    padding: 'none',
+    paddingBlock: 'none',
+    paddingInline: '3x',
     textAlign: 'left',
     width: 'full'
   }),
@@ -49,7 +50,9 @@ export type AccordionProps = {
 
 /**
  * A list of items that open to show their content, built on Base UI's Accordion (0003, 0023).
- * Each item's row names it and summarises what's inside, so a closed list can still be read.
+ * Each item's row names it and summarises what's inside, so a closed list can still be read. Like a
+ * list's rows, items fill their container and pad their own content; let them reach a frame's
+ * edges with `Bleed`.
  */
 export function Accordion({ defaultOpen = [], items }: AccordionProps) {
   return (
@@ -76,7 +79,7 @@ export function Accordion({ defaultOpen = [], items }: AccordionProps) {
             </BaseAccordion.Trigger>
           </BaseAccordion.Header>
           <BaseAccordion.Panel>
-            <Box paddingBottom='4x' paddingTop='2x'>
+            <Box paddingBottom='4x' paddingInline='3x' paddingTop='2x'>
               {content}
             </Box>
           </BaseAccordion.Panel>

@@ -4,6 +4,8 @@ import { Box } from '../Box/Box.js';
 import { Text } from '../Text/Text.js';
 import { Toggletip } from '../Toggletip/Toggletip.js';
 
+import * as styles from './Group.css.js';
+
 export type GroupProps = {
   children: ReactNode;
   /** A hint about the whole group, in a toggletip by its title (0022). */
@@ -14,7 +16,8 @@ export type GroupProps = {
 /**
  * A titled frame around fields that belong together, such as a widget's data: a hairline with the
  * title set into its top edge. A `fieldset`, so assistive technology announces the group by its
- * title. Its content touches the frame's inner padding; what's inside fills it.
+ * title. Its content sits inside the frame's padding, its edges lining up with the title's text; to
+ * reach the frame, like an accordion's rows, wrap it in `Bleed` with that padding (3x).
  */
 export function Group({ children, description, title }: GroupProps) {
   return (
@@ -29,7 +32,7 @@ export function Group({ children, description, title }: GroupProps) {
       paddingTop='2x'
       tagName='fieldset'
     >
-      <Box paddingInline='1x' tagName='legend'>
+      <Box className={styles.legend} paddingInline='1x' tagName='legend'>
         <Box alignItems='center' display='flex' gap='1x'>
           <Text color='text' variant='label'>
             {title}

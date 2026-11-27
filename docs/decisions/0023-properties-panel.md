@@ -16,7 +16,7 @@ The panel is generated from the widget's manifest, never from code per widget, b
 - **Header:** the widget's type, with **Duplicate** and **Remove**, next to what they act on. This works the same in the phone sheet.
 - **Type** `›`: swaps the widget for another type (see below).
 - **Data:** a framed group (`Group`) of **one accordion item per input** the manifest declares, so a widget with several signals (a shield-face widget, four directional lights) stays tidy. Collapsed, an item shows its input's name and a summary (the signal, and its thresholds, e.g. "Hydrogen fuel · low 25 / 10 %"); open, it holds everything about that input: its signal `›`, its thresholds, Hold state for, and Reset. A widget with one input shows it open; with several, they all start closed, and several can be open at once.
-- **Action** `›`, in a framed group of its own, for widgets that can trigger one; optional on a Light, which then is a lit button.
+- **Action** `›`, a single field, as a widget triggers at most one action (0010), for widgets that can trigger one; optional on a Light, which then is a lit button.
 - **Label:** empty means the signal's or action's name, shown as the placeholder.
 - **Options** the manifest declares (e.g. a Readout's decimals), each with a control that suits its type: a choice of a few becomes a `SegmentedControl`, not a text field.
 - **Place:** column, row, width and height as number fields, the way to edit without dragging (0006).

@@ -7,6 +7,7 @@ import { acceptsSignal, widgetManifests, type OptionSpec, type WidgetManifest } 
 import { bindingFor, duplicateWidget, removeWidget } from '@mfdiy/schema';
 import {
   Accordion,
+  Bleed,
   Box,
   Button,
   Columns,
@@ -314,42 +315,42 @@ export function WidgetProperties({
           />
           {inputs.length > 0 ? (
             <Group title='Data'>
-              <Accordion
-                defaultOpen={inputs.length === 1 ? inputs.map(([name]) => name) : []}
-                items={inputs.map(([name, spec]) => {
-                  const binding = widget.bindings?.[name];
-                  const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
+              <Bleed bottom='3x' horizontal='3x'>
+                <Accordion
+                  defaultOpen={inputs.length === 1 ? inputs.map(([name]) => name) : []}
+                  items={inputs.map(([name, spec]) => {
+                    const binding = widget.bindings?.[name];
+                    const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
 
-                  return {
-                    content: (
-                      <InputFields
-                        binding={binding}
-                        input={name}
-                        merge={typing.merge}
-                        onBlur={typing.onBlur}
-                        onChange={(next, merge) => change(current => withBinding(current, name, next), merge)}
-                        onPick={() => setPicking({ kind: 'signal', input: name })}
-                        signal={signal}
-                      />
-                    ),
-                    label: spec.label,
-                    summary: inputSummary(binding, signal),
-                    value: name
-                  };
-                })}
-              />
+                    return {
+                      content: (
+                        <InputFields
+                          binding={binding}
+                          input={name}
+                          merge={typing.merge}
+                          onBlur={typing.onBlur}
+                          onChange={(next, merge) => change(current => withBinding(current, name, next), merge)}
+                          onPick={() => setPicking({ kind: 'signal', input: name })}
+                          signal={signal}
+                        />
+                      ),
+                      label: spec.label,
+                      summary: inputSummary(binding, signal),
+                      value: name
+                    };
+                  })}
+                />
+              </Bleed>
             </Group>
           ) : null}
           {manifest.actionable ? (
-            <Group title='Action'>
-              <OpensRow
-                description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
-                empty={inputs.length > 0 ? 'No action' : 'Not connected'}
-                label='Action'
-                onOpen={() => setPicking({ kind: 'action' })}
-                value={action?.label ?? widget.action}
-              />
-            </Group>
+            <OpensRow
+              description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
+              empty={inputs.length > 0 ? 'No action' : 'Not connected'}
+              label='Action'
+              onOpen={() => setPicking({ kind: 'action' })}
+              value={action?.label ?? widget.action}
+            />
           ) : null}
           {options.length > 0 ? (
             <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>

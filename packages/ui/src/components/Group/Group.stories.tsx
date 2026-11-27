@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Accordion } from '../Accordion/Accordion.js';
+import { Bleed } from '../Bleed/Bleed.js';
 import { Placeholder } from '../Placeholder/Placeholder.js';
 
 import { Group } from './Group.js';
@@ -38,18 +39,20 @@ export const WithDescription = {
   args: { description: 'Where the widget gets its values from.' }
 } satisfies Story;
 
-/** Around a widget's inputs, each an accordion item (0023). */
+/** Around a widget's inputs, each an accordion item (0023), which reach its frame through `Bleed`. */
 export const AroundAnAccordion = {
   args: {
     children: (
-      <Accordion
-        defaultOpen={['left']}
-        items={[
-          { content: <Placeholder height={60} />, label: 'Left', summary: 'Shield left', value: 'left' },
-          { content: <Placeholder height={60} />, label: 'Right', summary: 'Shield right', value: 'right' },
-          { content: <Placeholder height={60} />, label: 'Top', summary: 'Shield top', value: 'top' }
-        ]}
-      />
+      <Bleed bottom='3x' horizontal='3x'>
+        <Accordion
+          defaultOpen={['left']}
+          items={[
+            { content: <Placeholder height={60} />, label: 'Left', summary: 'Shield left', value: 'left' },
+            { content: <Placeholder height={60} />, label: 'Right', summary: 'Shield right', value: 'right' },
+            { content: <Placeholder height={60} />, label: 'Top', summary: 'Shield top', value: 'top' }
+          ]}
+        />
+      </Bleed>
     )
   }
 } satisfies Story;
