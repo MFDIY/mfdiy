@@ -15,7 +15,14 @@ type View = { focusX: number; focusY: number; scale: number };
 /** Where the page sits in the viewport, in pixels. */
 type Placement = { height: number; left: number; top: number; width: number };
 
-type Size = { fitHeight: number; fitWidth: number; height: number; width: number };
+type Size = {
+  fitHeight: number;
+  fitWidth: number;
+  height: number;
+  /** The height of the label above the page. */
+  label: number;
+  width: number;
+};
 
 /** The pointers moving the view, and where the gesture stood when they last changed. */
 type Drive = {
@@ -34,6 +41,8 @@ type Drive = {
 const FIT_MARGIN = 16;
 
 const MAX_SCALE = 6;
+
+const MIN_SCALE = 0.5;
 
 /** How much of the viewport the page always covers, along each axis, unless it's smaller. */
 const MIN_COVER = 0.25;
@@ -61,17 +70,26 @@ const BUTTON_ZOOM_STEP = 1.5;
 
 const LINE_HEIGHT = 16;
 
-function fitSize(width: number, height: number, aspectRatio: number | undefined): Size {
+/** The page at its fitting size, leaving room for the margin all round and its label on top. */
+function fitSize(width: number, height: number, aspectRatio: number | undefined, label: number): Size {
   const roomWidth = Math.max(width - FIT_MARGIN * 2, 1);
-  const roomHeight = Math.max(height - FIT_MARGIN * 2, 1);
+  const roomHeight = Math.max(height - FIT_MARGIN * 2 - label, 1);
 
   if (!aspectRatio) {
-    return { fitHeight: roomHeight, fitWidth: roomWidth, height, width };
+    return { fitHeight: roomHeight, fitWidth: roomWidth, height, label, width };
   }
 
   const fitWidth = Math.min(roomWidth, roomHeight * aspectRatio);
 
-  return { fitHeight: fitWidth / aspectRatio, fitWidth, height, width };
+  return { fitHeight: fitWidth / aspectRatio, fitWidth, height, label, width };
+}
+
+/** The page and its label together, centred. */
+function fitView(size: Size): View {
+  const left = (size.width - size.fitWidth) / 2;
+  const top = (size.height - size.fitHeight - size.label) / 2 + size.label;
+
+  return viewOf(left, top, 1, size);
 }
 
 function place(view: View, size: Size): Placement {
@@ -150,12 +168,17 @@ export type CanvasViewOptions = {
 /**
  * Pans and zooms the canvas (0024): with fingers, the page stays attached to them; with a mouse,
  * it's grabbed; the wheel pans and, with Ctrl or ⌘, zooms at the pointer; `+`, `−` and `0` zoom.
- * It writes the page's size and position straight to the frame, so moving the view never renders.
+ * It writes the page's size and position straight to the frame, and the label above it, so moving
+ * the view never renders. Fitting shows the page and its label; the view starts there, and again
+ * when the shape changes.
  */
 export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<View>({ focusX: 0.5, focusY: 0.5, scale: 1 });
+  /** Until the view is moved, it stays fitted as the screen or the label changes size. */
+  const atFitRef = useRef(true);
   const sizeRef = useRef<Size | null>(null);
   const driveRef = useRef<Drive | null>(null);
   const frameRequestRef = useRef<number | null>(null);
@@ -172,10 +195,16 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
     }
 
     const { height, left, top, width } = place(view, size);
+    const label = labelRef.current;
 
     frame.style.width = `${width}px`;
     frame.style.height = `${height}px`;
-    frame.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+    frame.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top)}px, 0)`;
+
+    if (label) {
+      label.style.maxWidth = `${Math.max(width, 0)}px`;
+      label.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top - size.label)}px, 0)`;
+    }
   }
 
   function stopAnimation() {
@@ -306,6 +335,7 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
     }
 
     stopAnimation();
+    atFitRef.current = false;
 
     const placed = place(viewRef.current, size);
     const next: Drive = {
@@ -313,7 +343,7 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
       baseCentroid: { x: 0, y: 0 },
       baseDistance: 0,
       baseScale: viewRef.current.scale,
-      minScale: Math.min(1, viewRef.current.scale),
+      minScale: Math.min(MIN_SCALE, viewRef.current.scale),
       pointers: new Map(pointers.slice(0, 2).map(([id, point]) => [id, toViewport(point)])),
       raw: { left: placed.left, scale: viewRef.current.scale, top: placed.top },
       samples: []
@@ -480,15 +510,28 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
   function zoomBy(factor: number) {
     const size = sizeRef.current;
 
+    atFitRef.current = false;
+
     if (size) {
       tweenTo(
-        zoomedAt(viewRef.current, factor, { x: size.width / 2, y: size.height / 2 }, Math.min(1, viewRef.current.scale))
+        zoomedAt(
+          viewRef.current,
+          factor,
+          { x: size.width / 2, y: size.height / 2 },
+          Math.min(MIN_SCALE, viewRef.current.scale)
+        )
       );
     }
   }
 
   function fit() {
-    tweenTo({ focusX: 0.5, focusY: 0.5, scale: 1 });
+    const size = sizeRef.current;
+
+    atFitRef.current = true;
+
+    if (size) {
+      tweenTo(fitView(size));
+    }
   }
 
   /**
@@ -540,7 +583,8 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
     const left = (room.left + room.right) / 2 - middle.x * size.fitWidth * scale;
     const top = (room.top + room.bottom) / 2 - middle.y * size.fitHeight * scale;
 
-    tweenTo(clampView(viewOf(left, top, scale, size), Math.min(1, scale)));
+    atFitRef.current = false;
+    tweenTo(clampView(viewOf(left, top, scale, size), Math.min(MIN_SCALE, scale)));
   }
 
   useLayoutEffect(() => {
@@ -550,11 +594,23 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
       return;
     }
 
+    atFitRef.current = true;
+
     function measure() {
       const rect = viewport?.getBoundingClientRect();
 
-      if (rect) {
-        sizeRef.current = fitSize(rect.width, rect.height, aspectRatio);
+      if (!rect) {
+        return;
+      }
+
+      const size = fitSize(rect.width, rect.height, aspectRatio, labelRef.current?.offsetHeight ?? 0);
+
+      sizeRef.current = size;
+
+      if (atFitRef.current) {
+        stopAnimation();
+        apply(fitView(size));
+      } else {
         apply(viewRef.current);
       }
     }
@@ -564,6 +620,10 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
     const observer = new ResizeObserver(measure);
 
     observer.observe(viewport);
+
+    if (labelRef.current) {
+      observer.observe(labelRef.current);
+    }
 
     return () => observer.disconnect();
   }, [aspectRatio]);
@@ -585,6 +645,7 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
       }
 
       stopAnimation();
+      atFitRef.current = false;
 
       const unit = event.deltaMode === 1 ? LINE_HEIGHT : event.deltaMode === 2 ? size.height : 1;
       const origin = viewportOrigin();
@@ -598,7 +659,7 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
             view,
             Math.exp(-delta * WHEEL_ZOOM_RATE),
             { x: event.clientX - origin.x, y: event.clientY - origin.y },
-            Math.min(1, view.scale)
+            Math.min(MIN_SCALE, view.scale)
           )
         );
 
@@ -613,7 +674,7 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
       apply(
         clampView(
           viewOf(placed.left - dx, placed.top - dy, viewRef.current.scale, size),
-          Math.min(1, viewRef.current.scale)
+          Math.min(MIN_SCALE, viewRef.current.scale)
         )
       );
     }
@@ -638,12 +699,13 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
       const view = viewRef.current;
 
       stopAnimation();
+      atFitRef.current = false;
       apply(
         zoomedAt(
           view,
           gesture.scale / gestureScale,
           { x: gesture.clientX - origin.x, y: gesture.clientY - origin.y },
-          Math.min(1, view.scale)
+          Math.min(MIN_SCALE, view.scale)
         )
       );
       gestureScale = gesture.scale;
@@ -695,6 +757,7 @@ export function useCanvasView({ aspectRatio, hasTouches }: CanvasViewOptions) {
     endDriver,
     fit,
     frameRef,
+    labelRef,
     moveDriver,
     panning,
     reveal,

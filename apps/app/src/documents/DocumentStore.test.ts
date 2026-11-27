@@ -10,7 +10,7 @@ const stored: StoredDocument = {
   id: ID,
   revision: 1,
   updatedAt: 0,
-  document: { schema: 2, name: 'Fighter', game: 'test', pages: [] }
+  document: { schema: 2, fit: 'contain', name: 'Fighter', game: 'test', pages: [], shape: { width: 16, height: 10 } }
 };
 
 function createLink() {

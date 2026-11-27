@@ -1,9 +1,10 @@
 import type { CanvasHandle, CanvasProps, CanvasView } from './canvas/Canvas.js';
 import type { Catalogue } from './palette/choices.js';
+import type { ProfileSettings } from './properties/ProfileProperties.js';
 import type { Area, GridPoint, Page } from '@mfdiy/schema';
 
 import { widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
-import { addWidget, growArea, newWidgetId, placeArea } from '@mfdiy/schema';
+import { addWidget, formatShape, growArea, newWidgetId, placeArea } from '@mfdiy/schema';
 import {
   Box,
   PanelLayout,
@@ -16,6 +17,7 @@ import {
 import { useEffect, useImperativeHandle, useRef, useState, type PointerEvent, type Ref } from 'react';
 
 import { Canvas } from './canvas/Canvas.js';
+import { CanvasLabel } from './canvas/CanvasLabel.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { DragLabel } from './palette/DragLabel.js';
 import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
@@ -24,7 +26,15 @@ import { propertiesTitle } from './properties/title.js';
 
 export type PageEditorProps = Omit<
   CanvasProps,
-  'ghost' | 'handleRef' | 'newWidgetArea' | 'onChange' | 'onDragChange' | 'onEmptyTap' | 'onPanHint' | 'reveal'
+  | 'ghost'
+  | 'handleRef'
+  | 'label'
+  | 'newWidgetArea'
+  | 'onChange'
+  | 'onDragChange'
+  | 'onEmptyTap'
+  | 'onPanHint'
+  | 'reveal'
 > & {
   catalogue: Catalogue;
   /**
@@ -38,6 +48,14 @@ export type PageEditorProps = Omit<
   onDeletePage?: (() => void) | undefined;
   /** Duplicates the page; greyed out without it. */
   onDuplicatePage?: (() => void) | undefined;
+  /** Changes the profile's name, shape or fit, from its settings (0006). */
+  onProfileChange?: ((profile: ProfileSettings, merge?: string) => void) | undefined;
+  /**
+   * The profile the page belongs to: named with the page and its shape in a label above the canvas,
+   * which opens its settings. Without it, there's no label.
+   */
+  profile?: ProfileSettings | undefined;
+  /** Receives| undefined;
   /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
   viewRef?: Ref<CanvasView> | undefined;
 };
@@ -78,6 +96,8 @@ export function PageEditor({
   focusPageName = false,
   onDeletePage,
   onDuplicatePage,
+  onProfileChange,
+  profile,
   viewRef,
   ...canvasProps
 }: PageEditorProps) {
@@ -86,6 +106,8 @@ export function PageEditor({
   const [openSheet, setOpenSheet] = useState<PanelSide | null>(focusPageName ? 'end' : null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [widgetDragging, setWidgetDragging] = useState(false);
+  /** Whether the properties show the profile's settings, after its label was pressed. */
+  const [profileShown, setProfileShown] = useState(false);
   const dragRef = useRef<Drag | null>(null);
   const canvasRef = useRef<CanvasHandle>(null);
   /** A drag that ends on its own row also clicks it; that click mustn't count. */
@@ -139,6 +161,14 @@ export function PageEditor({
   }
 
   function handleEmptyTap(point: GridPoint) {
+    // Like a selection, the profile's settings are let go of first.
+    if (profileShown) {
+      setProfileShown(false);
+      setOpenSheet(null);
+
+      return;
+    }
+
     setMarked(point);
     setOpenSheet('start');
   }
@@ -146,6 +176,7 @@ export function PageEditor({
   function handleSelect(widgetId: string | null) {
     // Selecting a widget lets go of the marked cell; on a phone, its properties take the sheet's place.
     if (widgetId !== null) {
+      setProfileShown(false);
       setMarked(null);
       library.reset();
       setOpenSheet('end');
@@ -154,6 +185,14 @@ export function PageEditor({
     }
 
     onSelect(widgetId);
+  }
+
+  function handleShowProfile() {
+    setProfileShown(true);
+    setMarked(null);
+    library.reset();
+    setOpenSheet('end');
+    onSelect(null);
   }
 
   function handleLibrarySelect(id: string) {
@@ -307,13 +346,16 @@ export function PageEditor({
               onChange={onChange}
               onDelete={onDeletePage}
               onDuplicate={onDuplicatePage}
+              onProfileChange={onProfileChange}
               onSelect={handleSelect}
               page={page}
+              profile={profileShown ? profile : undefined}
               selectedId={selectedId}
             />
           ),
           peek: true,
-          title: propertiesTitle(page, selectedId, catalogue)
+          title:
+            profileShown && profile && selectedId === null ? 'Profile' : propertiesTitle(page, selectedId, catalogue)
         }}
         onSheetClose={() => {
           setOpenSheet(null);
@@ -343,6 +385,16 @@ export function PageEditor({
             {...canvasProps}
             ghost={ghost}
             handleRef={canvasRef}
+            label={
+              profile ? (
+                <CanvasLabel
+                  detail={`${formatShape(profile.shape)} · ${layout.grid.columns} × ${layout.grid.rows}`}
+                  onPress={handleShowProfile}
+                  pressed={profileShown && selectedId === null}
+                  title={`${profile.name} · ${page.name}`}
+                />
+              ) : undefined
+            }
             newWidgetArea={smallestPlace}
             onDragChange={setWidgetDragging}
             onEmptyTap={handleEmptyTap}

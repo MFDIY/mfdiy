@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'react-router';
 import { DocumentPlaceholder } from '../documents/DocumentPlaceholder.js';
 import { useWatchedDocument } from '../documents/DocumentsProvider.js';
 import { MfdRenderer } from '../mfd/MfdRenderer.js';
+import { ScreenShape } from '../mfd/ScreenShape.js';
 
 /**
  * Full-screen MFD, following every save. The profile and page are in the address, so a refresh or
@@ -29,11 +30,13 @@ export default function Display() {
       touchAction='none'
       width='viewport'
     >
-      <MfdRenderer
-        document={document}
-        onPageChange={page => setSearchParams({ page }, { replace: true })}
-        pageId={searchParams.get('page') ?? document.pages[0]?.id ?? ''}
-      />
+      <ScreenShape document={document}>
+        <MfdRenderer
+          document={document}
+          onPageChange={page => setSearchParams({ page }, { replace: true })}
+          pageId={searchParams.get('page') ?? document.pages[0]?.id ?? ''}
+        />
+      </ScreenShape>
     </Box>
   );
 }

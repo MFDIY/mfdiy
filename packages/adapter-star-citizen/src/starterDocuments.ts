@@ -1,12 +1,14 @@
 import type { MfdDocument } from '@mfdiy/schema';
 
-import { DEFAULT_GRID, DOCUMENT_SCHEMA_VERSION, scaleLayout } from '@mfdiy/schema';
+import { DEFAULT_SHAPE, DOCUMENT_SCHEMA_VERSION, scaleLayout, seedGrid } from '@mfdiy/schema';
 
 /** Hand-written on coarse grids, which are easier to read. */
 const demo: MfdDocument = {
   schema: DOCUMENT_SCHEMA_VERSION,
+  fit: 'contain',
   name: 'Demo',
   game: 'star-citizen',
+  shape: DEFAULT_SHAPE,
   pages: [
     {
       id: 'flight',
@@ -160,7 +162,7 @@ export const starterDocuments: MfdDocument[] = [
     ...demo,
     pages: demo.pages.map(page => ({
       ...page,
-      layouts: page.layouts.map(layout => scaleLayout(layout, DEFAULT_GRID))
+      layouts: page.layouts.map(layout => scaleLayout(layout, seedGrid(DEFAULT_SHAPE)))
     }))
   }
 ];

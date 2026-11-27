@@ -4,7 +4,7 @@ import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { EditorHeader, PageEditor, type CanvasView } from '@mfdiy/builder';
 import { pageToken } from '@mfdiy/instruments';
-import { addPage, duplicatePage, removePage } from '@mfdiy/schema';
+import { addPage, duplicatePage, removePage, shapeRatio } from '@mfdiy/schema';
 import { Box, Button, Dialog, MenuItem, MenuSeparator, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
@@ -236,6 +236,7 @@ function Editor({ id }: { id: string }) {
       <Box flexBasis='fluid' flexGrow='1' minHeight='none'>
         {page && layout ? (
           <PageEditor
+            aspectRatio={shapeRatio(document.shape)}
             catalogue={hello ?? emptyCatalogue}
             documentTokens={document.tokens}
             focusPageName={focusNameOf === page.id}
@@ -244,8 +245,10 @@ function Editor({ id }: { id: string }) {
             onChange={handleChange}
             onDeletePage={document.pages.length > 1 ? () => handleDeletePage(page) : undefined}
             onDuplicatePage={() => handleDuplicatePage(page.id)}
+            onProfileChange={(profile, merge) => setEditAndDismiss(change(current, { ...document, ...profile }, merge))}
             onSelect={setSelectedId}
             page={page}
+            profile={{ fit: document.fit, name: document.name, shape: document.shape }}
             renderWidget={widget => <MfdWidget widget={widget} />}
             selectedId={selected}
             viewRef={viewRef}

@@ -94,6 +94,11 @@ export type CanvasProps = {
   ghost?: Area | null | undefined;
   /** Receives a `CanvasHandle`. */
   handleRef?: Ref<CanvasHandle> | undefined;
+  /**
+   * Shown above the page's top-left corner, at the same size whatever the zoom, e.g. a
+   * `CanvasLabel`. Fitting the page makes room for it (0006, 0024).
+   */
+  label?: ReactNode | undefined;
   /** The layout being edited: one of the page's own. */
   layout: Layout;
   /**
@@ -144,7 +149,8 @@ export function Canvas({
   onPanHint,
   renderWidget,
   reveal,
-  handleRef
+  handleRef,
+  label
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
   /** Every finger on the canvas, so a second one can turn into a pinch. */
@@ -393,7 +399,7 @@ export function Canvas({
       return;
     }
 
-    if (target.closest('[data-canvas="widget"]')) {
+    if (target.closest('[data-canvas="widget"], [data-canvas="label"]')) {
       return;
     }
 
@@ -557,6 +563,19 @@ export function Canvas({
       userSelect='none'
       width='full'
     >
+      {label ? (
+        <Box
+          cursor='default'
+          data-canvas='label'
+          left='none'
+          overflow='hidden'
+          position='absolute'
+          ref={view.labelRef}
+          top='none'
+        >
+          {label}
+        </Box>
+      ) : null}
       <Box
         className={mfdRoot}
         containerType='size'

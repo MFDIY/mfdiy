@@ -26,8 +26,9 @@ On a phone, the half-open properties sheet (0008) can cover the widget being edi
 
 ### Limits
 
-- **Fit** is the whole page with a margin (16 px) around it, centred; the editor opens at fit. Zooming out stops at fit; going past it during a gesture stretches with resistance and springs back on release.
-- Zoom in stops at 6× fit, with the same give.
+- **Fit** is everything that matters in view: the page in the profile's shape (0006) and its label above it, with a margin (16 px) around them, centred. The editor opens at fit, and stays fitted as the screen changes size until the view is moved.
+- Zooming out stops at **half of fit**, so there's room around the page; going past a limit during a gesture stretches with resistance and springs back on release.
+- Zoom in stops at 6× fit, with the same give. The page's position is rounded to whole pixels, so it stays crisp.
 - Panning stops when the page covers less than a quarter of the viewport along either axis (or all of it, if the page is smaller), so there is always some canvas in view. Past that, it stretches and springs back.
 - The page is resized rather than scaled, so the MFD stays sharp and resize handles, outlines and the [+] stay their size on screen.
 
@@ -45,7 +46,7 @@ The display never pans or zooms (0007): it always shows the whole page.
 
 ## Open questions
 
-- The numbers are a first pass, to be tuned by feel: the 16 px margin, 6× maximum, the quarter-viewport limit, wheel speed, and how long a fling glides.
+- The numbers are a first pass, to be tuned by feel: the 16 px margin, half of fit and 6× as limits, the quarter-viewport limit, wheel speed, and how long a fling glides.
 - Whether a mouse user without a trackpad finds Ctrl + scroll; if not, the zoom controls could leave `⋯`.
 
 ## Why

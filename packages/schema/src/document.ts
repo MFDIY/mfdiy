@@ -98,9 +98,33 @@ export type Page = v.InferOutput<typeof PageSchema>;
 
 export const MAX_DOCUMENT_NAME_LENGTH = 64;
 
+/**
+ * The shape of the screen a profile is made for, as a ratio of width to height: 16:10, or
+ * 1920:1080. Only the ratio matters (0006).
+ */
+export const ShapeSchema = v.object({
+  height: v.pipe(v.number(), v.gtValue(0), v.maxValue(100_000)),
+  width: v.pipe(v.number(), v.gtValue(0), v.maxValue(100_000))
+});
+
+export type Shape = v.InferOutput<typeof ShapeSchema>;
+
+/** Close to most tablets: Android's 16:10, between it and an iPad's 4.3:3 (0006). */
+export const DEFAULT_SHAPE: Shape = { height: 10, width: 16 };
+
+export const screenFits = ['contain', 'stretch'] as const;
+
+/**
+ * What a display does on a screen of another shape: keep the profile's shape, with bars beside or
+ * above it, or stretch the pages to fill the screen (0006).
+ */
+export type ScreenFit = (typeof screenFits)[number];
+
 export const MfdDocumentSchema = v.object({
   schema: v.literal(DOCUMENT_SCHEMA_VERSION),
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_DOCUMENT_NAME_LENGTH)),
+  /** What a display does on a screen of another shape (0006). */
+  fit: v.optional(v.picklist(screenFits), 'contain'),
   /** The game whose signals and actions this document binds to. */
   game: IdSchema,
   pages: v.pipe(
@@ -108,6 +132,8 @@ export const MfdDocumentSchema = v.object({
     v.minLength(1),
     v.check(pages => new Set(pages.map(page => page.id)).size === pages.length, 'Page ids must be unique.')
   ),
+  /** The shape the builder shows its pages in, and displays keep unless told to stretch (0006). */
+  shape: v.optional(ShapeSchema, DEFAULT_SHAPE),
   /** Document-wide theme overrides. */
   tokens: v.optional(TokenValuesSchema)
 });

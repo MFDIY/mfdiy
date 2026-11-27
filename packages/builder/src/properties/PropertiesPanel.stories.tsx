@@ -1,3 +1,4 @@
+import type { ProfileSettings } from './ProfileProperties.js';
 import type { Catalogue } from '../palette/choices.js';
 import type { Layout, Page as PageData } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -105,6 +106,8 @@ type DemoProps = {
   focusPageName: boolean;
   /** The profile's only page, which can't be deleted. */
   onlyPage: boolean;
+  /** Shows the profile's settings, as after pressing the canvas's label (0006). */
+  profile: boolean;
   selectedId: string | null;
   themeName: string;
 };
@@ -113,8 +116,13 @@ type DemoProps = {
  * The panel fills whatever it's given; the container here starts at the sidebar's width and can be
  * resized from its corner. It keeps its own page and selection, so it can be used.
  */
-function Demo({ catalogue, focusPageName, onlyPage, selectedId: initialSelection, themeName }: DemoProps) {
+function Demo({ catalogue, focusPageName, onlyPage, profile, selectedId: initialSelection, themeName }: DemoProps) {
   const [current, setCurrent] = useState(page);
+  const [settings, setSettings] = useState<ProfileSettings>({
+    fit: 'contain',
+    name: 'Fighter',
+    shape: { width: 16, height: 10 }
+  });
   const [selectedId, setSelectedId] = useState(initialSelection);
   const [currentLayout = layout] = current.layouts;
 
@@ -141,8 +149,10 @@ function Demo({ catalogue, focusPageName, onlyPage, selectedId: initialSelection
           onChange={setCurrent}
           onDelete={onlyPage ? undefined : () => undefined}
           onDuplicate={() => undefined}
+          onProfileChange={setSettings}
           onSelect={setSelectedId}
           page={current}
+          profile={profile ? settings : undefined}
           selectedId={selectedId}
         />
       </Box>
@@ -152,7 +162,7 @@ function Demo({ catalogue, focusPageName, onlyPage, selectedId: initialSelection
 
 const meta = {
   title: 'Builder/PropertiesPanel',
-  args: { catalogue, focusPageName: false, onlyPage: false, selectedId: null },
+  args: { catalogue, focusPageName: false, onlyPage: false, profile: false, selectedId: null },
   render: (args, context) => <Demo {...args} themeName={String(context.globals['theme'] ?? '')} />
 } satisfies Meta<Omit<DemoProps, 'themeName'>>;
 
@@ -165,6 +175,9 @@ export const Page: Story = {};
 
 /** A profile always has a page, so its only one can't be deleted. */
 export const OnlyPage: Story = { args: { onlyPage: true } };
+
+/** After pressing the canvas's label: the profile's name and shape, and what displays do on a screen of another shape (0006). */
+export const Profile: Story = { args: { profile: true } };
 
 /** A page just duplicated: its name is focused and selected, ready to rename (0023). */
 export const PageJustDuplicated: Story = {

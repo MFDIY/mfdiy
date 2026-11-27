@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useDocumentRequest, useLibrary } from '../documents/DocumentsProvider.js';
-import { NameDialog } from '../documents/NameDialog.js';
 import { ProfileDialog } from '../documents/ProfileDialog.js';
+import { ShapeDialog } from '../documents/ShapeDialog.js';
 import { useConnection } from '../telemetry/TelemetryProvider.js';
 
 const statusText = {
@@ -54,13 +54,12 @@ export default function Home() {
         ))}
       </Stack>
       {creating && hello ? (
-        <NameDialog
-          initialName='New profile'
+        <ShapeDialog
           onClose={() => setCreating(false)}
           onDone={id => void navigate(`/builder/${id}`)}
-          onSubmit={name => request({ type: 'document-create', document: createBlankDocument(name, hello.game.id) })}
-          submitLabel='Create'
-          title='New profile'
+          onSubmit={shape =>
+            request({ type: 'document-create', document: createBlankDocument('New profile', hello.game.id, shape) })
+          }
         />
       ) : null}
       {openProfile ? (
