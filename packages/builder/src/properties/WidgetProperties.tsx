@@ -71,6 +71,18 @@ export function WidgetProperties({
     onChange(updateWidget(page, widget.id, next), merge);
   }
 
+  function duplicate() {
+    const copy = duplicateWidget(page, layout, widget.id);
+
+    onChange(copy.page);
+    onSelect(copy.id);
+  }
+
+  function remove() {
+    onChange(removeWidget(page, widget.id));
+    onSelect(null);
+  }
+
   function pickType(type: string) {
     const to = widgetManifests[type];
 
@@ -265,33 +277,30 @@ export function WidgetProperties({
     <PanelTask onClose={() => setPicking(null)} task={picking ? pickTask(picking) : null}>
       <Box>
         <Box flexShrink='0' paddingBottom='4x'>
-          <Box alignItems='center' display='flex' gap='2x' height='control'>
-            <Box flexGrow='1' minWidth='none'>
-              {sidebar ? (
+          {sidebar ? (
+            <Box alignItems='center' display='flex' gap='2x' height='control'>
+              <Box flexGrow='1' minWidth='none'>
                 <Text tagName='h2' truncate variant='heading'>
                   {title}
                 </Text>
-              ) : null}
+              </Box>
+              <IconButton icon='content_copy' label='Duplicate' onClick={duplicate} />
+              <IconButton icon='delete' label='Remove' onClick={remove} />
             </Box>
-            <IconButton
-              icon='content_copy'
-              label='Duplicate'
-              onClick={() => {
-                const copy = duplicateWidget(page, layout, widget.id);
-
-                onChange(copy.page);
-                onSelect(copy.id);
-              }}
-            />
-            <IconButton
-              icon='delete'
-              label='Remove'
-              onClick={() => {
-                onChange(removeWidget(page, widget.id));
-                onSelect(null);
-              }}
-            />
-          </Box>
+          ) : (
+            <Columns spacing='3x'>
+              <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                <Button icon='content_copy' onClick={duplicate} width='full'>
+                  Duplicate
+                </Button>
+              </Box>
+              <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                <Button icon='delete' onClick={remove} width='full'>
+                  Remove
+                </Button>
+              </Box>
+            </Columns>
+          )}
         </Box>
         <Stack dividers spacing='5x'>
           <OpensRow

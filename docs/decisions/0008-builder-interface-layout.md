@@ -33,7 +33,7 @@ A side task inside a panel, like choosing a widget's data, replaces a sidebar's 
 
 ### Sheets and sidebars pad and scroll their content
 
-What's in a panel touches its edges; the sidebar or sheet around it pads it and scrolls it, with the padding inside the scroll area, so the scrollbar sits at the edge of the screen or sidebar. Nothing inside scrolls on its own: a panel's heading scrolls away with its content, and a search field stays in view by sticking. On a phone, a finger on the content scrolls it, and pulls the sheet down once the content is at its top, like a map's sheet.
+What's in a panel touches its edges; the sidebar or sheet around it pads it and scrolls it, with the padding inside the scroll area, so the scrollbar sits at the edge of the screen or sidebar. Nothing inside scrolls on its own: a panel's heading scrolls away with its content, and a search field stays in view by sticking. On a phone, a finger on the content scrolls it, and pulls the sheet down once the content is at its top, like a map's sheet. Pushing up on the content only scrolls it: a half-open sheet doesn't grow from its content, unlike Maps or iOS, so the canvas stays in view while a widget is edited and changes show on it straight away. Opening the sheet fully is a deliberate choice, made by dragging its header (handle and title).
 
 ### Sheets have no buttons of their own
 

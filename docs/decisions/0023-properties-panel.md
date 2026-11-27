@@ -47,7 +47,7 @@ Changes show on the canvas as they're made. A pick or a toggle is one undo step;
 
 ### On a phone
 
-The sheet's content scrolls, so everything is reachable while it's half-open; half-open only keeps the canvas in view to stay oriented, like a map app's sheet. There is no separate set of essentials. The sheet never fully closes: it peeks with its handle and the widget's name (or "Page"), so the page's properties are always within reach and closing it never deselects (0008). The sheet's header names the widget, peeking or open, so in a sheet the panel doesn't repeat it: its first row holds only Duplicate and Remove, and it scrolls away with the rest of the panel. In a sidebar, the panel shows the widget's name (or "Page") itself. Choosing a type, data or action stacks a modal sheet on it, which starts with Back.
+The sheet's content scrolls, so everything is reachable while it's half-open; half-open only keeps the canvas in view to stay oriented, like a map app's sheet. There is no separate set of essentials. The sheet never fully closes: it peeks with its handle and the widget's name (or "Page"), so the page's properties are always within reach and closing it never deselects (0008). The sheet's header names the widget, peeking or open, so in a sheet the panel doesn't repeat it: its first row holds only Duplicate and Remove, as buttons with an icon and text sharing the row evenly, and it scrolls away with the rest of the panel. In a sidebar they're icon buttons beside the widget's name. In a sidebar, the panel shows the widget's name (or "Page") itself. Choosing a type, data or action stacks a modal sheet on it, which starts with Back.
 
 ### Nothing jumps
 
