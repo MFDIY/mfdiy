@@ -8,6 +8,7 @@ export { LayoutArea, LayoutGrid } from './layout/Layout.js';
 
 export { applyTokens } from './theme/applyTokens.js';
 export { vars } from './theme/contract.css.js';
+export { pageToken } from './theme/pageToken.js';
 export { root as mfdRoot } from './theme/root.css.js';
 export { amberCrt, builtInThemes, phosphor, type PrimitiveTokenValues } from './theme/themes.js';
 export { token } from './theme/token.js';

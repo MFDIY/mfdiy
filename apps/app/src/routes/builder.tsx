@@ -1,9 +1,9 @@
 import type { WatchedDocument } from '../documents/DocumentStore.js';
-import type { FailedOutcome } from '../documents/documentText.js';
 import type { Edit } from '../documents/edit.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { EditorHeader, PageEditor } from '@mfdiy/builder';
+import { pageToken } from '@mfdiy/instruments';
 import { addPage, duplicatePage, removePage } from '@mfdiy/schema';
 import { Box, Button, Dialog, MenuItem, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
@@ -23,6 +23,9 @@ export default function Builder() {
   return <Editor id={id} key={id} />;
 }
 
+/** Says why saving failed, until it's dismissed or saving works. */
+const SAVE_FAILED_TOAST = 'save-failed';
+
 /** Shown after deleting a page, with Undo; the id lets it be closed once anything else changes. */
 const PAGE_DELETED_TOAST = 'page-deleted';
 
@@ -40,7 +43,6 @@ function Editor({ id }: { id: string }) {
 
   const [lastEdit, setEdit] = useState<Edit | null>(null);
   const [saving, setSaving] = useState(false);
-  const [failure, setFailure] = useState<FailedOutcome['status'] | null>(null);
   const [dialog, setDialog] = useState<'conflict' | 'save-as-new' | null>(null);
   const [pageId, setPageId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -87,7 +89,6 @@ function Editor({ id }: { id: string }) {
   /** Every change but the delete it undoes makes the Undo of a page's delete out of date. */
   function setEditAndDismiss(next: Edit) {
     toast.dismiss(PAGE_DELETED_TOAST);
-    setFailure(null);
     setEdit(next);
   }
 
@@ -137,7 +138,6 @@ function Editor({ id }: { id: string }) {
       action: {
         label: 'Undo',
         onClick: () => {
-          setFailure(null);
           setEdit(latest => (latest?.document === after ? undo(latest) : latest));
           setPageId(deleted.id);
         }
@@ -155,7 +155,6 @@ function Editor({ id }: { id: string }) {
     const sent: MfdDocument = edit.document;
 
     setSaving(true);
-    setFailure(null);
 
     const outcome = await request({
       type: 'document-save',
@@ -167,11 +166,16 @@ function Editor({ id }: { id: string }) {
     setSaving(false);
 
     if (outcome.status === 'ok') {
+      toast.dismiss(SAVE_FAILED_TOAST);
       setEdit(latest => latest && saved(latest, sent, outcome.revision));
     } else if (outcome.status === 'stale' || outcome.status === 'not-found') {
       setDialog('conflict');
     } else {
-      setFailure(outcome.status);
+      toast.show(`Not saved. ${failureText[outcome.status]}`, {
+        autoDismiss: false,
+        dismissible: true,
+        id: SAVE_FAILED_TOAST
+      });
     }
 
     return outcome.status === 'ok';
@@ -195,12 +199,19 @@ function Editor({ id }: { id: string }) {
       tagName='main'
     >
       {page ? (
-        <Box padding='3x'>
+        <Box
+          borderBottomColor='line'
+          borderBottomStyle='solid'
+          borderBottomWidth='hairline'
+          flexShrink='0'
+          paddingInline='3x'
+          paddingTop='3x'
+        >
           <EditorHeader
+            accent={pageToken('accent', document.tokens, page.tokens)}
             canRedo={current.future.length > 0}
             canUndo={current.past.length > 0}
             dirty={dirty}
-            failed={Boolean(failure ?? conflict)}
             menu={<MenuItem onClick={() => setDialog('save-as-new')}>Save as new…</MenuItem>}
             name={document.name}
             onAddPage={handleAddPage}
@@ -212,17 +223,6 @@ function Editor({ id }: { id: string }) {
             pageId={page.id}
             pages={document.pages.map(candidate => ({ label: candidate.name, value: candidate.id }))}
             saving={saving}
-            status={
-              saving
-                ? 'Saving…'
-                : failure
-                  ? `Not saved. ${failureText[failure]}`
-                  : conflict
-                    ? conflictText[conflict]
-                    : dirty
-                      ? 'Unsaved changes'
-                      : 'Saved'
-            }
           />
         </Box>
       ) : null}
@@ -275,7 +275,6 @@ function Editor({ id }: { id: string }) {
                 <Button
                   onClick={() => {
                     setEdit(null);
-                    setFailure(null);
                     setDialog(null);
                   }}
                   variant='danger'
@@ -317,13 +316,10 @@ function Editor({ id }: { id: string }) {
 /** Until the bridge has announced its own. */
 const emptyCatalogue = { signals: [], actions: [] };
 
-const conflictText = {
-  changed: 'Changed on another device',
-  deleted: 'Deleted on another device'
-} as const;
+type Conflict = 'changed' | 'deleted';
 
 /** What happened to the saved version since these changes were started, if anything. */
-function findConflict({ base }: Edit, watched: WatchedDocument): keyof typeof conflictText | null {
+function findConflict({ base }: Edit, watched: WatchedDocument): Conflict | null {
   if (watched.status === 'loading') {
     return null;
   }

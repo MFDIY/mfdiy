@@ -9,14 +9,15 @@ The canvas fills the whole screen only on the **display**. In the **builder**, t
 
 ### Wide screens (desktop, tablet landscape)
 
-- **Header** (slim, one row): Back, the profile name, page tabs, undo / redo, the save status, **Save**, and a **`⋯` menu** with every other profile action: Save as new (0019) for now; preview shape, zoom and the preview toggle join it or the row when they're built. Removing a widget is in its properties (0023).
+- **Header** (slim, one row, over a hairline across the whole screen): the **MFDIY logomark** in the accent of the page shown (0022), Back, the profile name, page tabs, undo / redo, **Save**, and a **`⋯` menu** with every other profile action: Save as new (0019) for now; preview shape, zoom and the preview toggle join it or the row when they're built. Removing a widget is in its properties (0023).
 - **Properties panel** on the right for the selected widget, or the page when nothing is selected (0023).
 - **Canvas** fills the rest, centred and fitted to the preview shape.
 - **Widget library** on the left, **always visible**: widget types to add, searchable. Tapping or clicking an empty cell marks the spot, and picking from the library adds the widget there (see "Add" in 0006).
 
 ### Narrow screens (phones)
 
-- The canvas takes almost the whole screen, under the same header in one row (on trial: it may feel crowded). The profile name gives way to the page tabs, and a **dot on Save** replaces the save status text (unsaved, or in the critical colour when saving failed); the status still names it for assistive technology.
+- The canvas takes almost the whole screen, under the same header in one row (on trial: it may feel crowded). The logomark, then the profile name, give way to the page tabs.
+- **Save shows the save status itself**, on every screen: the accent (primary) while there are changes to save, a greyed-out default button when there are none. No status text sits beside it, as one changing length shifted the buttons around it. A failed save says why in a toast that stays until dismissed; a profile changed on another device is explained when Save is pressed.
 - The **properties sheet never fully closes**: closed, it **peeks** at the bottom: a control's height (44 px on touch, above what the phone keeps clear at the bottom) with its handle and its title (the selected widget's name, or "Page") in label text. Pressing anywhere on it opens it, or it's dragged up, like a map's sheet. A 44 px peek keeps the grab area out of the system's swipe-up zone at the bottom of the screen. The canvas stops above it. Selecting a widget opens it half-way; swiping it down (or Escape) lets it peek again without deselecting, and the page's properties are always within reach. Its content scrolls, so everything is reachable while it's half-open; half-open only keeps the selected widget visible above it. Dragged up, more fits at once.
 - Tapping an empty cell opens the **widget library in a bottom sheet**, half-open so the marked cell stays visible above it, and draggable to full height. Unlike the properties sheet, it closes fully, as it's only needed after tapping a cell. One sheet at a time: selecting a widget swaps it for the properties sheet.
 - Opened **by touch**, its search field isn't focused, so no on-screen keyboard covers the list until it's tapped.

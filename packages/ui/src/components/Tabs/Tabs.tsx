@@ -49,17 +49,19 @@ export type TabsProps = {
   /** Names the tabs for assistive technology, e.g. "Pages". */
   label: string;
   onValueChange: (value: string) => void;
+  /** Draws a hairline under the whole row. Leave it off where what the tabs sit in has its own. */
+  underline?: boolean | undefined;
   /** The active tab. */
   value: string;
 };
 
 /**
- * A row of tabs over a hairline, the active one underlined, built on Base UI's Tabs (0003): arrow
+ * A row of tabs, the active one underlined, over a hairline with `underline`, built on Base UI's Tabs (0003): arrow
  * keys move between them. Tabs sit flush (0022) and never scroll: those that don't fit go into a
  * menu that says how many there are, and the active tab is always one of those shown. Takes the
  * width of its container. Controlled: the page owns the value.
  */
-export function Tabs({ after, items, label, onValueChange, value }: TabsProps) {
+export function Tabs({ after, items, label, onValueChange, underline = false, value }: TabsProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const afterRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -98,9 +100,9 @@ export function Tabs({ after, items, label, onValueChange, value }: TabsProps) {
   return (
     <Box
       alignItems='center'
-      borderBottomColor='line'
-      borderBottomStyle='solid'
-      borderBottomWidth='hairline'
+      borderBottomColor={underline ? 'line' : undefined}
+      borderBottomStyle={underline ? 'solid' : undefined}
+      borderBottomWidth={underline ? 'hairline' : undefined}
       display='flex'
       minWidth='none'
       position='relative'

@@ -36,6 +36,7 @@ const meta = {
     after: { control: false },
     items: { control: false },
     label: { control: { type: 'text' } },
+    underline: { control: { type: 'boolean' } },
     value: { control: { type: 'select' }, options: pages.map(page => page.value) }
   },
   args: {
@@ -43,6 +44,7 @@ const meta = {
     items: pages,
     label: 'Pages',
     onValueChange: () => undefined,
+    underline: false,
     value: 'flight'
   },
   // Keyed on the control, so changing `value` in the controls panel starts the tabs over.
@@ -63,6 +65,9 @@ type Story = StoryObj<typeof meta>;
 export const Default = {} satisfies Story;
 
 /** A button directly after the last tab adds one. */
+/** With a hairline under the whole row, where nothing around the tabs draws one. */
+export const Underlined = { args: { underline: true } } satisfies Story;
+
 export const WithAdd = {
   args: { after: <IconButton icon='add' label='Add page' /> }
 } satisfies Story;
