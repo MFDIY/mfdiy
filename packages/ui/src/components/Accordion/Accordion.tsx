@@ -5,6 +5,7 @@ import { Accordion as BaseAccordion } from '@base-ui/react/accordion';
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Icon } from '../Icon/Icon.js';
+import { Sticky } from '../Sticky/Sticky.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './Accordion.css.js';
@@ -45,41 +46,44 @@ export type AccordionItem = {
 };
 
 export type AccordionProps = {
-  /** The items open at first. Several can be open at once. */
+  /** The item open at first, if any. Only one is open at a time. */
   defaultOpen?: readonly string[] | undefined;
   items: readonly AccordionItem[];
 };
 
 /**
  * A list of items that open to show their content, built on Base UI's Accordion (0003, 0023).
- * Each item's row names it and summarises what's inside, so a closed list can still be read. Like a
+ * Each item's row names it and summarises what's inside, so a closed list can still be read. Only
+ * one item is open at a time, and its row sticks while its content scrolls under it (0023). Like a
  * list's rows, items fill their container and pad their own content; let them reach a frame's
  * edges with `Bleed`.
  */
 export function Accordion({ defaultOpen = [], items }: AccordionProps) {
   return (
-    <BaseAccordion.Root defaultValue={[...defaultOpen]} multiple>
+    <BaseAccordion.Root defaultValue={[...defaultOpen].slice(0, 1)} multiple={false}>
       {items.map(({ content, invalid = false, label, summary, value }) => (
         <BaseAccordion.Item className={styles.item} key={value} value={value}>
-          <BaseAccordion.Header render={<Box margin='none' tagName='h4' />}>
-            <BaseAccordion.Trigger className={triggerClass}>
-              <Box flexShrink='0'>
-                <Text color='text' variant='label'>
-                  {label}
-                </Text>
-              </Box>
-              <Box flexGrow='1' minWidth='none'>
-                {summary ? (
-                  <Text color={invalid ? 'status.critical' : 'text.dim'} truncate variant='body'>
-                    {summary}
+          <Sticky>
+            <BaseAccordion.Header render={<Box margin='none' tagName='h4' />}>
+              <BaseAccordion.Trigger className={triggerClass}>
+                <Box flexShrink='0'>
+                  <Text color='text' variant='label'>
+                    {label}
                   </Text>
-                ) : null}
-              </Box>
-              <Box className={styles.chevron} color='text.dim' display='flex'>
-                <Icon name='keyboard_arrow_down' />
-              </Box>
-            </BaseAccordion.Trigger>
-          </BaseAccordion.Header>
+                </Box>
+                <Box flexGrow='1' minWidth='none'>
+                  {summary ? (
+                    <Text color={invalid ? 'status.critical' : 'text.dim'} truncate variant='body'>
+                      {summary}
+                    </Text>
+                  ) : null}
+                </Box>
+                <Box className={styles.chevron} color='text.dim' display='flex'>
+                  <Icon name='keyboard_arrow_down' />
+                </Box>
+              </BaseAccordion.Trigger>
+            </BaseAccordion.Header>
+          </Sticky>
           <BaseAccordion.Panel>
             <Box paddingBottom='3x' paddingInline='3x' paddingTop='2x'>
               {content}

@@ -13,6 +13,6 @@ export const edge = style({
   height: uiVars['border.hairline'],
 
   selectors: {
-    [`${root}:has([data-sticky="top"]) > &[data-scroll-edge="top"]`]: { display: 'none' }
+    [`${root}:has([data-sticky="top"][data-covering]) > &[data-scroll-edge="top"]`]: { display: 'none' }
   }
 });

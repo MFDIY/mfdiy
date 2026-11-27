@@ -41,13 +41,13 @@ export const Default = {} satisfies Story;
 /** One open from the start, as a widget's only input is (0023). */
 export const OneOpen = { args: { defaultOpen: ['front'] } } satisfies Story;
 
-/** Several can be open at once. */
+/** Only one is open at a time: opening another closes the first. */
 export const OpeningAnother = {
   tags: ['!dev', '!visual'],
   args: { defaultOpen: ['front'] },
   play: async () => {
     await userEvent.click(screen.getByRole('button', { name: /^Rear/ }));
-    await expect(screen.getByRole('button', { name: /^Front/ })).toHaveAttribute('aria-expanded', 'true');
+    await expect(screen.getByRole('button', { name: /^Front/ })).toHaveAttribute('aria-expanded', 'false');
     await expect(screen.getByRole('button', { name: /^Rear/ })).toHaveAttribute('aria-expanded', 'true');
   }
 } satisfies Story;
