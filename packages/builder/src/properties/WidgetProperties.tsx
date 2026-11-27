@@ -30,7 +30,7 @@ import { WidgetPreview } from '../palette/WidgetPreview.js';
 import { InputFields } from './InputFields.js';
 import { PickList } from './PickList.js';
 import { placeWidget, swapType, updateWidget, withAction, withBinding, withOption, type TypeSwap } from './editing.js';
-import { OpensRow, Section, Typing, useTyping } from './fields.js';
+import { OpensRow, Typing, useTyping } from './fields.js';
 import { inputSummary } from './inputs.js';
 import { widgetTitle } from './title.js';
 
@@ -306,7 +306,7 @@ export function WidgetProperties({
             </Columns>
           )}
         </Box>
-        <Stack dividers spacing='5x'>
+        <Stack spacing='5x'>
           <OpensRow
             empty={widget.type}
             label='Type'
@@ -353,27 +353,31 @@ export function WidgetProperties({
             />
           ) : null}
           {options.length > 0 ? (
-            <Section title='Options'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Section>
+            <Group title='Options'>
+              <Stack spacing='4x'>{options.map(([key, spec]) => optionField(key, spec, typing.merge))}</Stack>
+            </Group>
           ) : null}
           {area ? (
-            <Section title='Place'>
-              <Columns spacing='3x'>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('column', 'Column')}
-                </Box>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('row', 'Row')}
-                </Box>
-              </Columns>
-              <Columns spacing='3x'>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('columnSpan', 'Width')}
-                </Box>
-                <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
-                  {placeField('rowSpan', 'Height')}
-                </Box>
-              </Columns>
-            </Section>
+            <Group title='Place'>
+              <Stack spacing='4x'>
+                <Columns spacing='3x'>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('column', 'Column')}
+                  </Box>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('row', 'Row')}
+                  </Box>
+                </Columns>
+                <Columns spacing='3x'>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('columnSpan', 'Width')}
+                  </Box>
+                  <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                    {placeField('rowSpan', 'Height')}
+                  </Box>
+                </Columns>
+              </Stack>
+            </Group>
           ) : null}
         </Stack>
         {swap ? (

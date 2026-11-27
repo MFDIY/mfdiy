@@ -1,6 +1,6 @@
 import type { FocusEvent, ReactNode } from 'react';
 
-import { Box, Button, Field, Stack, Text, Toggletip } from '@mfdiy/ui/components';
+import { Box, Button, Field } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 
 /** Merges what's typed into one undo step per visit to a field (0023). */
@@ -63,27 +63,5 @@ export function OpensRow({ description, empty, label, onOpen, value }: OpensRowP
         {value ?? empty}
       </Button>
     </Field>
-  );
-}
-
-type SectionProps = {
-  children: ReactNode;
-  /** A hint about the whole group, in a toggletip by its title (0022). */
-  description?: string | undefined;
-  title: string;
-};
-
-/** A titled group of fields. */
-export function Section({ children, description, title }: SectionProps) {
-  return (
-    <Stack spacing='4x'>
-      <Box alignItems='center' display='flex' gap='1x'>
-        <Text color='text' tagName='h3' variant='label'>
-          {title}
-        </Text>
-        {description ? <Toggletip label={`About ${title}`}>{description}</Toggletip> : null}
-      </Box>
-      {children}
-    </Stack>
   );
 }

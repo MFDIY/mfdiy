@@ -1,11 +1,11 @@
 import type { Layout, Page } from '@mfdiy/schema';
 
 import { MAX_GRID_SIZE } from '@mfdiy/schema';
-import { Box, Columns, NumberField, Stack, Text, TextField, usePanelForm } from '@mfdiy/ui/components';
+import { Box, Columns, Group, NumberField, Stack, Text, TextField, usePanelForm } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { resizeGrid } from './editing.js';
-import { Section, Typing, useTyping } from './fields.js';
+import { Typing, useTyping } from './fields.js';
 
 export type PagePropertiesProps = {
   layout: Layout;
@@ -54,7 +54,7 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
           </Box>
         </Box>
       ) : null}
-      <Stack dividers spacing='5x'>
+      <Stack spacing='5x'>
         <Box
           onBlur={event => {
             setDraft(null);
@@ -75,7 +75,7 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
             value={draft ?? page.name}
           />
         </Box>
-        <Section description='Widgets keep their share of the page when the grid changes.' title='Grid'>
+        <Group description='Widgets keep their share of the page when the grid changes.' title='Grid'>
           <Columns spacing='3x'>
             <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
               {gridField('columns', 'Columns')}
@@ -84,7 +84,7 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
               {gridField('rows', 'Rows')}
             </Box>
           </Columns>
-        </Section>
+        </Group>
       </Stack>
     </Box>
   );
