@@ -68,7 +68,7 @@ export type SelectItem = {
 export type SelectProps = {
   /** Shows a button that clears the choice while there is one. */
   clearable?: boolean | undefined;
-  /** Explains the field, under it. */
+  /** Explains the field: a hint in a toggletip by the label (0022). */
   description?: string | undefined;
   disabled?: boolean | undefined;
   /** Explains what's wrong with the choice. Shown under the field, which turns red. */

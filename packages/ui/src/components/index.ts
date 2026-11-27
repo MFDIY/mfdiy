@@ -12,7 +12,7 @@ export { Divider, type DividerProps } from './Divider/Divider.js';
 
 export { Field, type FieldProps } from './Field/Field.js';
 
-export { Icon, iconNames, type IconName, type IconProps } from './Icon/Icon.js';
+export { Icon, iconNames, iconSizes, type IconName, type IconProps, type IconSize } from './Icon/Icon.js';
 
 export { IconButton, type IconButtonProps } from './IconButton/IconButton.js';
 
@@ -82,5 +82,7 @@ export {
 } from './SearchList/SearchList.js';
 
 export { ToastProvider, useToast, type ToastOptions } from './Toast/Toast.js';
+
+export { Toggletip, type ToggletipProps } from './Toggletip/Toggletip.js';
 
 export { Tooltip, type TooltipProps } from './Tooltip/Tooltip.js';

@@ -75,10 +75,7 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
             value={draft ?? page.name}
           />
         </Box>
-        <Section title='Grid'>
-          <Text color='text.dim' variant='body'>
-            Widgets keep their share of the page when the grid changes.
-          </Text>
+        <Section description='Widgets keep their share of the page when the grid changes.' title='Grid'>
           <Columns spacing='3x'>
             <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
               {gridField('columns', 'Columns')}

@@ -51,7 +51,7 @@ The sheet's content scrolls, so everything is reachable while it's half-open; ha
 
 ### Nothing jumps
 
-The panel avoids layout shifts: a message never appears or disappears below a field. A temporary state shows inside the control instead ("Not connected" in an empty data row), a value that can't be right can't be entered (a threshold's levels limit each other, so it always warns before it turns critical), and an emptied page name comes back on leaving the field. Help text is either always shown or never. Switching a threshold side on still shows its fields below it, for now.
+The panel avoids layout shifts: a message never appears or disappears below a field. A temporary state shows inside the control instead ("Not connected" in an empty data row), a value that can't be right can't be entered (a threshold's levels limit each other, so it always warns before it turns critical), and an emptied page name comes back on leaving the field. Help text sits in toggletips (0022), so it never shifts anything either. Switching a threshold side on still shows its fields below it, for now.
 
 ## Open questions
 
