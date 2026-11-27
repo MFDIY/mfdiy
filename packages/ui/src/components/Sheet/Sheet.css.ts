@@ -73,3 +73,9 @@ export const backdrop = style({
     }
   }
 });
+
+export const content = style({
+  selectors: {
+    [`${popup}[data-peeking] &`]: { overflowY: 'visible' }
+  }
+});

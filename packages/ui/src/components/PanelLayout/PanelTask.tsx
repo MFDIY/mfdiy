@@ -8,14 +8,14 @@ import { usePanelForm } from './PanelLayout.js';
 
 export type Task = {
   content: ReactNode;
-  /** The sheet's title. */
+  /** Names the sheet for assistive technology. */
   title: string;
 };
 
 export type PanelTaskProps = {
   /** The panel's own content. */
   children: ReactNode;
-  /** Fires when the user closes the task's sheet. In a sidebar, the task offers its own way back. */
+  /** Fires when the user closes the task's sheet; the task should offer its own way back too, such as Back. */
   onClose: () => void;
   /** The side task, or null for none. */
   task: Task | null;
@@ -23,7 +23,8 @@ export type PanelTaskProps = {
 
 /**
  * A side task inside a panel, like choosing a widget's data (0008): in a sidebar, it takes the
- * panel's place until it's done; on a sheet, it opens as a modal sheet stacked on top. Put it in a
+ * panel's place until it's done; on a sheet, it opens as a modal sheet stacked on top. Either way,
+ * the task shows its own way back, as the sheet has no buttons of its own. Put it in a
  * `PanelLayout` panel, around the panel's content.
  */
 export function PanelTask({ children, onClose, task }: PanelTaskProps) {

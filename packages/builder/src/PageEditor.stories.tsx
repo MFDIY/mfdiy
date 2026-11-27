@@ -204,8 +204,9 @@ export const PhoneSelecting: Story = {
   play: async ({ canvasElement, userEvent }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Bar fuel' }));
 
-    await expect(await screen.findByRole('button', { name: 'Close' })).toBeInTheDocument();
-    await expect(screen.getByRole('dialog', { name: 'Fuel' })).toBeInTheDocument();
+    const sheet = await screen.findByRole('dialog', { name: 'Fuel' });
+
+    await waitFor(() => expect(within(sheet).queryByRole('button', { name: 'Open Fuel' })).not.toBeInTheDocument());
   }
 };
 
@@ -213,11 +214,11 @@ export const PhoneSelecting: Story = {
 export const PhoneEditing: Story = {
   args: { page: pageWithBar, phone: true, selectedId: 'fuel' },
   play: async ({ userEvent }) => {
-    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Open Fuel' }));
 
     const sheet = await screen.findByRole('dialog', { name: 'Fuel' });
 
-    await screen.findByRole('button', { name: 'Close' });
+    await waitFor(() => expect(within(sheet).queryByRole('button', { name: 'Open Fuel' })).not.toBeInTheDocument());
     await Promise.all(sheet.getAnimations().map(animation => animation.finished));
   }
 };
@@ -226,7 +227,7 @@ export const PhoneEditing: Story = {
 export const PhonePickingData: Story = {
   args: { page: pageWithBar, phone: true, selectedId: 'fuel' },
   play: async ({ userEvent }) => {
-    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Open Fuel' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Value: Fuel' }));
 
     const task = await screen.findByRole('dialog', { name: 'Value' });

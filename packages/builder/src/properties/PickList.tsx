@@ -34,7 +34,7 @@ function byGroup(items: readonly PickItem[]): SearchListGroup[] {
   return [...groups].map(([label, inGroup]) => ({ label, items: inGroup }));
 }
 
-/** A searchable list for a side task in the panel (0008). In a sidebar, it offers Back; a sheet closes instead. */
+/** A searchable list for a side task in the panel (0008), with Back to return to the properties. */
 export function PickList({ back, emptyText, items, label, onBack, onPick }: PickListProps) {
   const [query, setQuery] = useState('');
   const sidebar = usePanelForm() === 'sidebars';
@@ -42,7 +42,7 @@ export function PickList({ back, emptyText, items, label, onBack, onPick }: Pick
 
   return (
     <SearchList
-      back={sidebar ? { label: back, onBack } : undefined}
+      back={{ label: back, onBack }}
       emptyText={query.trim() === '' ? emptyText : 'Nothing found.'}
       focusSearch={sidebar}
       groups={byGroup(found)}

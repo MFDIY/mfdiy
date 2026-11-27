@@ -20,7 +20,7 @@ export type Panel = {
    * the main content stops above it. For a panel that always has something to show, like properties.
    */
   peek?: boolean | undefined;
-  /** The sheet's title. */
+  /** Names the sheet for assistive technology. */
   title: string;
 };
 

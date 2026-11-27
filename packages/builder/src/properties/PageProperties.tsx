@@ -1,7 +1,7 @@
 import type { Layout, Page } from '@mfdiy/schema';
 
 import { MAX_GRID_SIZE } from '@mfdiy/schema';
-import { Box, Columns, NumberField, ScrollContainer, Stack, Text, TextField, usePanelForm } from '@mfdiy/ui/components';
+import { Box, Columns, NumberField, ScrollContainer, Stack, Text, TextField } from '@mfdiy/ui/components';
 import { useState } from 'react';
 
 import { resizeGrid } from './editing.js';
@@ -20,7 +20,6 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
   const typing = useTyping(page.id, page);
   /** The name as typed; an empty one isn't saved, as a page always has a name, and goes on leaving. */
   const [draft, setDraft] = useState<string | null>(null);
-  const sidebar = usePanelForm() === 'sidebars';
 
   function gridField(axis: 'columns' | 'rows', label: string) {
     return (
@@ -45,13 +44,11 @@ export function PageProperties({ layout, onChange, page }: PagePropertiesProps) 
 
   return (
     <Box display='flex' flexDirection='column' height='full' minHeight='none'>
-      {sidebar ? (
-        <Box flexShrink='0' paddingBottom='4x'>
-          <Text tagName='h2' truncate variant='heading'>
-            Page
-          </Text>
-        </Box>
-      ) : null}
+      <Box flexShrink='0' paddingBottom='4x'>
+        <Text tagName='h2' truncate variant='heading'>
+          Page
+        </Text>
+      </Box>
       <ScrollContainer>
         <Box>
           <Stack dividers spacing='5x'>

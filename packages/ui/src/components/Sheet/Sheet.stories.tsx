@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useState, type ComponentProps } from 'react';
-import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, screen, userEvent, waitFor } from 'storybook/test';
 
 import { createArgTypeFromConditionalStyleProp } from '../../../.storybook/createArgTypeFromConditionalStyleProp.js';
 import { Button } from '../Button/Button.js';
@@ -76,7 +76,10 @@ function StackButton({ depth = 1, levels }: { depth?: number; levels: number }) 
       <Button onClick={() => setOpen(true)}>{`Stack sheet ${depth}`}</Button>
       <Sheet modal onClose={() => setOpen(false)} open={open} title={`Stacked ${depth}`}>
         <Stack spacing='5x'>
-          {depth < levels ? <StackButton depth={depth + 1} levels={levels} /> : null}
+          <Inline spacing='3x'>
+            <Button onClick={() => setOpen(false)}>Done</Button>
+            {depth < levels ? <StackButton depth={depth + 1} levels={levels} /> : null}
+          </Inline>
           <WidgetList />
         </Stack>
       </Sheet>
@@ -166,18 +169,6 @@ export const LongContent = {
   play: openSheet
 } satisfies Story;
 
-/** The chevron moves between the stops, for anyone who can't drag. */
-export const ChevronTogglesStops = {
-  // Checks behaviour; the stories above cover the looks.
-  tags: ['!dev', '!visual'],
-  args: { children: <WidgetList /> },
-  play: async () => {
-    await openSheet();
-    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
-    await expect(await screen.findByRole('button', { name: 'Collapse' })).toBeInTheDocument();
-  }
-} satisfies Story;
-
 /** Not modal: the canvas behind it can still be pressed. */
 export const CanvasStaysUsable = {
   tags: ['!dev', '!visual'],
@@ -212,17 +203,16 @@ export const Peeking = {
   play: settled
 } satisfies Story;
 
-/** Expanding a peeking sheet opens it; closing it again leaves it peeking. */
+/** Pressing a peeking sheet's handle opens it; closing it again leaves it peeking. */
 export const PeekingOpensAndCloses = {
   tags: ['!dev', '!visual'],
   args: { children: <WidgetList />, peek: true, title: 'Properties' },
   play: async () => {
     await settled();
-    await expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Close' }));
-    await expect(await screen.findByRole('dialog')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: 'Open Properties' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Open Properties' })).not.toBeInTheDocument());
+    await userEvent.keyboard('{Escape}');
+    await expect(await screen.findByRole('button', { name: 'Open Properties' })).toBeInTheDocument();
   }
 } satisfies Story;
 
@@ -248,20 +238,6 @@ export const StackedTwoDeep = {
 export const StackedAtFull = {
   args: { children: <Stackable levels={2} />, defaultStop: 'full', title: 'Properties' },
   play: () => stack(1)
-} satisfies Story;
-
-/** Brought down from full to half, the top sheet shows the stack under it: they follow it. */
-export const StackedThenCollapsed = {
-  args: { children: <Stackable levels={2} />, defaultStop: 'full', title: 'Properties' },
-  play: async () => {
-    await stack(1);
-
-    const top = await screen.findByRole('dialog', { name: 'Stacked 1' });
-
-    await userEvent.click(within(top).getByRole('button', { name: 'Collapse' }));
-    await within(top).findByRole('button', { name: 'Expand' });
-    await stillness();
-  }
 } satisfies Story;
 
 /** Only the top sheet can be used, and one backdrop darkens the page under the whole stack. */
