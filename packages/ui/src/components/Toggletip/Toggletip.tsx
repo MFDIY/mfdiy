@@ -1,5 +1,6 @@
 import { Popover } from '@base-ui/react/popover';
 
+import { usePopupLayer } from '../../contexts/PopupLayer/popupLayer.js';
 import { designSystem } from '../../styles/design-system.js';
 import { Icon } from '../Icon/Icon.js';
 import { Text } from '../Text/Text.js';
@@ -62,13 +63,15 @@ export type ToggletipProps = {
  * size, without taking up that room.
  */
 export function Toggletip({ children, label }: ToggletipProps) {
+  const layer = usePopupLayer();
+
   return (
     <Popover.Root>
       <Popover.Trigger aria-label={label} className={triggerClass} delay={DELAY} openOnHover>
         <Icon name='info' size='small' />
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner className={styles.positioner} side='top' sideOffset={OFFSET}>
+      <Popover.Portal {...layer.portal}>
+        <Popover.Positioner {...layer.positioner} className={styles.positioner} side='top' sideOffset={OFFSET}>
           <Popover.Popup className={popupClass}>
             <Text variant='body'>{children}</Text>
           </Popover.Popup>

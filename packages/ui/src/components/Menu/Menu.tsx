@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { Menu as BaseMenu } from '@base-ui/react/menu';
 import { useState } from 'react';
 
+import { usePopupLayer } from '../../contexts/PopupLayer/popupLayer.js';
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Icon } from '../Icon/Icon.js';
@@ -61,6 +62,7 @@ export type MenuProps = {
  */
 export function Menu({ children, onOpenChange, trigger }: MenuProps) {
   const [open, setOpen] = useState(false);
+  const layer = usePopupLayer();
 
   return (
     <BaseMenu.Root
@@ -71,8 +73,8 @@ export function Menu({ children, onOpenChange, trigger }: MenuProps) {
       open={open}
     >
       <BaseMenu.Trigger render={typeof trigger === 'function' ? trigger(open) : trigger} />
-      <BaseMenu.Portal>
-        <BaseMenu.Positioner align='start' sideOffset={OFFSET}>
+      <BaseMenu.Portal {...layer.portal}>
+        <BaseMenu.Positioner {...layer.positioner} align='start' sideOffset={OFFSET}>
           <BaseMenu.Popup className={popupClass}>{children}</BaseMenu.Popup>
         </BaseMenu.Positioner>
       </BaseMenu.Portal>

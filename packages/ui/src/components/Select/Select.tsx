@@ -1,6 +1,7 @@
 import { Select as BaseSelect } from '@base-ui/react/select';
 import { useRef, useState } from 'react';
 
+import { usePopupLayer } from '../../contexts/PopupLayer/popupLayer.js';
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Field } from '../Field/Field.js';
@@ -100,6 +101,7 @@ export function Select({
   placeholder,
   value
 }: SelectProps) {
+  const layer = usePopupLayer();
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -146,8 +148,8 @@ export function Select({
             </Box>
           ) : null}
         </Box>
-        <BaseSelect.Portal>
-          <BaseSelect.Positioner alignItemWithTrigger={false} anchor={boxRef} sideOffset={OFFSET}>
+        <BaseSelect.Portal {...layer.portal}>
+          <BaseSelect.Positioner {...layer.positioner} alignItemWithTrigger={false} anchor={boxRef} sideOffset={OFFSET}>
             <BaseSelect.Popup className={popupClass}>
               <BaseSelect.List>
                 {items.map(item => (
