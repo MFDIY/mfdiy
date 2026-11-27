@@ -161,3 +161,31 @@ export const ClickSelects = {
     await expect(screen.getByRole('tab', { name: 'Combat' })).toHaveAttribute('aria-selected', 'true');
   }
 } satisfies Story;
+
+const longPages = [
+  { label: 'Flight', value: 'flight' },
+  { label: 'Combat and targeting', value: 'combat' },
+  { label: 'Power management', value: 'power' }
+];
+
+/** A tab is at most 110px wide: a longer name ends in an ellipsis, and its tooltip shows it in full. */
+export const LongNames = {
+  args: { after: <IconButton icon='add' label='Add page' />, items: longPages }
+} satisfies Story;
+
+/** Focusing a tab, or hovering it, names it in full. */
+export const LongNameTooltip = {
+  ...LongNames,
+  tags: ['!dev', '!visual'],
+  args: { ...LongNames.args, value: 'combat' },
+  play: async () => {
+    await userEvent.tab();
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByText('Combat and targeting')
+          .find(element => !element.closest('[role="tab"], [aria-hidden="true"]'))
+      ).toBeVisible()
+    );
+  }
+} satisfies Story;

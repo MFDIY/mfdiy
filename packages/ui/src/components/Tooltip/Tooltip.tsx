@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 
@@ -44,4 +44,17 @@ export function Tooltip({ children, label }: TooltipProps) {
       </BaseTooltip.Portal>
     </BaseTooltip.Root>
   );
+}
+
+export type TooltipGroupProps = {
+  /** Controls with their own `Tooltip`s. */
+  children: ReactNode;
+};
+
+/**
+ * Groups neighbouring controls' tooltips, such as a row of tabs: once one has shown, moving to the
+ * next shows its tooltip straight away. Built on Base UI's Tooltip.Provider (0003).
+ */
+export function TooltipGroup({ children }: TooltipGroupProps) {
+  return <BaseTooltip.Provider>{children}</BaseTooltip.Provider>;
 }

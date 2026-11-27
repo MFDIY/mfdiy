@@ -63,32 +63,34 @@ export type CanvasPointer = {
 };
 
 export type CanvasProps = {
-  page: Page;
-  /** The layout being edited: one of the page's own. */
-  layout: Layout;
-  /** Document-wide theme overrides; the page's own are applied on top. */
-  documentTokens?: TokenValues | undefined;
   /** Width divided by height of the preview shape. Fills the available space if not set. */
   aspectRatio?: number | undefined;
-  selectedId: string | null;
-  onSelect: (widgetId: string | null) => void;
-  onChange: (page: Page) => void;
+  /** Document-wide theme overrides; the page's own are applied on top. */
+  documentTokens?: TokenValues | undefined;
   /** Where a widget is being added: marked with a plus. */
   ghost?: Area | null | undefined;
+  /** The layout being edited: one of the page's own. */
+  layout: Layout;
   /**
    * The area a widget added at this point covers at least. Shown with a plus while hovering an empty
    * cell, whenever a click there would add one.
    */
   newWidgetArea?: ((point: GridPoint) => Area) | undefined;
+  onChange: (page: Page) => void;
+  /** Fires when a press on a widget becomes a move or resize, and when that ends. */
+  onDragChange?: ((dragging: boolean) => void) | undefined;
   /**
    * Fires when an empty cell is tapped while nothing is selected: with a selection, the first tap
    * only lets go of it. Comes with what was used to tap.
    */
   onEmptyTap?: ((point: GridPoint, pointerType: string) => void) | undefined;
-  /** Renders a widget's contents. Presses never reach it. */
-  renderWidget: (widget: WidgetInstance) => ReactNode;
+  onSelect: (widgetId: string | null) => void;
+  page: Page;
   /** Receives a `CanvasPointer`. */
   pointerRef?: Ref<CanvasPointer> | undefined;
+  /** Renders a widget's contents. Presses never reach it. */
+  renderWidget: (widget: WidgetInstance) => ReactNode;
+  selectedId: string | null;
 };
 
 /**
@@ -103,6 +105,7 @@ export function Canvas({
   selectedId,
   onSelect,
   onChange,
+  onDragChange,
   ghost,
   newWidgetArea,
   onEmptyTap,
@@ -181,6 +184,7 @@ export function Canvas({
     const next = update(gesture, event);
 
     if (next.dragging && !gesture.dragging) {
+      onDragChange?.(true);
       onSelect(next.widgetId);
     }
 
@@ -293,6 +297,10 @@ export function Canvas({
 
     setGesture(null);
 
+    if (final.dragging) {
+      onDragChange?.(false);
+    }
+
     if (!final.dragging) {
       if (!final.handle) {
         handleTap(final.widgetId, event);
@@ -308,6 +316,10 @@ export function Canvas({
 
   /** The browser took the pointer away (or the gesture has already ended): never commit. */
   function handlePointerLost(event: PointerEvent) {
+    if (gesture?.pointerId === event.pointerId && gesture.dragging) {
+      onDragChange?.(false);
+    }
+
     setGesture(current => (current?.pointerId === event.pointerId ? null : current));
   }
 

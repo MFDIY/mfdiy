@@ -93,4 +93,4 @@ export { ToastProvider, useToast, type ToastOptions } from './Toast/Toast.js';
 
 export { Toggletip, type ToggletipProps } from './Toggletip/Toggletip.js';
 
-export { Tooltip, type TooltipProps } from './Tooltip/Tooltip.js';
+export { Tooltip, TooltipGroup, type TooltipGroupProps, type TooltipProps } from './Tooltip/Tooltip.js';
