@@ -139,7 +139,7 @@ function Sidebar({ children, side }: { children: ReactNode; side: PanelSide }) {
       tagName='aside'
       width='panel'
     >
-      <ScrollContainer>
+      <ScrollContainer hideEdges>
         <Box
           backgroundColor='surface'
           className={onSurface}

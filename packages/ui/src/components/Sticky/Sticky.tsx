@@ -21,8 +21,8 @@ export type StickyProps = {
  * Keeps its content in view at an edge of the `ScrollContainer` it's in, such as a search field
  * above a list, or an accordion's open row above its content, on the colour of the sheet or
  * sidebar it's in. While content scrolls underneath it, a hairline on its inner side says so, as
- * the container's own edge does (0022); a top `Sticky` then takes the place of the container's top
- * hairline. It sticks one pixel past the edge, so it can tell it's stuck: that pixel is cut off.
+ * the container's own edge does (0022). It sticks one pixel past the edge, so it can tell it's
+ * stuck: that pixel is cut off.
  */
 export function Sticky({ children, edge = 'top' }: StickyProps) {
   const [covering, setCovering] = useState(false);
@@ -45,7 +45,6 @@ export function Sticky({ children, edge = 'top' }: StickyProps) {
     <Box
       bottom={edge === 'bottom' ? 'sticky' : undefined}
       className={surfaceBackground}
-      data-covering={covering ? '' : undefined}
       data-sticky={edge}
       position='sticky'
       ref={ref}

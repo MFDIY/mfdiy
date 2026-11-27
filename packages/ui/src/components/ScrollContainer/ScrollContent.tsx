@@ -7,12 +7,13 @@ import * as styles from './ScrollContent.css.js';
 import { ScrollEdge } from './ScrollEdge.js';
 
 type Props = PropsWithChildren<{
+  hideEdges: boolean;
   onOverflowBottom?: ((overflowing: boolean) => void) | undefined;
   onOverflowTop?: ((overflowing: boolean) => void) | undefined;
   ref: RefCallback<HTMLElement> | null;
 }>;
 
-export function ScrollContent({ children, onOverflowBottom, onOverflowTop, ref }: Props) {
+export function ScrollContent({ children, hideEdges, onOverflowBottom, onOverflowTop, ref }: Props) {
   const [topOverflowing, setTopOverflowing] = useState<boolean>(false);
   const [bottomOverflowing, setBottomOverflowing] = useState<boolean>(false);
 
@@ -45,8 +46,12 @@ export function ScrollContent({ children, onOverflowBottom, onOverflowTop, ref }
         {children}
         <Box ref={bottomOverflowRef} />
       </Box>
-      <ScrollEdge edge='top' show={topOverflowing} />
-      <ScrollEdge edge='bottom' show={bottomOverflowing} />
+      {hideEdges ? null : (
+        <>
+          <ScrollEdge edge='top' show={topOverflowing} />
+          <ScrollEdge edge='bottom' show={bottomOverflowing} />
+        </>
+      )}
     </>
   );
 }
