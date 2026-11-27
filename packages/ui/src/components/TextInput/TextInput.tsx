@@ -7,8 +7,8 @@ import { useRef, useState, type ChangeEvent, type Ref } from 'react';
 import { useRestProps } from '../../hooks/useRestProps/useRestProps.js';
 import { designSystem } from '../../styles/design-system.js';
 import { Box, type IntrinsicProps as BoxIntrinsicProps } from '../Box/Box.js';
-import { fieldBoxClass, fieldButtonClass } from '../Field/fieldStyles.js';
-import { Icon } from '../Icon/Icon.js';
+import { fieldBoxClass, fieldButtonClass, fieldStartButtonClass } from '../Field/fieldStyles.js';
+import { Icon, type IconName } from '../Icon/Icon.js';
 import * as textStyles from '../Text/Text.css.js';
 
 import * as styles from './TextInput.css.js';
@@ -44,6 +44,8 @@ export type TextInputProps = StyleProps &
     /** Shows a button that clears the input while it has text, and calls this. */
     onClear?: (() => void) | undefined;
     ref?: Ref<HTMLInputElement> | undefined;
+    /** A button at the start of the box, e.g. Back, so the two read as one control. */
+    startButton?: { icon: IconName; label: string; onClick: () => void } | undefined;
     /** The `type` of the `input` element. */
     type?: Type | undefined;
   };
@@ -68,6 +70,7 @@ export function TextInput({
   onClear,
   onChange,
   ref,
+  startButton,
   type = 'text',
   value,
   ...restProps
@@ -109,6 +112,18 @@ export function TextInput({
 
   return (
     <Box className={fieldBoxClass({ disabled, invalid: error, open: false })}>
+      {startButton ? (
+        <Box
+          aria-label={startButton.label}
+          className={fieldStartButtonClass}
+          disabled={disabled}
+          onClick={startButton.onClick}
+          tagName='button'
+          type='button'
+        >
+          <Icon name={startButton.icon} />
+        </Box>
+      ) : null}
       <Box
         {...nativeProps}
         aria-describedby={ariaDescribedBy}

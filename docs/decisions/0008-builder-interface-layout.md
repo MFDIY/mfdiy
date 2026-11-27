@@ -39,6 +39,10 @@ What's in a panel touches its edges; the sidebar or sheet around it pads it and 
 
 A sheet is only a header and its content: no expand or close buttons. The header is its handle with its title under it in label text, a control's height, the same whether the sheet peeks or is open, so nothing shifts when it's let go; the content doesn't repeat the title. Flicking and dragging move it between its stops, Escape closes it, and its content closes it where that makes sense (choosing something, Back). Its title still names it for assistive technology. Every row the header took is given to the content, which matters most on a phone.
 
+On Android, the system Back gesture closes the top sheet or dialog instead of leaving the page (Base UI answers the browser's close requests, as it does Escape). Keep it: it's the most natural way to put a stacked sheet away. Browsers without close requests (Safari, as far as known) may go back a page instead; check before relying on it there.
+
+Within a panel, Back sits in the search field it belongs to, as one control (`‹ | Search… | ×`), named after where it goes ("Back to Fuel").
+
 ### Preview mode
 
 A toggle hides all builder controls and shows the layout full-screen with live data, exactly as the display will render it.

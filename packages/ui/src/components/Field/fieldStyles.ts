@@ -49,3 +49,24 @@ export const fieldButtonClass = designSystem({
   padding: 'none',
   width: 'control'
 });
+
+/** The same, at the start of the box: its hairline is on its other side. */
+export const fieldStartButtonClass = designSystem({
+  alignItems: 'center',
+  appearance: 'none',
+  backgroundColor: { default: 'transparent', hover: 'hover', active: 'pressed', disabled: 'transparent' },
+  borderBottomStyle: 'hidden',
+  borderLeftStyle: 'hidden',
+  borderRightColor: 'inherit',
+  borderRightStyle: 'solid',
+  borderRightWidth: 'hairline',
+  borderTopStyle: 'hidden',
+  color: { default: 'text', disabled: 'text.faint' },
+  cursor: { default: 'default', disabled: 'not-allowed' },
+  display: 'flex',
+  flexShrink: '0',
+  justifyContent: 'center',
+  outlineStyle: 'none',
+  padding: 'none',
+  width: 'control'
+});

@@ -14,6 +14,7 @@ import {
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
+import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './Sheet.css.js';
@@ -72,21 +73,16 @@ const popupClass = [
  * the page never scrolls (0007). Content doesn't scroll itself: a part that stays in view, like a
  * search field, sticks, on the sheet's own background.
  */
-const contentClass = [
-  designSystem({
-    backgroundColor: 'inherit',
-    display: 'flex',
-    flexDirection: 'column',
-    flexBasis: 'auto',
-    flexGrow: '1',
-    flexShrink: '1',
-    minHeight: 'none',
-    overflowY: 'auto',
-    overscrollBehavior: 'none',
-    touchAction: 'auto'
-  }),
-  styles.safeBottom
-].join(' ');
+const contentClass = designSystem({
+  display: 'flex',
+  flexDirection: 'column',
+  flexBasis: 'auto',
+  flexGrow: '1',
+  flexShrink: '1',
+  minHeight: 'none',
+  overscrollBehavior: 'none',
+  touchAction: 'auto'
+});
 
 /** Until the peeking shape is measured: about its height with a mouse. */
 const FALLBACK_PEEK_HEIGHT = 64;
@@ -312,18 +308,14 @@ export function Sheet({
               <SheetPeekSpace />
             </Box>
             <Drawer.Content className={contentClass}>
-              <Box
-                backgroundColor='inherit'
-                flexGrow='1'
-                minHeight='none'
-                paddingBottom='5x'
-                paddingInline='5x'
-                paddingTop='3x'
-              >
-                <SheetStackContext value={{ onStop: moveTo, popups: [...(ancestors ?? []), popupRef], stop }}>
-                  {children}
-                </SheetStackContext>
-              </Box>
+              <ScrollContainer>
+                <Box backgroundColor='surface.raised' paddingBottom='5x' paddingInline='5x' paddingTop='3x'>
+                  <SheetStackContext value={{ onStop: moveTo, popups: [...(ancestors ?? []), popupRef], stop }}>
+                    {children}
+                  </SheetStackContext>
+                </Box>
+                <Box className={styles.safeBottom} />
+              </ScrollContainer>
             </Drawer.Content>
           </Drawer.Popup>
         </Drawer.Viewport>

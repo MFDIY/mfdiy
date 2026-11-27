@@ -15,6 +15,7 @@ const meta = {
     disabled: { control: { type: 'boolean' } },
     error: { control: { type: 'boolean' } },
     placeholder: { control: { type: 'text' } },
+    startButton: { control: false },
     type: createArgTypeFromConditionalStyleProp(types, undefined, 'text')
   },
   args: {
@@ -24,6 +25,7 @@ const meta = {
     error: false,
     onClear: undefined,
     placeholder: undefined,
+    startButton: undefined,
     type: undefined
   },
   decorators: [
@@ -63,5 +65,15 @@ export const ClearEmpties = {
     await expect(input).toHaveFocus();
     await expect(args.onClear).toHaveBeenCalledOnce();
     await expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+  }
+} satisfies Story;
+
+/** A button at the start of the box, such as Back, reads as one control with the field. */
+export const WithStartButton = {
+  args: {
+    defaultValue: 'hydrogen',
+    onClear: fn(),
+    placeholder: 'Search',
+    startButton: { icon: 'chevron_left', label: 'Back to Fuel', onClick: fn() }
   }
 } satisfies Story;

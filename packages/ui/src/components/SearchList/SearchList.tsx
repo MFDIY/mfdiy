@@ -1,11 +1,11 @@
 import { Autocomplete } from '@base-ui/react/autocomplete';
-import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type PointerEvent, type ReactNode } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Icon } from '../Icon/Icon.js';
-import { IconButton } from '../IconButton/IconButton.js';
 import { Stack } from '../Stack/Stack.js';
+import { Sticky } from '../Sticky/Sticky.js';
 import { Text } from '../Text/Text.js';
 import { TextInput } from '../TextInput/TextInput.js';
 
@@ -27,7 +27,7 @@ export type SearchListGroup = {
 };
 
 export type SearchListProps = {
-  /** A way back, e.g. after choosing an item that opened more. */
+  /** A way back, e.g. after choosing an item that opened more: a button in the search field, named after where it goes. */
   back?: { label: string; onBack: () => void } | undefined;
   /** Shows that rows can be dragged out of the list (the `grab` cursor). */
   draggable?: boolean | undefined;
@@ -96,7 +96,6 @@ export function SearchList({
   placeholder,
   query
 }: SearchListProps) {
-  const headingId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Moving focus is a DOM matter; `autoFocus` would also steal it from screen readers' context.
@@ -125,25 +124,24 @@ export function SearchList({
         open
         value={query}
       >
-        <Box backgroundColor='inherit' paddingBottom='3x' position='sticky' top='none' zIndex='1'>
-          <Stack spacing='3x'>
-            {back ? (
-              <Box alignItems='center' display='flex' gap='2x'>
-                <IconButton icon='chevron_left' label='Back' onClick={back.onBack} />
-                <Text color='text.dim' id={headingId} variant='label'>
-                  {back.label}
-                </Text>
-              </Box>
-            ) : null}
+        <Sticky>
+          <Box paddingBottom='3x'>
             <Autocomplete.Input
-              aria-describedby={back ? headingId : undefined}
               aria-label={label}
               placeholder={placeholder}
               ref={inputRef}
-              render={<TextInput clearLabel='Clear search' onClear={() => onQueryChange('')} />}
+              render={
+                <TextInput
+                  clearLabel='Clear search'
+                  onClear={() => onQueryChange('')}
+                  startButton={
+                    back ? { icon: 'chevron_left', label: `Back to ${back.label}`, onClick: back.onBack } : undefined
+                  }
+                />
+              }
             />
-          </Stack>
-        </Box>
+          </Box>
+        </Sticky>
         <Autocomplete.Empty>
           <Box paddingBlock='4x' paddingInline='3x'>
             <Text color='text.dim' variant='body'>
