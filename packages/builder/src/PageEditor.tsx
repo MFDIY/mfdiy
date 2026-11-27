@@ -27,8 +27,17 @@ export type PageEditorProps = Omit<
   'ghost' | 'newWidgetArea' | 'onChange' | 'onEmptyTap' | 'pointerRef'
 > & {
   catalogue: Catalogue;
+  /**
+   * Opens the page's properties with its name field focused when the editor is shown, e.g. on a page
+   * just duplicated (0023).
+   */
+  focusPageName?: boolean | undefined;
   /** `merge` names a run of typing in one field; changes with the same one are one undo step (0023). */
   onChange: (page: Page, merge?: string) => void;
+  /** Deletes the page; greyed out without it, as on a profile's last page. */
+  onDeletePage?: (() => void) | undefined;
+  /** Duplicates the page; greyed out without it. */
+  onDuplicatePage?: (() => void) | undefined;
 };
 
 /** A row being dragged out of the library. */
@@ -60,10 +69,16 @@ const HINT = 'Tap a cell, or drag a widget onto the page.';
  * tapped. The properties panel (0023) shows the selected widget, or the page. Use one per page, with
  * the page's id as its key.
  */
-export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
+export function PageEditor({
+  catalogue,
+  focusPageName = false,
+  onDeletePage,
+  onDuplicatePage,
+  ...canvasProps
+}: PageEditorProps) {
   const { page, layout, documentTokens, onChange, onSelect, selectedId } = canvasProps;
   const [marked, setMarked] = useState<GridPoint | null>(null);
-  const [openSheet, setOpenSheet] = useState<PanelSide | null>(null);
+  const [openSheet, setOpenSheet] = useState<PanelSide | null>(focusPageName ? 'end' : null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const dragRef = useRef<Drag | null>(null);
   const canvasRef = useRef<CanvasPointer>(null);
@@ -275,8 +290,11 @@ export function PageEditor({ catalogue, ...canvasProps }: PageEditorProps) {
             <PropertiesPanel
               catalogue={catalogue}
               documentTokens={documentTokens}
+              focusPageName={focusPageName}
               layout={layout}
               onChange={onChange}
+              onDelete={onDeletePage}
+              onDuplicate={onDuplicatePage}
               onSelect={handleSelect}
               page={page}
               selectedId={selectedId}

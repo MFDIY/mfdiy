@@ -29,6 +29,7 @@ const meta = {
     description: { control: { type: 'text' } },
     disabled: { control: { type: 'boolean' } },
     error: { control: { type: 'text' } },
+    focus: { control: { type: 'boolean' } },
     label: { control: { type: 'text' } },
     placeholder: { control: { type: 'text' } },
     value: { control: { type: 'text' } }
@@ -38,6 +39,7 @@ const meta = {
     description: undefined,
     disabled: false,
     error: undefined,
+    focus: false,
     label: 'Label',
     maxLength: undefined,
     onChange: () => undefined,
@@ -81,6 +83,18 @@ export const Clearable = { args: { clearable: true, label: 'Name', value: 'Fight
 
 export const WithError = {
   args: { error: 'A profile with this name already exists.', label: 'Name', value: 'Fighter' }
+} satisfies Story;
+
+/** Focused from code, e.g. after duplicating something, with its text selected to type over. */
+export const FocusedFromCode = {
+  tags: ['!dev'],
+  args: { focus: true, label: 'Name', value: 'Flight (clone)' },
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole<HTMLInputElement>('textbox');
+
+    await expect(input).toHaveFocus();
+    await expect([input.selectionStart, input.selectionEnd]).toEqual([0, 'Flight (clone)'.length]);
+  }
 } satisfies Story;
 
 export const Disabled = { args: { disabled: true, label: 'Name', value: 'Fighter' } } satisfies Story;

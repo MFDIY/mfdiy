@@ -51,6 +51,7 @@ const pageWithBar: Page = blankLayout
 
 type DemoProps = {
   catalogue: Catalogue;
+  focusPageName?: boolean | undefined;
   page?: Page | undefined;
   /** At a phone's width, where the panels are sheets (0008). */
   phone?: boolean | undefined;
@@ -60,6 +61,7 @@ type DemoProps = {
 
 function Demo({
   catalogue,
+  focusPageName = false,
   page: initialPage = blankPage,
   phone = false,
   selectedId: initialSelection = null,
@@ -75,8 +77,11 @@ function Demo({
         <PageEditor
           catalogue={catalogue}
           documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
+          focusPageName={focusPageName}
           layout={layout}
           onChange={setPage}
+          onDeletePage={() => undefined}
+          onDuplicatePage={() => undefined}
           onSelect={setSelectedId}
           page={page}
           renderWidget={renderWidget}
@@ -235,5 +240,13 @@ export const PhonePickingData: Story = {
     await waitFor(() => expect(task).not.toHaveAttribute('data-starting-style'));
     await Promise.all(task.getAnimations().map(animation => animation.finished));
     await expect(within(task).getByRole('option', { name: /^Speed/ })).toBeInTheDocument();
+  }
+};
+
+/** A page just duplicated, on a phone: its properties open half-way, with the name ready to rename (0023). */
+export const PhonePageJustDuplicated: Story = {
+  args: { focusPageName: true, page: { ...pageWithBar, name: 'Page 1 (clone)' }, phone: true },
+  play: async () => {
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus());
   }
 };

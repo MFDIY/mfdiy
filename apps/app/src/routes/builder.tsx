@@ -3,8 +3,9 @@ import type { FailedOutcome } from '../documents/documentText.js';
 import type { Edit } from '../documents/edit.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
-import { PageEditor } from '@mfdiy/builder';
-import { Box, Button, Dialog, Inline, Text, TextLink } from '@mfdiy/ui/components';
+import { EditorHeader, PageEditor } from '@mfdiy/builder';
+import { addPage, duplicatePage, removePage } from '@mfdiy/schema';
+import { Box, Button, Dialog, MenuItem, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
 
@@ -22,14 +23,18 @@ export default function Builder() {
   return <Editor id={id} key={id} />;
 }
 
+/** Shown after deleting a page, with Undo; the id lets it be closed once anything else changes. */
+const PAGE_DELETED_TOAST = 'page-deleted';
+
 /**
- * Edits one profile. Changes stay in the builder until saved; without any, it follows what other
- * devices save. The rest of the toolbar and the properties come next (0008).
+ * Edits one profile, under its header (0008). Changes stay in the builder until saved; without any,
+ * it follows what other devices save.
  */
 function Editor({ id }: { id: string }) {
   const watched = useWatchedDocument(id);
   const request = useDocumentRequest();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const { hello } = useConnection();
 
@@ -39,6 +44,8 @@ function Editor({ id }: { id: string }) {
   const [dialog, setDialog] = useState<'conflict' | 'save-as-new' | null>(null);
   const [pageId, setPageId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** A page just duplicated, whose name is focused when it's shown (0023). */
+  const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
 
   // Without unsaved changes there's nothing to keep once another device saves.
   const outdated =
@@ -77,25 +84,66 @@ function Editor({ id }: { id: string }) {
   const conflict = saving || !dirty ? null : findConflict(edit, watched);
   const selected = page?.widgets.some(widget => widget.id === selectedId) ? selectedId : null;
 
+  /** Every change but the delete it undoes makes the Undo of a page's delete out of date. */
+  function setEditAndDismiss(next: Edit) {
+    toast.dismiss(PAGE_DELETED_TOAST);
+    setFailure(null);
+    setEdit(next);
+  }
+
   function handleChange(next: Page, merge?: string) {
     const pages = document.pages.map(candidate => (candidate.id === next.id ? next : candidate));
 
-    setFailure(null);
-    setEdit(change(current, { ...document, pages }, merge));
+    setEditAndDismiss(change(current, { ...document, pages }, merge));
   }
 
   /** Undoes or redoes, showing the page it changed. */
   function handleTimeTravel(travel: (edit: Edit) => Edit) {
     const next = travel(current);
 
-    setFailure(null);
-    setEdit(next);
+    setEditAndDismiss(next);
     setPageId(changedPageId(document, next.document) ?? pageId);
   }
 
   function handlePageChange(next: string) {
     setPageId(next);
     setSelectedId(null);
+    setFocusNameOf(null);
+  }
+
+  function handleAddPage() {
+    const added = addPage(document);
+
+    setEditAndDismiss(change(current, added.document));
+    handlePageChange(added.id);
+  }
+
+  function handleDuplicatePage(id: string) {
+    const duplicated = duplicatePage(document, id);
+
+    setEditAndDismiss(change(current, duplicated.document));
+    handlePageChange(duplicated.id);
+    setFocusNameOf(duplicated.id);
+  }
+
+  /** Deletes at once, with Undo in a toast rather than a question first (0023). */
+  function handleDeletePage(deleted: Page) {
+    const removed = removePage(document, deleted.id);
+    const after = removed.document;
+
+    setEditAndDismiss(change(current, after));
+    handlePageChange(removed.id);
+    toast.show(`“${deleted.name}” deleted`, {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          setFailure(null);
+          setEdit(latest => (latest?.document === after ? undo(latest) : latest));
+          setPageId(deleted.id);
+        }
+      },
+      id: PAGE_DELETED_TOAST
+    });
   }
 
   /** Whether everything is saved. */
@@ -146,52 +194,26 @@ function Editor({ id }: { id: string }) {
       overscrollBehavior='none'
       tagName='main'
     >
-      <Box padding='3x'>
-        <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
-          <Inline alignItems='center' spacing='4x'>
-            <Text variant='body'>
-              <TextLink to='/'>Back</TextLink>
-            </Text>
-            <Text tagName='h1' variant='heading'>
-              {document.name}
-            </Text>
-            {page && document.pages.length > 1 ? (
-              // Plain buttons until page tabs get their own Tabs component.
-              <Inline aria-label='Pages' spacing='1x' tagName='nav'>
-                {document.pages.map(candidate => (
-                  <Button
-                    aria-current={candidate.id === page.id ? 'page' : undefined}
-                    key={candidate.id}
-                    onClick={() => handlePageChange(candidate.id)}
-                    variant={candidate.id === page.id ? 'primary' : 'quiet'}
-                  >
-                    {candidate.name}
-                  </Button>
-                ))}
-              </Inline>
-            ) : null}
-          </Inline>
-          <Inline alignItems='center' spacing='3x'>
-            <Button
-              aria-label='Undo'
-              disabled={current.past.length === 0}
-              onClick={() => handleTimeTravel(undo)}
-              title='Undo'
-            >
-              ↶
-            </Button>
-            <Button
-              aria-label='Redo'
-              disabled={current.future.length === 0}
-              onClick={() => handleTimeTravel(redo)}
-              title='Redo'
-            >
-              ↷
-            </Button>
-          </Inline>
-          <Inline alignItems='center' spacing='3x'>
-            <Text color={failure || conflict ? 'status.critical' : 'text.dim'} role='status' variant='body'>
-              {saving
+      {page ? (
+        <Box padding='3x'>
+          <EditorHeader
+            canRedo={current.future.length > 0}
+            canUndo={current.past.length > 0}
+            dirty={dirty}
+            failed={Boolean(failure ?? conflict)}
+            menu={<MenuItem onClick={() => setDialog('save-as-new')}>Save as new…</MenuItem>}
+            name={document.name}
+            onAddPage={handleAddPage}
+            onBack={() => void navigate('/')}
+            onPageChange={handlePageChange}
+            onRedo={() => handleTimeTravel(redo)}
+            onSave={() => (conflict ? setDialog('conflict') : void save())}
+            onUndo={() => handleTimeTravel(undo)}
+            pageId={page.id}
+            pages={document.pages.map(candidate => ({ label: candidate.name, value: candidate.id }))}
+            saving={saving}
+            status={
+              saving
                 ? 'Saving…'
                 : failure
                   ? `Not saved. ${failureText[failure]}`
@@ -199,28 +221,23 @@ function Editor({ id }: { id: string }) {
                     ? conflictText[conflict]
                     : dirty
                       ? 'Unsaved changes'
-                      : 'Saved'}
-            </Text>
-            <Button onClick={() => setDialog('save-as-new')}>Save as new</Button>
-            <Button
-              disabled={!dirty || saving}
-              onClick={() => (conflict ? setDialog('conflict') : void save())}
-              variant='primary'
-            >
-              Save
-            </Button>
-          </Inline>
-        </Inline>
-      </Box>
+                      : 'Saved'
+            }
+          />
+        </Box>
+      ) : null}
       {/* Padded, so resize handles at the edges of the canvas stay on screen. */}
       <Box flexBasis='fluid' flexGrow='1' minHeight='none' padding='4x'>
         {page && layout ? (
           <PageEditor
             catalogue={hello ?? emptyCatalogue}
             documentTokens={document.tokens}
+            focusPageName={focusNameOf === page.id}
             key={page.id}
             layout={layout}
             onChange={handleChange}
+            onDeletePage={document.pages.length > 1 ? () => handleDeletePage(page) : undefined}
+            onDuplicatePage={() => handleDuplicatePage(page.id)}
             onSelect={setSelectedId}
             page={page}
             renderWidget={widget => <MfdWidget widget={widget} />}

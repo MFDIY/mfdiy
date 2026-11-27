@@ -8,6 +8,8 @@ export * from './layout.js';
 
 export * from './layoutEditing.js';
 
+export * from './pageEditing.js';
+
 export * from './library.js';
 
 export * from './protocol.js';

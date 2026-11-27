@@ -48,6 +48,7 @@ const meta = {
   title: 'Components / Toast',
   component: ToastDemo,
   argTypes: {
+    action: { control: false },
     autoDismiss: { control: { type: 'boolean' } },
     description: { control: { type: 'text' } },
     dismissible: { control: { type: 'boolean' } },
@@ -56,6 +57,7 @@ const meta = {
     title: { control: { type: 'text' } }
   },
   args: {
+    action: undefined,
     autoDismiss: true,
     description: undefined,
     dismissible: false,
@@ -91,6 +93,31 @@ export const Dismissible = {
   play: async () => {
     await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
     await settled();
+  }
+} satisfies Story;
+
+/** With an action beside the text, such as Undo after deleting something. Pressing it closes the toast. */
+export const WithAction = {
+  args: { action: { label: 'Undo', onClick: () => undefined }, title: '“Page 2” deleted' },
+  play: async () => {
+    await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
+    await settled();
+  }
+} satisfies Story;
+
+export const ActionCloses = {
+  tags: ['!dev', '!visual'],
+  args: { action: { label: 'Undo', onClick: () => undefined }, autoDismiss: false, title: '“Page 2” deleted' },
+  play: async () => {
+    await userEvent.click(screen.getByRole('button', { name: 'Show toast' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(
+        screen
+          .queryAllByText('“Page 2” deleted')
+          .every(text => text.closest('[data-sonner-toast]')?.getAttribute('data-removed') === 'true')
+      ).toBe(true)
+    );
   }
 } satisfies Story;
 
