@@ -56,7 +56,8 @@ export type PanelLayoutProps = {
  * screen (0008): sidebars with a mouse or pen and room for them, sheets otherwise, both switching
  * together. Sidebars have a fixed width and a hairline towards the main content, and pad and scroll
  * their content, with the scrollbar at their edge; content doesn't scroll itself. As sheets, the page
- * decides which one is open, so there's only ever one.
+ * decides which one is open, so there's only ever one. It's its own stacking context, so what stacks
+ * inside it (a sticky search field) never covers popups from elsewhere on the page.
  */
 export function PanelLayout({ children, end, onSheetClose, onSheetOpen, openSheet, start }: PanelLayoutProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -92,7 +93,7 @@ export function PanelLayout({ children, end, onSheetClose, onSheetOpen, openShee
 
   return (
     <PanelFormContext value={form}>
-      <Box display='flex' gap='4x' height='full' minWidth='none' ref={rootRef} width='full'>
+      <Box display='flex' gap='4x' height='full' isolation='isolate' minWidth='none' ref={rootRef} width='full'>
         {form === 'sidebars' && start ? <Sidebar side='start'>{start.content}</Sidebar> : null}
         <Box display='flex' flexDirection='column' flexGrow='1' height='full' minWidth='none'>
           <Box flexGrow='1' minHeight='none'>

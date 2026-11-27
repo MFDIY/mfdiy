@@ -26,6 +26,8 @@ export { Inline, order as inlineOrder, tagNames as inlineTagNames, type InlinePr
 
 export { Link, type LinkBaseProps } from './Link/Link.js';
 
+export { Logomark, type LogomarkProps } from './Logomark/Logomark.js';
+
 export { Menu, MenuItem, MenuSeparator, type MenuItemProps, type MenuProps } from './Menu/Menu.js';
 
 export { NumberField, type NumberFieldProps } from './NumberField/NumberField.js';

@@ -10,7 +10,13 @@ globalStyle('*, *::before, *::after', {
   boxSizing: 'border-box'
 });
 
+/**
+ * The page is the root container, so container queries have something to answer to even where
+ * nothing closer is one: in popups rendered at the end of the page, such as a menu, and in parts
+ * that always span the page, such as the builder's header.
+ */
 globalStyle('body', {
+  containerType: 'inline-size',
   overflowX: 'clip',
   WebkitFontSmoothing: 'antialiased'
 });
