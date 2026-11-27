@@ -1,7 +1,7 @@
 import type { Layout, Page, SignalDefinition, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { builtInThemes, widgetManifests } from '@mfdiy/instruments';
+import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
 import { DEFAULT_GRID } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
@@ -47,7 +47,7 @@ function renderWidget(widget: WidgetInstance) {
   return manifest ? (
     <manifest.Component
       action={undefined}
-      inputs={input ? { value: input } : {}}
+      inputs={input ? { value: resolveInput(input.signal, input.value, undefined) } : {}}
       options={Object.fromEntries(
         Object.entries(manifest.options).map(([key, spec]) => [key, widget.options?.[key] ?? spec.default])
       )}

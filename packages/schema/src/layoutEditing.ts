@@ -315,3 +315,26 @@ export function removeWidget(page: Page, id: string): Page {
     }))
   };
 }
+
+/** The page with a copy of a widget on top, at the same size in the nearest free spot (0023). */
+export function duplicateWidget(page: Page, layout: Layout, id: string): { page: Page; id: string } {
+  const widget = page.widgets.find(candidate => candidate.id === id);
+  const area = layout.areas[id];
+
+  if (!widget || !area) {
+    return { page, id };
+  }
+
+  const copy = { ...structuredClone(widget), id: newWidgetId(page, widget.type) };
+
+  return {
+    page: addWidget(
+      page,
+      layout,
+      copy,
+      nearestFreeArea(area, layout.grid, Object.values(layout.areas)) ??
+        moveArea(area, { columns: 1, rows: 1 }, layout.grid)
+    ),
+    id: copy.id
+  };
+}

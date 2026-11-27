@@ -1,6 +1,6 @@
 import type { WidgetInstance } from '@mfdiy/schema';
 
-import { widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
+import { resolveInput, widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
 import { Box } from '@mfdiy/ui/components';
 
 import { useConnection, useSignalValues, useWidgetAction } from '../telemetry/TelemetryProvider.js';
@@ -29,7 +29,7 @@ export function MfdWidget({ widget }: { widget: WidgetInstance }) {
     const signal = connection.hello?.signals.find(candidate => candidate.id === binding.signal);
 
     if (signal) {
-      inputs[input] = { signal, value: values[index] ?? null };
+      inputs[input] = resolveInput(signal, values[index] ?? null, binding);
     }
   });
 

@@ -10,6 +10,8 @@ export type Edit = {
   past: readonly MfdDocument[];
   document: MfdDocument;
   future: readonly MfdDocument[];
+  /** Names the run of typing the last change belonged to, if any (0023). */
+  merge?: string | undefined;
 };
 
 export function startEdit(base: StoredDocument): Edit {
@@ -21,20 +23,27 @@ export function isDirty(edit: Edit): boolean {
   return edit.document !== edit.base.document;
 }
 
-export function change(edit: Edit, document: MfdDocument): Edit {
-  return { ...edit, past: [...edit.past, edit.document].slice(-MAX_UNDO_STEPS), document, future: [] };
+/** A change; one with the same `merge` as the last is part of the same undo step (0023). */
+export function change(edit: Edit, document: MfdDocument, merge?: string): Edit {
+  if (merge !== undefined && merge === edit.merge) {
+    return { ...edit, document, future: [] };
+  }
+
+  return { ...edit, past: [...edit.past, edit.document].slice(-MAX_UNDO_STEPS), document, future: [], merge };
 }
 
 export function undo(edit: Edit): Edit {
   const document = edit.past.at(-1);
 
-  return document ? { ...edit, past: edit.past.slice(0, -1), document, future: [edit.document, ...edit.future] } : edit;
+  return document
+    ? { ...edit, past: edit.past.slice(0, -1), document, future: [edit.document, ...edit.future], merge: undefined }
+    : edit;
 }
 
 export function redo(edit: Edit): Edit {
   const [document, ...future] = edit.future;
 
-  return document ? { ...edit, past: [...edit.past, edit.document], document, future } : edit;
+  return document ? { ...edit, past: [...edit.past, edit.document], document, future, merge: undefined } : edit;
 }
 
 /** After `document` was saved as `revision`. Changes made in the meantime are still unsaved. */

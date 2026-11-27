@@ -4,7 +4,6 @@ import type { Edit } from '../documents/edit.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
 import { PageEditor } from '@mfdiy/builder';
-import { removeWidget } from '@mfdiy/schema';
 import { Box, Button, Dialog, Inline, Text, TextLink } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
@@ -78,11 +77,11 @@ function Editor({ id }: { id: string }) {
   const conflict = saving || !dirty ? null : findConflict(edit, watched);
   const selected = page?.widgets.some(widget => widget.id === selectedId) ? selectedId : null;
 
-  function handleChange(next: Page) {
+  function handleChange(next: Page, merge?: string) {
     const pages = document.pages.map(candidate => (candidate.id === next.id ? next : candidate));
 
     setFailure(null);
-    setEdit(change(current, { ...document, pages }));
+    setEdit(change(current, { ...document, pages }, merge));
   }
 
   /** Undoes or redoes, showing the page it changed. */
@@ -188,17 +187,6 @@ function Editor({ id }: { id: string }) {
               title='Redo'
             >
               ↷
-            </Button>
-            <Button
-              disabled={!page || selected === null}
-              onClick={() => {
-                if (page && selected !== null) {
-                  handleChange(removeWidget(page, selected));
-                  setSelectedId(null);
-                }
-              }}
-            >
-              Remove
             </Button>
           </Inline>
           <Inline alignItems='center' spacing='3x'>

@@ -2,7 +2,7 @@ export { Bar, barStates, type BarProps, type BarState } from './primitives/Bar.j
 export { Button, buttonStatuses, type ButtonProps, type ButtonStatus } from './primitives/Button.js';
 export { Light, lightStates, type LightProps, type LightState } from './primitives/Light.js';
 export { pressHandlers } from './primitives/pressHandlers.js';
-export { Readout, type ReadoutProps } from './primitives/Readout.js';
+export { Readout, readoutStates, type ReadoutProps, type ReadoutState } from './primitives/Readout.js';
 
 export { LayoutArea, LayoutGrid } from './layout/Layout.js';
 
@@ -13,6 +13,7 @@ export { amberCrt, builtInThemes, phosphor, type PrimitiveTokenValues } from './
 export { token } from './theme/token.js';
 
 export { formatValue, normalise } from './widgets/format.js';
+export { resolveInput } from './widgets/manifest.js';
 export type {
   InputSpec,
   OptionSpec,

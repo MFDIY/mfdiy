@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 
 import { validateLayout } from './layout.js';
-import { IdSchema } from './signals.js';
+import { IdSchema, ThresholdsSchema } from './signals.js';
 import { TokenValuesSchema } from './tokens.js';
 
 /**
@@ -20,9 +20,10 @@ export const AreaSchema = v.object({
 
 export type Area = v.InferOutput<typeof AreaSchema>;
 
-/** Connects a widget input to a signal. */
+/** Connects a widget input to a signal, with its own thresholds (0023). */
 export const BindingSchema = v.object({
-  signal: IdSchema
+  signal: IdSchema,
+  thresholds: v.optional(ThresholdsSchema)
 });
 
 export type Binding = v.InferOutput<typeof BindingSchema>;

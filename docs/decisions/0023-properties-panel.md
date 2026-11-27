@@ -47,7 +47,11 @@ Changes show on the canvas as they're made. A pick or a toggle is one undo step;
 
 ### On a phone
 
-The sheet's content scrolls, so everything is reachable while it's half-open; half-open only keeps the canvas in view to stay oriented, like a map app's sheet. There is no separate set of essentials.
+The sheet's content scrolls, so everything is reachable while it's half-open; half-open only keeps the canvas in view to stay oriented, like a map app's sheet. There is no separate set of essentials. The sheet never fully closes: it peeks with its handle and the widget's name (or "Page"), so the page's properties are always within reach and closing it never deselects (0008). The sheet's header names the widget, peeking or open, so in a sheet the panel doesn't repeat it: its first row holds only Duplicate and Remove, as buttons with an icon and text sharing the row evenly, and it scrolls away with the rest of the panel. In a sidebar they're icon buttons beside the widget's name. In a sidebar, the panel shows the widget's name (or "Page") itself. Choosing a type, data or action stacks a modal sheet on it, which starts with Back.
+
+### Nothing jumps
+
+The panel avoids layout shifts: a message never appears or disappears below a field. A temporary state shows inside the control instead ("Not connected" in an empty data row), a value that can't be right can't be entered (a threshold's levels limit each other, so it always warns before it turns critical), and an emptied page name comes back on leaving the field. Help text sits in toggletips (0022), so it never shifts anything either. Switching a threshold side on still shows its fields below it, for now.
 
 ## Open questions
 
@@ -63,5 +67,5 @@ The sheet's content scrolls, so everything is reachable while it's half-open; ha
 
 - `BindingSchema` gains optional thresholds (`low` and `high`, each with `warning` and `critical`); signal definitions gain default thresholds; `ResolvedInput` gains `state` and the thresholds.
 - Bar's `warningBelow` and `criticalBelow` options, stored as fractions of the range, are replaced by its binding's thresholds.
-- `OptionSpec` gains a choice type.
+- `OptionSpec` gains a choice type (a `SegmentedControl`) when an option first needs one; with Light's colour option gone, none does yet.
 - Light accepts number signals: off when normal, amber (`warning`) at its warning threshold, red (`critical`) at critical. On an on/off signal it lights in `primary`; its "colour when lit" option goes.

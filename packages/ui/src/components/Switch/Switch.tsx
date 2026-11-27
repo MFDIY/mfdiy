@@ -2,8 +2,10 @@ import { Field as BaseField } from '@base-ui/react/field';
 import { Switch as BaseSwitch } from '@base-ui/react/switch';
 
 import { designSystem } from '../../styles/design-system.js';
+import { visuallyHidden } from '../../styles/visuallyHidden.css.js';
 import { Box } from '../Box/Box.js';
 import { Text } from '../Text/Text.js';
+import { Toggletip } from '../Toggletip/Toggletip.js';
 
 import * as styles from './Switch.css.js';
 
@@ -43,7 +45,7 @@ const thumbClass = [designSystem({ display: 'block', height: '4x', width: '4x' }
 
 export type SwitchProps = {
   checked: boolean;
-  /** Explains the option, under its label. */
+  /** Explains the option: a hint in a toggletip by the label (0022), and its description for assistive technology. */
   description?: string | undefined;
   disabled?: boolean | undefined;
   /** Explains what's wrong, under the label, in the critical colour. */
@@ -66,17 +68,16 @@ export function Switch({ checked, description, disabled = false, error, label, o
     <BaseField.Root disabled={disabled} invalid={Boolean(error)}>
       <Box className={rowClass}>
         <Box display='flex' flexDirection='column' gap='1x' minWidth='none'>
-          <BaseField.Label
-            className={styles.label}
-            render={<Text color={disabled ? 'text.faint' : 'text'} tagName='label' variant='body' />}
-          >
-            {label}
-          </BaseField.Label>
-          {description ? (
-            <BaseField.Description render={<Text color='text.dim' variant='body' />}>
-              {description}
-            </BaseField.Description>
-          ) : null}
+          <Box alignItems='center' display='flex' gap='1x'>
+            <BaseField.Label
+              className={styles.label}
+              render={<Text color={disabled ? 'text.faint' : 'text'} tagName='label' variant='body' />}
+            >
+              {label}
+            </BaseField.Label>
+            {description ? <Toggletip label={`About ${label}`}>{description}</Toggletip> : null}
+          </Box>
+          {description ? <BaseField.Description className={visuallyHidden}>{description}</BaseField.Description> : null}
           {error ? (
             <BaseField.Error match render={<Text color='status.critical' variant='body' />}>
               {error}

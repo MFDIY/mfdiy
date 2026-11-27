@@ -14,6 +14,7 @@ export function ScrollEdge({ edge, show }: Props) {
     <Box
       bottom={edge === 'bottom' ? 'none' : undefined}
       className={styles.edge}
+      data-scroll-edge={edge}
       insetX='none'
       opacity={show ? '1' : '0'}
       pointerEvents='none'

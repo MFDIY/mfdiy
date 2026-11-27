@@ -69,10 +69,16 @@ const meta = {
   },
   args: {
     children: undefined,
-    end: { content: <Placeholder />, title: 'Properties' },
+    end: {
+      content: <Placeholder />,
+      title: 'Properties'
+    },
     onSheetClose: () => undefined,
     openSheet: null,
-    start: { content: <Placeholder />, title: 'Add a widget' }
+    start: {
+      content: <Placeholder />,
+      title: 'Add a widget'
+    }
   },
   render: args => <Demo end={args.end} start={args.start} />,
   decorators: [

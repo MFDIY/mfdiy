@@ -6,7 +6,7 @@ import { TextInput } from '../TextInput/TextInput.js';
 export type TextFieldProps = {
   /** Shows a button that empties the field while it has text. */
   clearable?: boolean | undefined;
-  /** Explains the field, under it. */
+  /** Explains the field: a hint in a toggletip by the label (0022). */
   description?: string | undefined;
   disabled?: boolean | undefined;
   /** Explains what's wrong with the value. Shown under the field, which turns red. */

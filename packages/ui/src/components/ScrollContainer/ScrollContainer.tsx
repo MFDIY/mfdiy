@@ -8,6 +8,7 @@ import {
 } from '../../contexts/IntersectionObserverProvider/IntersectionObserverProvider.js';
 import { Box, type ViewTransitionNameProp } from '../Box/Box.js';
 
+import * as styles from './ScrollContainer.css.js';
 import { ScrollContent } from './ScrollContent.js';
 
 export type ScrollContainerProps = PropsWithChildren<{
@@ -34,6 +35,7 @@ export function ScrollContainer({
 
   return (
     <Box
+      className={styles.root}
       display='flex'
       flexDirection='column'
       flexGrow='1'

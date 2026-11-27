@@ -66,7 +66,7 @@ const demo: MfdDocument = {
           id: 'decoupled',
           type: 'light',
 
-          options: { label: 'Decpl', litState: 'warning' },
+          options: { label: 'Decpl' },
           bindings: { value: { signal: 'ifcs.decoupled' } },
           action: 'ifcs.decouple-toggle'
         },

@@ -12,7 +12,7 @@ export { Divider, type DividerProps } from './Divider/Divider.js';
 
 export { Field, type FieldProps } from './Field/Field.js';
 
-export { Icon, iconNames, type IconName, type IconProps } from './Icon/Icon.js';
+export { Icon, iconNames, iconSizes, type IconName, type IconProps, type IconSize } from './Icon/Icon.js';
 
 export { IconButton, type IconButtonProps } from './IconButton/IconButton.js';
 
@@ -35,6 +35,8 @@ export {
   type PanelSide
 } from './PanelLayout/PanelLayout.js';
 
+export { PanelTask, type PanelTaskProps, type Task as PanelTaskContent } from './PanelLayout/PanelTask.js';
+
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
@@ -54,6 +56,8 @@ export { TextInput, type TextInputProps } from './TextInput/TextInput.js';
 
 export { TextLink, type TextLinkProps } from './TextLink/TextLink.js';
 
+export { Sticky, stickyEdges, type StickyEdge, type StickyProps } from './Sticky/Sticky.js';
+
 export { Switch, type SwitchProps } from './Switch/Switch.js';
 
 export { Tabs, type TabsItem, type TabsProps } from './Tabs/Tabs.js';
@@ -68,7 +72,7 @@ export {
 
 export { Select, type SelectItem, type SelectProps } from './Select/Select.js';
 
-export { Sheet, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
+export { Sheet, SheetPeekSpace, stops as sheetStops, type SheetProps } from './Sheet/Sheet.js';
 
 export {
   SearchList,
@@ -78,5 +82,7 @@ export {
 } from './SearchList/SearchList.js';
 
 export { ToastProvider, useToast, type ToastOptions } from './Toast/Toast.js';
+
+export { Toggletip, type ToggletipProps } from './Toggletip/Toggletip.js';
 
 export { Tooltip, type TooltipProps } from './Tooltip/Tooltip.js';

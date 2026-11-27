@@ -31,6 +31,21 @@ describe('undo and redo', () => {
     expect(change(undo(change(start, b)), c).future).toEqual([]);
   });
 
+  it('makes typing in one field one step', () => {
+    const typed = change(change(change(start, b, 'label 0'), c, 'label 0'), b, 'label 0');
+
+    expect(typed.past).toEqual([a]);
+    expect(undo(typed).document).toBe(a);
+    expect(change(typed, c, 'label 1').past).toEqual([a, b]);
+    expect(change(typed, c).past).toEqual([a, b]);
+  });
+
+  it('starts a new step after undo, even in the same field', () => {
+    const typed = change(change(start, b, 'label 0'), c, 'other 0');
+
+    expect(change(undo(typed), c, 'other 0').past).toEqual([a, b]);
+  });
+
   it('keeps a limited number of steps', () => {
     let edit = start;
 

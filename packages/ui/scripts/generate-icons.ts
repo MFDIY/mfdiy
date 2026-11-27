@@ -14,6 +14,7 @@ const names = [
   'close',
   'content_copy',
   'delete',
+  'info',
   'keyboard_arrow_down',
   'keyboard_arrow_up',
   'more_horiz',

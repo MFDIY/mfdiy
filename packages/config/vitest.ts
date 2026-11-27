@@ -38,6 +38,7 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
           '@base-ui/react/field',
           '@base-ui/react/menu',
           '@base-ui/react/number-field',
+          '@base-ui/react/popover',
           '@base-ui/react/radio',
           '@base-ui/react/radio-group',
           '@base-ui/react/select',
