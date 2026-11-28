@@ -41,6 +41,12 @@ const RequestIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 export const HelloMessageSchema = v.object({
   type: v.literal('hello'),
   protocol: v.number(),
+  /**
+   * Where other devices on the network can open the app, such as `http://192.168.1.20`, the
+   * likeliest first (0004). Empty when the gaming PC isn't on a network. Optional, so a bridge
+   * that doesn't send it still reaches the protocol check.
+   */
+  addresses: v.optional(v.pipe(v.array(v.pipe(v.string(), v.url())), v.maxLength(16)), []),
   game: GameInfoSchema,
   source: v.picklist(bridgeSources),
   signals: v.array(SignalDefinitionSchema),

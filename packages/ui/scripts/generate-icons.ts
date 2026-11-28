@@ -25,6 +25,7 @@ const names = [
   'list_arrow',
   'menu',
   'more_horiz',
+  'qr_code',
   'redo',
   'remove',
   'undo',

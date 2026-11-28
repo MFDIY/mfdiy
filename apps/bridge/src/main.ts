@@ -5,9 +5,11 @@ import { networkInterfaces } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import QRCode from 'qrcode';
 import sirv from 'sirv';
 import { WebSocketServer } from 'ws';
 
+import { lanAddresses } from './addresses.js';
 import { createHub } from './hub.js';
 import { defaultDataDirectory, openLibrary } from './library.js';
 import { isAllowedOrigin } from './origin.js';
@@ -31,7 +33,8 @@ const { values: args } = parseArgs({
 const source = createSimulator(starCitizen);
 const dataDirectory = args.data ? resolve(args.data) : defaultDataDirectory();
 const library = await openLibrary(dataDirectory, source.adapter.starterDocuments);
-const hub = createHub(source, library);
+let port = 0;
+const hub = createHub(source, library, () => lanAddresses(networkInterfaces(), port));
 
 const serveApp =
   !args['no-static'] && existsSync(args.static) ? sirv(args.static, { single: true, etag: true }) : undefined;
@@ -81,18 +84,31 @@ function listen(server: Server, [port, ...fallbacks]: number[]): Promise<number>
   });
 }
 
-const port = await listen(server, ports);
-const suffix = port === 80 ? '' : `:${port}`;
-
-const lanAddresses = Object.values(networkInterfaces())
-  .flat()
-  .filter(address => address && address.family === 'IPv4' && !address.internal)
-  .map(address => `http://${address?.address}${suffix}`);
+port = await listen(server, ports);
+const local = `http://localhost${port === 80 ? '' : `:${port}`}`;
+const addresses = lanAddresses(networkInterfaces(), port);
 
 console.log(`MFDIY bridge, ${source.kind === 'simulator' ? 'simulating' : 'connected to'} ${source.adapter.game.name}`);
-console.log(serveApp ? `Open the MFD on any device on your network:` : 'Telemetry WebSocket available at /ws on:');
-for (const address of [`http://localhost${suffix}`, ...lanAddresses]) {
-  console.log(`  ${address}`);
+
+if (serveApp) {
+  const [first] = addresses;
+
+  if (first) {
+    console.log('Scan this with a phone or tablet on the same network to open your profiles:');
+    console.log(await QRCode.toString(first, { type: 'terminal', small: true }));
+  }
+
+  console.log(addresses.length > 0 ? 'Or open one of these on any device on your network:' : 'Open:');
+  for (const address of [...addresses, local]) {
+    console.log(`  ${address}`);
+  }
+
+  console.log(`To connect another device, open ${local}/connect on this PC.`);
+} else {
+  console.log('Telemetry WebSocket available at /ws on:');
+  for (const address of [local, ...addresses]) {
+    console.log(`  ${address}`);
+  }
 }
 
 console.log(`Profiles are saved in ${dataDirectory}`);

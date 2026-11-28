@@ -34,7 +34,7 @@ export default function Home() {
   return (
     <Box tagName='main'>
       <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline'>
-        <AppHeader />
+        <AppHeader onConnect={() => void navigate('/connect')} />
       </Box>
       <Box padding='6x'>
         <Stack spacing='5x'>

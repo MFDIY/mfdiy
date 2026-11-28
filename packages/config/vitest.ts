@@ -46,6 +46,7 @@ export function storybookPackageProjects(packageDir: string): TestProjectInlineC
           '@base-ui/react/switch',
           '@base-ui/react/tabs',
           '@base-ui/react/tooltip',
+          'qrcode',
           'sonner'
         ]
       },

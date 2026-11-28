@@ -22,6 +22,8 @@ export type AppHeaderProps = {
   accent?: string | undefined;
   /** How the screen is kept on, shown with a hint; leave it out until it's engaged (0005). */
   keepAwake?: KeepAwakeMethod | undefined;
+  /** Shows the QR code another device can scan to open the app, or the profile shown (0004). */
+  onConnect?: (() => void) | undefined;
   /** Opens the editor on the page shown. */
   onEdit?: (() => void) | undefined;
   /** Shows the MFD fullscreen; leave it out where the browser can't (0009). */
@@ -32,10 +34,10 @@ export type AppHeaderProps = {
 
 /**
  * The header on the home page and on a profile (0009): the same one row over a hairline as the
- * editor's (0008), with the logomark on the left, which leads home, and Edit and Fullscreen on the
- * right, after how the screen is kept on (0005). It draws no hairline: what it's placed in does.
+ * editor's (0008), with the logomark on the left, which leads home, and Connect a device (0004),
+ * Edit and Fullscreen on the right, after how the screen is kept on (0005). It draws no hairline: what it's placed in does.
  */
-export function AppHeader({ accent, keepAwake, onEdit, onFullscreen, onHome }: AppHeaderProps) {
+export function AppHeader({ accent, keepAwake, onConnect, onEdit, onFullscreen, onHome }: AppHeaderProps) {
   return (
     <Box
       alignItems='center'
@@ -82,6 +84,7 @@ export function AppHeader({ accent, keepAwake, onEdit, onFullscreen, onHome }: A
           </Toggletip>
         </Box>
       ) : null}
+      {onConnect ? <IconButton icon='qr_code' label='Connect a device' onClick={onConnect} /> : null}
       {onEdit ? <IconButton icon='edit' label='Edit' onClick={onEdit} /> : null}
       {onFullscreen ? <IconButton icon='fullscreen' label='Fullscreen' onClick={onFullscreen} /> : null}
     </Box>

@@ -48,6 +48,8 @@ export { PanelTask, type PanelTaskProps, type Task as PanelTaskContent } from '.
 
 export { Placeholder, type PlaceholderProps } from './Placeholder/Placeholder.js';
 
+export { QrCode, type QrCodeProps } from './QrCode/QrCode.js';
+
 export { ScrollContainer, type ScrollContainerProps } from './ScrollContainer/ScrollContainer.js';
 
 export { Stack, order as stackOrder, tagNames as stackTagNames, type StackProps } from './Stack/Stack.js';

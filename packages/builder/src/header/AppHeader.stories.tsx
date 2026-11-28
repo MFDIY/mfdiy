@@ -23,6 +23,7 @@ const meta = {
   args: {
     accent: undefined,
     keepAwake: undefined,
+    onConnect: undefined,
     onEdit: undefined,
     onFullscreen: undefined,
     onHome: undefined
@@ -39,6 +40,11 @@ type Story = StoryObj<typeof meta>;
 
 /** As on the home page: only the logomark, which is already home. */
 export const Default = {} satisfies Story;
+
+/** On the home page, with the way to connect a phone or tablet (0004). */
+export const Home = {
+  args: { onConnect: fn() }
+} satisfies Story;
 
 /** On a profile: the logomark leads home, in the accent of the page shown; Edit and Fullscreen on the right. */
 export const Profile = {
@@ -77,13 +83,15 @@ export const Phone = {
 
 /** Each control does one thing. */
 export const Pressing = {
-  args: { onEdit: fn(), onFullscreen: fn(), onHome: fn() },
+  args: { onConnect: fn(), onEdit: fn(), onFullscreen: fn(), onHome: fn() },
   tags: ['!dev', '!visual'],
   play: async ({ args, canvasElement }) => {
     const header = within(canvasElement);
 
     await userEvent.click(header.getByRole('button', { name: 'All profiles' }));
     await expect(args.onHome).toHaveBeenCalledOnce();
+    await userEvent.click(header.getByRole('button', { name: 'Connect a device' }));
+    await expect(args.onConnect).toHaveBeenCalledOnce();
     await userEvent.click(header.getByRole('button', { name: 'Edit' }));
     await expect(args.onEdit).toHaveBeenCalledOnce();
     await userEvent.click(header.getByRole('button', { name: 'Fullscreen' }));
