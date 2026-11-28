@@ -1,5 +1,4 @@
 import type { CanvasHandle, CanvasProps, CanvasSurround, CanvasView } from './canvas/Canvas.js';
-import type { Catalogue } from './palette/choices.js';
 import type { ProfileSettings } from './properties/ProfileProperties.js';
 import type { Area, Copied, GridPoint, Layout, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
 
@@ -48,6 +47,7 @@ import { CanvasLabel } from './canvas/CanvasLabel.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
 import { isModifierShortcut } from './keys.js';
 import { DragLabel } from './palette/DragLabel.js';
+import { withPageSignals, type Catalogue } from './palette/choices.js';
 import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
 import { PropertiesPanel } from './properties/PropertiesPanel.js';
 import { SubgridProperties } from './properties/SubgridProperties.js';
@@ -618,7 +618,7 @@ export function PageEditor({
               ? 'Shared subgrid'
               : profileShown && profile && selectedId === null
                 ? 'Profile'
-                : propertiesTitle(edited.page, selectedId, catalogue, pages)
+                : propertiesTitle(edited.page, selectedId, withPageSignals(catalogue, pages), pages)
         }}
         onSheetClose={() => {
           setOpenSheet(null);

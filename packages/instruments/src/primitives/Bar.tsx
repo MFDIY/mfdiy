@@ -2,7 +2,7 @@ import { Box } from '@mfdiy/ui/components';
 
 import * as styles from './Bar.css.js';
 import { Frame } from './Frame.js';
-import { Label } from './Label.js';
+import { Name } from './Name.js';
 
 export const barStates = ['normal', 'warning', 'critical'] as const;
 
@@ -23,7 +23,7 @@ export function Bar({ label, value, displayValue, state }: BarProps) {
 
   return (
     <Frame className={styles.bar} data-state={state} display='grid'>
-      <Label>{label}</Label>
+      <Name>{label}</Name>
       <Box className={styles.value}>{displayValue}</Box>
       <Box
         alignSelf='flex-end'

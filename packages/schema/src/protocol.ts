@@ -2,6 +2,7 @@ import * as v from 'valibot';
 
 import { MfdDocumentSchema } from './document.js';
 import { DocumentIdSchema, DocumentSummarySchema, RevisionSchema, StoredDocumentSchema } from './library.js';
+import { MFD_SIGNAL_PREFIX } from './pageSignals.js';
 import {
   ActionDefinitionSchema,
   GameInfoSchema,
@@ -49,7 +50,14 @@ export const HelloMessageSchema = v.object({
   addresses: v.optional(v.pipe(v.array(v.pipe(v.string(), v.url())), v.maxLength(16)), []),
   game: GameInfoSchema,
   source: v.picklist(bridgeSources),
-  signals: v.array(SignalDefinitionSchema),
+  /** The game's signals; never in the MFD's own namespace (`mfd.`), so they can't clash with its signals. */
+  signals: v.pipe(
+    v.array(SignalDefinitionSchema),
+    v.check(
+      signals => signals.every(signal => !signal.id.startsWith(MFD_SIGNAL_PREFIX)),
+      `Game signals can't start with "${MFD_SIGNAL_PREFIX}"`
+    )
+  ),
   actions: v.array(ActionDefinitionSchema)
 });
 

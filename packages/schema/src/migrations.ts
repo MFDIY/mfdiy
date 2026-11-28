@@ -55,10 +55,7 @@ const tokenMoves: readonly (readonly [string, readonly TokenName[]])[] = [
   // The bar's value used to share the readout's colour.
   ['readout.value', ['readout.value', 'bar.value']],
   // So did the readout's unit and label.
-  ['readout.label', ['readout.label', 'readout.unit']],
-  ['button.background', ['button.face']],
-  ['button.text', ['button.label']],
-  ['button.outline', ['button.outline']]
+  ['readout.label', ['readout.label', 'readout.unit']]
 ];
 
 /**

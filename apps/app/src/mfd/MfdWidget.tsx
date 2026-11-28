@@ -1,7 +1,7 @@
 import type { WidgetInstance } from '@mfdiy/schema';
 
 import { resolveInput, useHeldStates, widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
-import { gameActionOf, pageActionOf } from '@mfdiy/schema';
+import { gameActionOf, pageActionOf, pageOfSignal, pageSignals } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 
 import { useConnection, useSignalValues, useWidgetAction } from '../telemetry/TelemetryProvider.js';
@@ -31,11 +31,20 @@ export function MfdWidget({ widget }: { widget: WidgetInstance }) {
   const manifest = widgetManifests[widget.type];
   const resolved: Partial<Record<string, ResolvedInput>> = {};
 
+  const shownPages = pageSignals(navigation.pages);
+
   bindings.forEach(([input, binding], index) => {
-    const signal = connection.hello?.signals.find(candidate => candidate.id === binding.signal);
+    const page = pageOfSignal(binding.signal);
+    const signal = (page === undefined ? (connection.hello?.signals ?? []) : shownPages).find(
+      candidate => candidate.id === binding.signal
+    );
 
     if (signal) {
-      resolved[input] = resolveInput(signal, values[index] ?? null, binding);
+      resolved[input] = resolveInput(
+        signal,
+        page === undefined ? (values[index] ?? null) : page === navigation.pageId,
+        binding
+      );
     }
   });
 

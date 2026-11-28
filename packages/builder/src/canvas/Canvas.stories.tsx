@@ -13,7 +13,7 @@ const widgets: WidgetInstance[] = [
   { id: 'fuel', type: 'bar', options: { label: 'Fuel' } },
   { id: 'gear', type: 'light', options: { label: 'Gear' } },
   { id: 'esp', type: 'light', options: { label: 'ESP' } },
-  { id: 'doors', type: 'button', options: { label: 'Doors' } }
+  { id: 'doors', type: 'label', options: { label: 'Doors' } }
 ];
 
 const layout: Layout = {

@@ -4,7 +4,7 @@ import type { Catalogue } from '../palette/choices.js';
 import type { Area, Layout, Page, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { acceptsSignal, widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
-import { bindingFor, duplicateWidget, gameActionOf, pageActionOf, removeWidget } from '@mfdiy/schema';
+import { bindingFor, duplicateWidget, gameActionOf, pageActionOf, pageSignalId, removeWidget } from '@mfdiy/schema';
 import {
   Accordion,
   Bleed,
@@ -121,13 +121,17 @@ export function WidgetProperties({
   }
 
   function pickAction(id: string) {
+    const target = id.startsWith(PAGE_PREFIX) ? id.slice(PAGE_PREFIX.length) : undefined;
+    const lit = Object.entries(manifest.inputs).find(([, spec]) => spec.pageShown)?.[0];
+
     setPicking(null);
-    change(current =>
-      withAction(
-        current,
-        id === NO_ACTION ? undefined : id.startsWith(PAGE_PREFIX) ? { page: id.slice(PAGE_PREFIX.length) } : id
-      )
-    );
+    change(current => {
+      const next = withAction(current, id === NO_ACTION ? undefined : target === undefined ? id : { page: target });
+
+      return target !== undefined && lit !== undefined && !current.bindings
+        ? withBinding(next, lit, { signal: pageSignalId(target) })
+        : next;
+    });
   }
 
   function pickTask(current: Picking): PanelTaskContent {
@@ -197,9 +201,9 @@ export function WidgetProperties({
       };
     }
 
-    const optional = Object.keys(manifest.inputs).length > 0;
+    const shows = Object.keys(manifest.inputs).length > 0 ? 'Only shows its data' : 'Only shows its text';
     const items: PickItem[] = [
-      ...(optional ? [{ id: NO_ACTION, label: 'No action', description: 'Only shows its data' }] : []),
+      { id: NO_ACTION, label: 'No action', description: shows },
       ...pages.map(({ id, name }) => ({
         id: `${PAGE_PREFIX}${id}`,
         label: name,
@@ -378,11 +382,10 @@ export function WidgetProperties({
           ) : null}
           {manifest.actionable ? (
             <OpensRow
-              description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
-              empty={inputs.length > 0 ? 'No action' : 'Not connected'}
+              description='Pressing it triggers this.'
+              empty='No action'
               label='Action'
               onOpen={() => setPicking({ kind: 'action' })}
-              required={inputs.length === 0}
               value={actionText}
             />
           ) : null}

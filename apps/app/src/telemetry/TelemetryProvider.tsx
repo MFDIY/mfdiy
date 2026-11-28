@@ -1,4 +1,4 @@
-import type { ButtonStatus, WidgetAction } from '@mfdiy/instruments';
+import type { PressStatus, WidgetAction } from '@mfdiy/instruments';
 import type { SignalValue } from '@mfdiy/schema';
 
 import {
@@ -60,13 +60,13 @@ export function useSignalValues(ids: readonly string[]): readonly SignalValue[] 
   return useSyncExternalStore(subscribe, () => store.selectValues(ids));
 }
 
-const STATUS_RESET_MS = 1500;
+const STATUS_RESET_MS = 1200;
 
 /** Wires a game action to a pressable widget, including pending / ok / failed feedback. */
 export function useWidgetAction(actionId: string | undefined): WidgetAction | undefined {
   const store = useTelemetryStore();
   const connection = useConnection();
-  const [status, setStatus] = useState<ButtonStatus>('idle');
+  const [status, setStatus] = useState<PressStatus>('idle');
 
   const definition = connection.hello?.actions.find(action => action.id === actionId);
 

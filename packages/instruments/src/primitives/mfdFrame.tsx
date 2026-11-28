@@ -8,9 +8,14 @@ import { builtInThemes } from '../theme/themes.js';
 
 /**
  * Stories only: draws a primitive on an MFD in the theme picked in the toolbar, at roughly the size
- * of a widget on a tablet, since primitives scale with the cell they're in.
+ * of a widget on a tablet, since primitives scale with the cell they're in. A story that draws its
+ * own MFD, like a comparison, turns it off with `parameters: { mfdFrame: false }`.
  */
 export const mfdFrame: Decorator = (Story, context) => {
+  if (context.parameters['mfdFrame'] === false) {
+    return <Story />;
+  }
+
   const theme = builtInThemes.find(candidate => candidate.name === context.globals['theme']) ?? builtInThemes[0];
 
   return (

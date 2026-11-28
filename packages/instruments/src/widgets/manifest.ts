@@ -1,4 +1,4 @@
-import type { ButtonStatus } from '../primitives/Button.js';
+import type { PressStatus } from '../primitives/Pressable.js';
 import type { ComponentType } from 'react';
 
 import {
@@ -19,6 +19,8 @@ export type InputSpec = {
   accepts: readonly SignalKind[];
   /** Only numbers whose range means something, e.g. for a gauge (0023). */
   bounded?: boolean | undefined;
+  /** Bound to a page's "shown" signal when the widget is given a page action with no data yet, so a page button lights while its page is shown (0018). */
+  pageShown?: boolean | undefined;
   required: boolean;
 };
 
@@ -61,7 +63,7 @@ export type WidgetAction = {
   /** A page button's page is shown (0018). */
   current?: boolean | undefined;
   label: string;
-  status: ButtonStatus;
+  status: PressStatus;
   trigger: () => void;
 };
 

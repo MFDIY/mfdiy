@@ -66,6 +66,8 @@ export const phosphor: PrimitiveTokenValues = {
   gap: '1.5cqmin',
   radius: '0.5cqmin',
   'border.width': '1px',
+  'corner.width': '2px',
+  'corner.gap': '3px',
   glow: '1.5cqmin',
   duration: '250ms'
 };

@@ -106,6 +106,17 @@ export const tokens = {
   },
   radius: { tier: 'primitive', type: 'length', description: 'Corner radius of frames and lights.' },
   'border.width': { tier: 'primitive', type: 'length', description: 'Width of outlines.' },
+  'corner.width': {
+    tier: 'primitive',
+    type: 'length',
+    description:
+      'Thickness of the corners that mark a widget that can be pressed. Every widget keeps room for them, so they line up. 0 for none.'
+  },
+  'corner.gap': {
+    tier: 'primitive',
+    type: 'length',
+    description: 'Space between the corners of a widget that can be pressed and the widget itself.'
+  },
   glow: {
     tier: 'primitive',
     type: 'length',
@@ -176,14 +187,41 @@ export const tokens = {
   'readout.value': { tier: 'component', type: 'color', fallback: 'text', description: 'Readout: value.' },
   'readout.unit': { tier: 'component', type: 'color', fallback: 'text.dim', description: 'Readout: unit.' },
   'readout.label': { tier: 'component', type: 'color', fallback: 'text.dim', description: 'Readout: label.' },
-  'button.face': { tier: 'component', type: 'color', fallback: 'surface', description: 'Button: face.' },
-  'button.label': { tier: 'component', type: 'color', fallback: 'text', description: 'Button: label.' },
-  'button.outline': { tier: 'component', type: 'color', fallback: 'line', description: 'Button: outline.' },
-  'button.failed': {
+  'readout.zeros': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'neutral.5',
+    description: 'Readout: leading zeros, dimmer than the digits that count.'
+  },
+  'press.cue': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'text.dim',
+    description: 'Pressable widgets: the corners that show they can be pressed.'
+  },
+  'press.accepted': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.on',
+    description: 'Pressable widgets: the corners once the game accepted the press.'
+  },
+  'press.pending': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'accent',
+    description: 'Pressable widgets: waiting for the game to answer.'
+  },
+  'press.ripple': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'text',
+    description: 'Pressable widgets: the ripple from where they were touched.'
+  },
+  'press.failed': {
     tier: 'component',
     type: 'color',
     fallback: 'status.critical',
-    description: 'Button and light: the action failed.'
+    description: 'Pressable widgets: the game refused the press.'
   }
 } as const satisfies Record<string, TokenSpec>;
 

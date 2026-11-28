@@ -36,28 +36,3 @@ export const light = style({
     }
   }
 });
-
-export const pressable = style({
-  font: 'inherit',
-  WebkitUserSelect: 'none',
-
-  selectors: {
-    '&:active': {
-      transform: 'scale(0.97)'
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${token('accent')}`,
-      outlineOffset: '2px'
-    },
-    '&[data-status="pending"]': {
-      opacity: 0.6
-    },
-    '&[data-status="failed"]': {
-      outline: `2px solid ${token('button.failed')}`,
-      outlineOffset: '2px'
-    },
-    '&:disabled': {
-      opacity: 0.4
-    }
-  }
-});

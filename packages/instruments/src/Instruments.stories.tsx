@@ -3,8 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mfdiy/ui/components';
 
 import { Bar } from './primitives/Bar.js';
-import { Button } from './primitives/Button.js';
+import { Label } from './primitives/Label.js';
 import { Light } from './primitives/Light.js';
+import { Pressable } from './primitives/Pressable.js';
 import { Readout } from './primitives/Readout.js';
 import { applyTokens } from './theme/applyTokens.js';
 import { root } from './theme/root.css.js';
@@ -37,10 +38,14 @@ function Showcase({ themeName }: { themeName: string }) {
         <Bar displayValue='18%' label='Quantum fuel' state='warning' value={0.18} />
       </Box>
       <Box style={{ gridColumn: 'span 2' }}>
-        <Readout label='SCM speed' unit='m/s' value='212' />
+        <Readout label='SCM speed' unit='m/s' value={{ digits: '212', sign: '', value: 212, zeros: '0' }} />
       </Box>
-      <Button label='Gear' onPress={() => {}} status='idle' />
-      <Button label='Doors' onPress={() => {}} status='failed' />
+      <Pressable onPress={() => {}}>
+        <Label text='Lights' />
+      </Pressable>
+      <Pressable onPress={() => {}} status='failed'>
+        <Label text='Doors' />
+      </Pressable>
     </Box>
   );
 }

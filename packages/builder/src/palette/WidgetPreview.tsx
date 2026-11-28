@@ -51,11 +51,7 @@ export function WidgetPreview({ documentTokens, label, manifest, pageTokens, sig
     <Box className={mfdRoot} cssVariables={applyTokens(documentTokens)} height='full'>
       <Box className={styles.surface} cssVariables={applyTokens(pageTokens)} height='full'>
         <manifest.Component
-          action={
-            inputs.length === 0
-              ? { available: true, label: label ?? manifest.label, status: 'idle', trigger: () => undefined }
-              : undefined
-          }
+          action={undefined}
           inputs={Object.fromEntries(inputs)}
           options={{
             ...Object.fromEntries(Object.entries(manifest.options).map(([name, spec]) => [name, spec.default])),
