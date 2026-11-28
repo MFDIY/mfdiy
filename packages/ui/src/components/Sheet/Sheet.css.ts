@@ -20,8 +20,11 @@ export const frontOffset = createVar();
 
 export const popup = style({
   height: '100dvh',
-  // What's below the screen's edge at the half stop isn't part of the visible sheet.
-  paddingBottom: `max(0px, ${offset})`,
+  // What's below the screen's edge at the half stop isn't part of the visible sheet. Capped to leave
+  // the handle's row, so the padding never makes the sheet taller than the screen: Base UI measures
+  // the sheet, and after the screen shrinks (a phone rotated) an old offset would otherwise keep it
+  // tall and below the screen's edge.
+  paddingBottom: `clamp(0px, ${offset}, calc(100dvh - ${uiVars['size.control']}))`,
   transform: `translateY(${offset})`,
   transition: `transform ${uiVars['duration.long']} cubic-bezier(0.32, 0.72, 0, 1)`,
   willChange: 'transform',

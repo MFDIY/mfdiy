@@ -221,6 +221,23 @@ export const PeekingOpensAndCloses = {
   }
 } satisfies Story;
 
+/**
+ * A sheet is never taller than the screen, even while its offset is still the one from a taller
+ * screen (a phone just rotated): Base UI measures the sheet, so a taller one would rest below the
+ * screen's edge, handle and all.
+ */
+export const NeverTallerThanTheScreen = {
+  tags: ['!dev', '!visual'],
+  args: { children: <Content />, peek: true, title: 'Properties' },
+  play: async () => {
+    await settled();
+    const sheet = screen.getByRole('button', { name: 'Open Properties' }).closest<HTMLElement>('[role="dialog"]');
+
+    sheet?.style.setProperty('--drawer-snap-point-offset', `${2 * window.innerHeight}px`);
+    await expect(sheet?.offsetHeight).toBeLessThanOrEqual(window.innerHeight);
+  }
+} satisfies Story;
+
 /** Modal, e.g. a side task stacked on another sheet: what's behind it is darkened and can't be pressed. */
 export const Modal = {
   args: { children: <Content />, modal: true, title: 'Choose data' },
