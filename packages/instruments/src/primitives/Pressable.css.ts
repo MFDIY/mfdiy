@@ -2,6 +2,7 @@ import { createVar, keyframes, style } from '@vanilla-extract/css';
 
 import { token } from '../theme/token.js';
 
+import { light } from './Light.css.js';
 import { glow, transition } from './styleHelpers.js';
 
 const cueColor = createVar();
@@ -44,6 +45,18 @@ export const pressable = style({
     },
     '&:disabled': {
       opacity: 0.4
+    },
+    '&[data-cue$="-outside"]': {
+      padding: 'clamp(3px, 6cqmin, 6px)'
+    },
+    [`&[data-cue$="-inked"]:has(${light}[data-state="on"])`]: {
+      vars: { [cueColor]: token('light.on.text') }
+    },
+    [`&[data-cue$="-inked"]:has(${light}[data-state="warning"])`]: {
+      vars: { [cueColor]: token('light.warning.text') }
+    },
+    [`&[data-cue$="-inked"]:has(${light}[data-state="critical"])`]: {
+      vars: { [cueColor]: token('light.critical.text') }
     }
   }
 });
@@ -52,7 +65,7 @@ export const cue = style({
   transition: transition('background', 'border-color', 'box-shadow'),
 
   selectors: {
-    [`${pressable}[data-cue="corners"] &`]: {
+    [`${pressable}[data-cue^="corners"] &`]: {
       background: [
         `linear-gradient(${cueColor}, ${cueColor}) top left / ${corner} ${thickness}`,
         `linear-gradient(${cueColor}, ${cueColor}) top left / ${thickness} ${corner}`,
@@ -65,14 +78,13 @@ export const cue = style({
       ].join(', '),
       backgroundRepeat: 'no-repeat'
     },
-    [`${pressable}[data-cue="frame"] &`]: {
+    [`${pressable}[data-cue^="frame"] &`]: {
       border: `${token('border.width')} solid ${cueColor}`,
       borderRadius: token('radius'),
       inset: 'clamp(2px, 5cqmin, 5px)'
     },
-    [`${pressable}[data-cue="edge"] &`]: {
-      background: `linear-gradient(${cueColor}, ${cueColor}) bottom / 100% clamp(2px, 6cqmin, 5px) no-repeat`,
-      borderRadius: token('radius')
+    [`${pressable}[data-cue="frame-outside"] &`]: {
+      inset: 0
     },
     [`${pressable}[aria-current="page"] &, ${pressable}[data-status="ok"] &`]: {
       filter: `drop-shadow(${glow(cueColor)})`

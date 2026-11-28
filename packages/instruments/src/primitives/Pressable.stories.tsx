@@ -53,6 +53,7 @@ const widgets: { name: string; content: ReactNode; current?: boolean }[] = [
   { name: 'Label, page shown', content: <Label text='Flight' />, current: true },
   { name: 'Light, off', content: <Light label='Decpl' state='off' /> },
   { name: 'Light, on', content: <Light label='Gear' state='on' /> },
+  { name: 'Light, critical', content: <Light label='Hull' state='critical' /> },
   { name: 'Readout', content: <Readout label='SCM speed' unit='m/s' value={speed} /> },
   { name: 'Bar', content: <Bar displayValue='62%' label='Shield front' state='normal' value={0.62} /> }
 ];
@@ -74,6 +75,7 @@ export const CompareCues: Story = {
   parameters: { mfdFrame: false },
   render: (_args, context) => (
     <Comparison
+      cell={{ height: 88, width: 136 }}
       columns={widgets.map(widget => widget.name)}
       rows={[
         {

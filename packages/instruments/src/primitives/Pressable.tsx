@@ -11,8 +11,12 @@ export const pressStatuses = ['idle', 'pending', 'ok', 'failed'] as const;
 /** Where the last press stands: waiting for the game, accepted, or refused (0018). */
 export type PressStatus = (typeof pressStatuses)[number];
 
-/** Temporary: the looks being compared for showing that a widget can be pressed (0018). */
-export const cues = ['corners', 'frame', 'edge', 'none'] as const;
+/**
+ * Temporary: the looks being compared for showing that a widget can be pressed (0018). Inked: over
+ * a lit light, the cue takes the light's text colour. Outside: the widget is set in from its cell,
+ * and the cue sits around it, never on it.
+ */
+export const cues = ['corners', 'corners-inked', 'corners-outside', 'frame', 'frame-inked', 'frame-outside'] as const;
 
 export type Cue = (typeof cues)[number];
 
