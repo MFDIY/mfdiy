@@ -1,7 +1,7 @@
 # 0005: Keeping the display awake
 
 - **Status:** Accepted
-- **Date:** 2026-11-24 (updated 2026-11-28, when it was built)
+- **Date:** 2026-11-24 (updated 2026-11-28, when it was built; not checked yet on real devices)
 
 ## Decision
 
