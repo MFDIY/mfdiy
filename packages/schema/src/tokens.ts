@@ -211,6 +211,12 @@ export const tokens = {
     fallback: 'accent',
     description: 'Pressable widgets: waiting for the game to answer.'
   },
+  'press.ripple': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'text',
+    description: 'Pressable widgets: the ripple from where they were touched.'
+  },
   'press.failed': {
     tier: 'component',
     type: 'color',

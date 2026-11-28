@@ -21,7 +21,14 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 - On a touch screen nothing can be found by pointing at it, and pressing to find out does something in the game. So a pressable widget shows **corners** (`Pressable` in `packages/instruments`), a fixed look rather than a hover or pressed state (0022). Never hover or cursor changes: the MFD is used by touch.
 - **Every widget has a corner box**, like a CSS box model: corner box, then border, then padding. A pressable widget draws its corners in it; one without an action keeps it empty (`CornerBox`), so the two line up and giving a widget an action moves nothing. Theme tokens: `corner.width`, the corners' thickness (2 px), `corner.gap`, air between corners and widget (3 px), and `press.cue`, their colour, falling back to `text.dim`. The gap between widgets stays the theme's `gap` (0022).
 - Chosen by comparing, in Storybook: corners at 1, 2 and 3 px, flush or with air, in `line`, `text.dim`, `text`, `accent` and `secondary.8`. Ruled out: no cue; an edge along the bottom; corners or a frame that shrink only pressable widgets; corners against the border; a frame inside the widget, as a hairline or 2 px, which feels wrong among hairlines; and `accent`, which can't be told apart from an accepted press.
-- **Actions are only input.** The game answers a press with whether it took it (`TriggerGameAction` returns a status, sent on as `action-result`), never with what changed; that comes back through the signals. So the corners show only the press: **waiting** until the game answers, then **accepted** or **refused**. While waiting, a light runs around the corner box, shown only after a moment so the usual quick answer doesn't flash; with reduced motion it's a still ring. A widget whose action can't be used (not connected, not in the game's list, a deleted page) is dimmed. Tap feedback (0010, 0022) isn't built yet.
+- **Actions are only input.** The game answers a press with whether it took it (`TriggerGameAction` returns a status, sent on as `action-result`), never with what changed; that comes back through the signals. So a pressable widget shows only the press, all within its corner box, with nothing solid beyond it (only glows):
+  - **Tap:** a ripple from the touch point, clipped by the widget's border (0022). Every widget clips its content there, so nothing sticks out of it.
+  - **Waiting** for the game: the corner box becomes a solid rim with a light running around it, shown only after a moment so the usual quick answer doesn't flash.
+  - **Accepted:** the rim turns solid in `press.accepted` and pulses twice, then fades.
+  - **Refused:** the rim turns solid in `press.failed` and pulses twice as fast for twice as long.
+  - **Unavailable** (not connected, not in the game's list, a deleted page): only the corners dim, since the widget's data is still true; pressing it shows it refused, without sending it.
+  - With reduced motion, the rim is still and nothing pulses.
+  - Tried in `Primitives/Pressable` (Pressing, live, and States).
 - **A widget shows the state its action changes by being bound to it**, like any data: a gear button is a Light bound to the gear signal, whose action toggles the gear.
 
 ### Page shown is a signal
@@ -66,6 +73,6 @@ Covers what real MFD pages show and the data the game provides, in the order tha
 
 ## Open questions
 
-- **The press states** (waiting, accepted, refused, unavailable): still to be discussed with the maintainer (`Primitives/Pressable`, Compare States).
+- **The press states** as built: to be felt on a tablet; the pulses' speeds and counts may need tuning.
 - **Which way to steady numbers**, from the comparison, and whether it's built in or an option per widget.
 - Mark **Accepted** once the maintainer has confirmed the list of types.

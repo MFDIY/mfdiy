@@ -33,7 +33,7 @@ Everything in `packages/ui` that decides how things look (its token contract, it
 
 ### Interaction states belong to the chrome
 
-- MFD widgets have **no hover or pressed state**. Actions fire on touch (0010), so there is nothing to show between press and release. Instead, a tap gets **tap feedback**: a ripple from the touch point and a soft, quick shockwave around the outside of the widget, so players know it registered. Its colours and timing are public tokens.
+- MFD widgets have **no hover or pressed state**. Actions fire on touch (0010), so there is nothing to show between press and release. Instead, a tap gets **tap feedback**: a ripple from the touch point, clipped by the widget's border like all its content, so players know it registered (`press.ripple`, timed by `duration`). The game's answer follows on a rim around the widget (0018).
 - The builder chrome still needs hover, pressed, focus, disabled, selected and destructive states, the editing overlay, spacing and control sizes. These are **private to `packages/ui`**, derived from the brand theme's primitives, and not part of the public contract.
 - The brand theme is **dark only** and is called **`mfdiy`**, so it's clearly the project's own theme and not one of the MFD themes it ships. There are no light and dark colour schemes.
 

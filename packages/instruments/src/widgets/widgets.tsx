@@ -92,7 +92,7 @@ function LabelWidget(props: WidgetProps) {
 
 const labelOption = { label: 'Label', type: 'string', default: '' } as const;
 
-const pressTokens = ['press.cue', 'press.accepted', 'press.pending', 'press.failed'] as const;
+const pressTokens = ['press.cue', 'press.accepted', 'press.pending', 'press.failed', 'press.ripple'] as const;
 
 export const lightManifest: WidgetManifest = {
   type: 'light',

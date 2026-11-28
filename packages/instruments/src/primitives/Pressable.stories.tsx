@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ReactNode } from 'react';
 
+import { useState } from 'react';
 import { fn } from 'storybook/test';
 
 import { Bar } from './Bar.js';
@@ -85,17 +87,16 @@ export const AllWidgets: Story = {
 const states: { name: string; props: Partial<PressableProps> }[] = [
   { name: 'Idle', props: {} },
   { name: 'Waiting for the game', props: { status: 'pending' } },
-  { name: 'Accepted', props: { status: 'ok' } },
-  { name: 'Refused', props: { status: 'failed' } },
   { name: 'Unavailable', props: { disabled: true } }
 ];
 
 /**
- * Temporary: what a press looks like while the game answers. Waiting shows a light running around
- * the corner box, after a moment so quick answers don't flash; with reduced motion, as in these
- * screenshots, it's a still ring.
+ * The states that last: idle, waiting for the game (a light running around the corner box, shown
+ * after a moment so quick answers don't flash; a still rim with reduced motion, as in these
+ * screenshots), and an action that can't be used, whose corners dim. Accepted and refused only
+ * pulse briefly: see Pressing.
  */
-export const CompareStates: Story = {
+export const States: Story = {
   tags: ['!autodocs'],
   parameters: { mfdFrame: false },
   render: (_args, context) => (
@@ -116,6 +117,67 @@ export const CompareStates: Story = {
             <Pressable key={state.name} onPress={() => undefined} {...state.props}>
               <Light label='Gear' state='on' />
             </Pressable>
+          ))
+        }
+      ]}
+      themeName={String(context.globals['theme'] ?? '')}
+    />
+  )
+};
+
+type Answer = 'accept' | 'quick' | 'refuse' | 'unavailable';
+
+const answers = ['accept', 'refuse', 'quick', 'unavailable'] as const satisfies readonly Answer[];
+
+/** A widget whose presses a pretend game answers after a while, as `answer` says. */
+function Answering({ answer, children }: { answer: Answer; children: ReactNode }) {
+  const [status, setStatus] = useState<PressableProps['status']>('idle');
+
+  function press() {
+    setStatus('pending');
+    setTimeout(
+      () => {
+        setStatus(answer === 'refuse' ? 'failed' : 'ok');
+        setTimeout(() => setStatus('idle'), 1500);
+      },
+      answer === 'quick' ? 40 : 1600
+    );
+  }
+
+  return (
+    <Pressable disabled={answer === 'unavailable'} onPress={press} status={status}>
+      {children}
+    </Pressable>
+  );
+}
+
+/**
+ * Press them: a pretend game accepts or refuses after a while, or answers at once, which shows no
+ * waiting. The last one's action can't be used, so it's refused without being sent. Motion only
+ * shows with reduced motion turned off.
+ */
+export const Pressing: Story = {
+  tags: ['!autodocs', '!visual'],
+  parameters: { mfdFrame: false },
+  render: (_args, context) => (
+    <Comparison
+      cell={{ height: 120, width: 200 }}
+      columns={['Accepted', 'Refused', 'Answered at once', 'Unavailable']}
+      rows={[
+        {
+          name: 'Label',
+          cells: answers.map(answer => (
+            <Answering answer={answer} key={answer}>
+              <Label text='Lights' />
+            </Answering>
+          ))
+        },
+        {
+          name: 'Light, on',
+          cells: answers.map(answer => (
+            <Answering answer={answer} key={answer}>
+              <Light label='Gear' state='on' />
+            </Answering>
           ))
         }
       ]}

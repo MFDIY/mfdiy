@@ -12,5 +12,9 @@ export type CornerBoxProps = {
  * corners, so widgets line up whether they can be pressed or not (0018).
  */
 export function CornerBox({ children }: CornerBoxProps) {
-  return <Frame className={cornerBox}>{children}</Frame>;
+  return (
+    <Frame className={cornerBox} overflow='visible'>
+      {children}
+    </Frame>
+  );
 }
