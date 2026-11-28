@@ -82,7 +82,7 @@ export function Menu({ children, onOpenChange, trigger }: MenuProps) {
       <BaseMenu.Portal {...layer.portal}>
         <BaseMenu.Positioner {...layer.positioner} align='start' sideOffset={OFFSET}>
           <BaseMenu.Popup className={`${popupClass} ${styles.popup}`}>
-            <ScrollContainer>{children}</ScrollContainer>
+            <ScrollContainer hideEdges>{children}</ScrollContainer>
           </BaseMenu.Popup>
         </BaseMenu.Positioner>
       </BaseMenu.Portal>
