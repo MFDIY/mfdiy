@@ -1,13 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ReactNode } from 'react';
 
+import { Box } from '@mfdiy/ui/components';
 import { expect, fn, within } from 'storybook/test';
+
+import { applyTokens } from '../theme/applyTokens.js';
 
 import { Bar } from './Bar.js';
 import { Comparison } from './Comparison.js';
+import { CornerBox } from './CornerBox.js';
 import { Label } from './Label.js';
 import { Light } from './Light.js';
-import { Pressable, cues, pressStatuses, type PressableProps } from './Pressable.js';
+import { Pressable, cues, pressStatuses, type Cue, type PressableProps } from './Pressable.js';
 import { Readout } from './Readout.js';
 import { mfdFrame } from './mfdFrame.js';
 
@@ -58,35 +62,53 @@ const widgets: { name: string; content: ReactNode; current?: boolean }[] = [
   { name: 'Bar', content: <Bar displayValue='62%' label='Shield front' state='normal' value={0.62} /> }
 ];
 
-function press(cue: PressableProps['cue'], content: ReactNode, props: Partial<PressableProps> = {}) {
+const looks: { cue: Cue; gap: string; name: string; width: string }[] = [
+  { cue: 'corners', gap: '0', name: 'corners, 1 px', width: '1px' },
+  { cue: 'corners', gap: '0', name: 'corners, 2 px', width: '2px' },
+  { cue: 'corners', gap: '0', name: 'corners, 3 px', width: '3px' },
+  { cue: 'corners', gap: '3px', name: 'corners, 1 px, 3 px air', width: '1px' },
+  { cue: 'corners', gap: '3px', name: 'corners, 2 px, 3 px air', width: '2px' },
+  { cue: 'frame-inked', gap: '0', name: 'frame-inked, 2 px box', width: '2px' }
+];
+
+function press(look: (typeof looks)[number], content: ReactNode, props: Partial<PressableProps> = {}) {
   return (
-    <Pressable cue={cue} onPress={() => undefined} {...props}>
-      {content}
-    </Pressable>
+    <Box cssVariables={applyTokens({ 'corner.gap': look.gap, 'corner.width': look.width })} height='full'>
+      <Pressable cue={look.cue} onPress={() => undefined} {...props}>
+        {content}
+      </Pressable>
+    </Box>
+  );
+}
+
+function still(look: (typeof looks)[number], content: ReactNode) {
+  return (
+    <Box cssVariables={applyTokens({ 'corner.gap': look.gap, 'corner.width': look.width })} height='full'>
+      <CornerBox>{content}</CornerBox>
+    </Box>
   );
 }
 
 /**
- * Temporary: how a widget shows it can be pressed, one look per row, above the same widgets
- * without an action. On a touch screen nothing can be found by pointing at it (0018).
+ * Temporary: how a widget shows it can be pressed, one look per row. Every widget keeps a corner
+ * box around it, pressable or not, so a light without an action (last but two) lines up with the
+ * rest. On a touch screen nothing can be found by pointing at it (0018).
  */
 export const CompareCues: Story = {
   tags: ['!autodocs'],
   parameters: { mfdFrame: false },
   render: (_args, context) => (
     <Comparison
-      cell={{ height: 88, width: 136 }}
-      columns={widgets.map(widget => widget.name)}
-      rows={[
-        {
-          name: 'No action',
-          cells: widgets.map(widget => (widget.current ? null : widget.content))
-        },
-        ...cues.map(cue => ({
-          name: cue,
-          cells: widgets.map(widget => press(cue, widget.content, { current: widget.current }))
-        }))
-      ]}
+      cell={{ height: 88, width: 120 }}
+      columns={[...widgets.slice(0, 5).map(widget => widget.name), 'Light, no action', 'Readout', 'Bar']}
+      rows={looks.map(look => ({
+        name: look.name,
+        cells: [
+          ...widgets.slice(0, 5).map(widget => press(look, widget.content, { current: widget.current })),
+          still(look, <Light label='ESP' state='on' />),
+          ...widgets.slice(5).map(widget => press(look, widget.content))
+        ]
+      }))}
       themeName={String(context.globals['theme'] ?? '')}
     />
   ),
@@ -109,8 +131,8 @@ const states: { name: string; props: Partial<PressableProps> }[] = [
 
 /**
  * Temporary: what a press looks like while the game answers, for each look. Waiting shows a light
- * running around the edge, after a moment so quick answers don't flash; with reduced motion, as
- * in these screenshots, it's a still ring.
+ * running around the corner box, after a moment so quick answers don't flash; with reduced motion,
+ * as in these screenshots, it's a still ring.
  */
 export const CompareStates: Story = {
   tags: ['!autodocs'],
@@ -118,9 +140,9 @@ export const CompareStates: Story = {
   render: (_args, context) => (
     <Comparison
       columns={states.map(state => state.name)}
-      rows={cues.map(cue => ({
-        name: cue,
-        cells: states.map(state => press(cue, <Label text='Gear' />, state.props))
+      rows={looks.map(look => ({
+        name: look.name,
+        cells: states.map(state => press(look, <Label text='Gear' />, state.props))
       }))}
       themeName={String(context.globals['theme'] ?? '')}
     />

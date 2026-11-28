@@ -1,4 +1,5 @@
 export { Bar, barStates, type BarProps, type BarState } from './primitives/Bar.js';
+export { CornerBox, type CornerBoxProps } from './primitives/CornerBox.js';
 export { Label, type LabelProps } from './primitives/Label.js';
 export { Light, lightStates, type LightProps, type LightState } from './primitives/Light.js';
 export { Pressable, pressStatuses, type PressableProps, type PressStatus } from './primitives/Pressable.js';

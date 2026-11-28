@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 
 import { Bar } from '../primitives/Bar.js';
+import { CornerBox } from '../primitives/CornerBox.js';
 import { Label } from '../primitives/Label.js';
 import { Light, type LightState } from '../primitives/Light.js';
 import { Pressable } from '../primitives/Pressable.js';
@@ -18,7 +19,7 @@ function inputLabel(props: WidgetProps, input: string, fallback: string): string
   return readOption(props, 'label', '') || props.inputs[input]?.signal.label || fallback;
 }
 
-/** Any widget with an action can be pressed (0018). */
+/** Any widget with an action can be pressed; every widget keeps the room for its corners (0018). */
 function pressable(props: WidgetProps, content: ReactElement): ReactElement {
   const { action } = props;
 
@@ -27,7 +28,7 @@ function pressable(props: WidgetProps, content: ReactElement): ReactElement {
       {content}
     </Pressable>
   ) : (
-    content
+    <CornerBox>{content}</CornerBox>
   );
 }
 

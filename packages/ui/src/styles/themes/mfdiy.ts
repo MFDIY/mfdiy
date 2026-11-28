@@ -69,6 +69,8 @@ export const mfdiy: Record<PrimitiveTokenName, string> = {
   gap: '1.5cqmin',
   radius: '0',
   'border.width': '1px',
+  'corner.width': '2px',
+  'corner.gap': '0px',
   glow: '10px',
   duration: '150ms'
 };

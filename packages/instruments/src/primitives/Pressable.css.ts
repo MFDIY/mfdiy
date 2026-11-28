@@ -6,12 +6,21 @@ import { light } from './Light.css.js';
 import { glow, transition } from './styleHelpers.js';
 
 const cueColor = createVar();
-const thickness = `calc(${token('border.width')} * 2)`;
+const thickness = token('corner.width');
+const corner = `calc(clamp(6px, 16cqmin, 16px) + ${thickness})`;
 
 const angle = createVar({ syntax: '<angle>', inherits: false, initialValue: '0deg' });
 
 const spin = keyframes({ to: { [angle]: '360deg' } });
 const appear = keyframes({ to: { opacity: 1 } });
+
+/**
+ * Room around every widget, pressable or not, so they line up: the outermost box of a widget, where
+ * a pressable one draws its corners (0018).
+ */
+export const cornerBox = style({
+  padding: `calc(${thickness} + ${token('corner.gap')})`
+});
 
 export const pressable = style({
   appearance: 'none',
@@ -20,7 +29,6 @@ export const pressable = style({
   color: 'inherit',
   display: 'block',
   font: 'inherit',
-  padding: 0,
   textAlign: 'inherit',
   WebkitTapHighlightColor: 'transparent',
   WebkitUserSelect: 'none',
@@ -61,15 +69,23 @@ export const cue = style({
   transition: transition('background', 'border-color', 'box-shadow'),
 
   selectors: {
+    [`${pressable}[data-cue="corners"] &`]: {
+      background: [
+        `linear-gradient(${cueColor}, ${cueColor}) top left / ${corner} ${thickness}`,
+        `linear-gradient(${cueColor}, ${cueColor}) top left / ${thickness} ${corner}`,
+        `linear-gradient(${cueColor}, ${cueColor}) top right / ${corner} ${thickness}`,
+        `linear-gradient(${cueColor}, ${cueColor}) top right / ${thickness} ${corner}`,
+        `linear-gradient(${cueColor}, ${cueColor}) bottom left / ${corner} ${thickness}`,
+        `linear-gradient(${cueColor}, ${cueColor}) bottom left / ${thickness} ${corner}`,
+        `linear-gradient(${cueColor}, ${cueColor}) bottom right / ${corner} ${thickness}`,
+        `linear-gradient(${cueColor}, ${cueColor}) bottom right / ${thickness} ${corner}`
+      ].join(', '),
+      backgroundRepeat: 'no-repeat'
+    },
     [`${pressable}[data-cue="frame-inked"] &`]: {
       border: `${token('border.width')} solid ${cueColor}`,
       borderRadius: token('radius'),
-      inset: 'clamp(2px, 5cqmin, 5px)'
-    },
-    [`${pressable}[data-cue="frame-inked-2px"] &`]: {
-      border: `2px solid ${cueColor}`,
-      borderRadius: token('radius'),
-      inset: '2px'
+      inset: `calc(${thickness} + ${token('corner.gap')} + clamp(2px, 5cqmin, 5px))`
     },
     [`${pressable}[aria-current="page"] &, ${pressable}[data-status="ok"] &`]: {
       filter: `drop-shadow(${glow(cueColor)})`
@@ -81,7 +97,7 @@ export const cue = style({
 export const busy = style({
   borderRadius: token('radius'),
   display: 'none',
-  padding: thickness,
+  padding: `max(${thickness}, 1px)`,
   background: `conic-gradient(from ${angle}, transparent 0deg 250deg, ${token('press.pending')} 330deg, transparent 360deg)`,
   mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',
   opacity: 0,

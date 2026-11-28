@@ -21,7 +21,8 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 - On a touch screen nothing can be found by pointing at it, and pressing to find out does something in the game. So a pressable widget carries a **cue** drawn over it (`Pressable` in `packages/instruments`), a fixed look rather than a hover or pressed state (0022). Never hover or cursor changes: the MFD is used by touch.
 - The cue also shows a widget **whose page is shown**, so a page button marks the current page in the same way whatever widget it is.
 - **The press's answer:** the game acknowledges every action (`TriggerGameAction` returns a status, sent on as `action-result`), so a press is **waiting** until it answers, then **accepted** or **refused**. While waiting, a light runs around the widget's edge, shown only after a moment so the usual quick answer doesn't flash; with reduced motion it's a still ring. A widget whose action can't be used (not connected, not in the game's list, a deleted page) is dimmed.
-- Being compared: corner marks, an inner frame, an edge along the bottom, or no cue (`Primitives/Pressable`, Compare Cues and Compare States). Tap feedback (0010, 0022) isn't built yet.
+- **Every widget has a corner box**, like a CSS box model: corner box, then border, then padding. A pressable widget draws its corners in it; one without an action keeps it empty (`CornerBox`), so the two line up and giving a widget an action moves nothing. Its thickness is the theme's `corner.width`; `corner.gap` adds air between the corners and the widget. The gap between widgets stays the theme's `gap` (0022).
+- Being compared: corners at 1, 2 and 3 px, flush or with 3 px of air, and a hairline frame inside the widget that takes a lit light's text colour (`Primitives/Pressable`, Compare Cues and Compare States). Ruled out: no cue, an edge along the bottom, corners or a frame that shrink only pressable widgets, and a 2 px frame, which feels wrong among hairlines. Tap feedback (0010, 0022) isn't built yet.
 
 ### Version 1
 
@@ -59,7 +60,7 @@ Covers what real MFD pages show and the data the game provides, in the order tha
 
 ## Open questions
 
-- **Which cue**, and how loud: chosen from the comparison. Its colours are tokens (`press.*`), so a theme can make it louder or quieter.
+- **Which cue**, and the default `corner.width` and `corner.gap`: chosen from the comparison. Its colours are tokens (`press.*`), so a theme can make it louder or quieter.
 - **Which way to steady numbers**, from the comparison, and whether it's built in or an option per widget.
 - **Toggles:** a Light bound to the same thing its action toggles (gear) shows the state. A widget that doesn't show it (a Label that toggles the lights) could if the game adapter said which signal shows an action's state; then the cue could light like a page button's. Not decided.
 - Mark **Accepted** once the maintainer has confirmed the list of types.

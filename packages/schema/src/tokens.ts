@@ -106,6 +106,17 @@ export const tokens = {
   },
   radius: { tier: 'primitive', type: 'length', description: 'Corner radius of frames and lights.' },
   'border.width': { tier: 'primitive', type: 'length', description: 'Width of outlines.' },
+  'corner.width': {
+    tier: 'primitive',
+    type: 'length',
+    description:
+      'Thickness of the corners that mark a widget that can be pressed. Every widget keeps room for them, so they line up. 0 for none.'
+  },
+  'corner.gap': {
+    tier: 'primitive',
+    type: 'length',
+    description: 'Space between the corners of a widget that can be pressed and the widget itself.'
+  },
   glow: {
     tier: 'primitive',
     type: 'length',
