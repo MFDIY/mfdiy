@@ -23,10 +23,11 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 - Chosen by comparing, in Storybook: corners at 1, 2 and 3 px, flush or with air, in `line`, `text.dim`, `text`, `accent` and `secondary.8`. Ruled out: no cue; an edge along the bottom; corners or a frame that shrink only pressable widgets; corners against the border; a frame inside the widget, as a hairline or 2 px, which feels wrong among hairlines; and `accent`, which can't be told apart from an accepted press.
 - **Actions are only input.** The game answers a press with whether it took it (`TriggerGameAction` returns a status, sent on as `action-result`), never with what changed; that comes back through the signals. So a pressable widget shows only the press, all within its corner box, with nothing solid beyond it (only glows):
   - **Tap:** a ripple from the touch point, clipped by the widget's border (0022). Every widget clips its content there, so nothing sticks out of it.
-  - **Waiting** for the game: the corner box becomes a solid rim with a light running around it, shown only after a moment so the usual quick answer doesn't flash.
-  - **Accepted:** the rim turns solid in `press.accepted` and pulses twice, then fades.
-  - **Refused:** the rim turns solid in `press.failed` and pulses twice as fast for twice as long.
-  - **Unavailable** (not connected, not in the game's list, a deleted page): only the corners dim, since the widget's data is still true; pressing it shows it refused, without sending it.
+  - **Waiting** for the game: the corner box becomes a faint rim with two lights chasing around it, shown only after a moment so the usual quick answer doesn't flash.
+  - **Accepted:** the rim turns solid in `press.accepted` and pulses once, slowly.
+  - **Refused:** the rim turns solid in `press.failed` and pulses three times in the time accepted pulses once.
+  - The answer shows for 1.2 s; then the rim fades out as the corners fade back in. The corners hide while any rim shows.
+  - **Unavailable** (not connected, not in the game's list, a deleted page): the corners hide, as the action can't be used, while the widget's data stays as it is, since it's still true. Pressing it shows it refused, without sending it.
   - With reduced motion, the rim is still and nothing pulses.
   - Tried in `Primitives/Pressable` (Pressing, live, and States).
 - **A widget shows the state its action changes by being bound to it**, like any data: a gear button is a Light bound to the gear signal, whose action toggles the gear.

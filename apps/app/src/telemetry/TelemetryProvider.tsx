@@ -60,7 +60,7 @@ export function useSignalValues(ids: readonly string[]): readonly SignalValue[] 
   return useSyncExternalStore(subscribe, () => store.selectValues(ids));
 }
 
-const STATUS_RESET_MS = 1500;
+const STATUS_RESET_MS = 1200;
 
 /** Wires a game action to a pressable widget, including pending / ok / failed feedback. */
 export function useWidgetAction(actionId: string | undefined): WidgetAction | undefined {

@@ -138,7 +138,7 @@ function Answering({ answer, children }: { answer: Answer; children: ReactNode }
     setTimeout(
       () => {
         setStatus(answer === 'refuse' ? 'failed' : 'ok');
-        setTimeout(() => setStatus('idle'), 1500);
+        setTimeout(() => setStatus('idle'), 1200);
       },
       answer === 'quick' ? 40 : 1600
     );

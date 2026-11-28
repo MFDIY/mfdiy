@@ -15,7 +15,7 @@ export type PressableProps = {
   children: ReactNode;
   /** Announces a widget whose page is shown; it looks no different, as that's a signal of its own (0018). */
   current?: boolean | undefined;
-  /** The action can't be used: its corners dim, and pressing it shows it refused, without sending it. */
+  /** The action can't be used: its corners hide, and pressing it shows it refused, without sending it. */
   disabled?: boolean | undefined;
   onPress: () => void;
   status?: PressStatus | undefined;
@@ -33,9 +33,11 @@ const rims = { failed: 'refused', idle: undefined, ok: 'accepted', pending: 'pen
 export function Pressable({ children, current = false, disabled = false, onPress, status = 'idle' }: PressableProps) {
   const layer = useRef<HTMLDivElement>(null);
   const [tap, setTap] = useState<{ key: number; x: number; y: number } | null>(null);
-  const [refusals, setRefusals] = useState(0);
-  const handlers = pressHandlers(disabled ? () => setRefusals(count => count + 1) : onPress);
-  const rim = rims[status] ?? (refusals > 0 ? 'refused' : undefined);
+  const [refusal, setRefusal] = useState({ active: false, replay: 0 });
+  const handlers = pressHandlers(
+    disabled ? () => setRefusal(current => ({ active: true, replay: current.replay + 1 })) : onPress
+  );
+  const rim = rims[status] ?? (refusal.active ? 'refused' : undefined);
 
   function ripple(event: PointerEvent) {
     const bounds = layer.current?.getBoundingClientRect();
@@ -50,8 +52,8 @@ export function Pressable({ children, current = false, disabled = false, onPress
   }
 
   function settle(event: AnimationEvent) {
-    if (event.animationName === styles.fade) {
-      setRefusals(0);
+    if (event.animationName === styles.pulse || event.animationName === styles.hold) {
+      setRefusal(current => ({ ...current, active: false }));
     }
   }
 
@@ -85,11 +87,13 @@ export function Pressable({ children, current = false, disabled = false, onPress
         ) : null}
       </Box>
       <Box aria-hidden className={styles.cue} inset='none' pointerEvents='none' position='absolute' />
+      <Box aria-hidden className={styles.waiting} inset='none' pointerEvents='none' position='absolute' />
+      <Box aria-hidden className={styles.accepted} inset='none' pointerEvents='none' position='absolute' />
       <Box
         aria-hidden
-        className={styles.rim}
+        className={styles.refused}
         inset='none'
-        key={refusals}
+        key={refusal.replay}
         onAnimationEnd={settle}
         pointerEvents='none'
         position='absolute'
