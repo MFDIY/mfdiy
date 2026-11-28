@@ -42,7 +42,10 @@ type Story = StoryObj<typeof meta>;
 /** Press the button to open it. */
 export const Default = {} satisfies Story;
 
-/** Icons before the text, a disabled item, and a destructive one in a group of its own. */
+/**
+ * Icons before the text, an item without one inset to line up, a disabled item, and a destructive
+ * one in a group of its own.
+ */
 export const Open = {
   tags: ['!dev'],
   args: {
@@ -53,6 +56,9 @@ export const Open = {
         </MenuItem>
         <MenuItem disabled icon='add' onClick={fn()}>
           Add page
+        </MenuItem>
+        <MenuItem inset onClick={fn()}>
+          Save as new…
         </MenuItem>
         <MenuSeparator />
         <MenuItem danger icon='delete' onClick={onRemove}>

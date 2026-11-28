@@ -43,7 +43,7 @@ or write a story for it, never a script that clicks through the app.
 - **A failing comparison** reports how many pixels differ and writes the new screenshot and a diff
   image (red: changed pixels) to `<workspace>/.vitest/attachments/`; the failure output names
   them. Read both. Unintended: fix the code. Intended: accept with
-  `npm run test:stories -w <workspace> -- --update <path>`, then read the new baseline, and list
+  `npm run test:stories -w <workspace> -- <path> --update`, then read the new baseline, and list
   in the commit message which stories changed and why.
 - **New stories** get a baseline on their first run. Always read a new baseline before
   committing it: it's what every future run is held to.
@@ -65,8 +65,10 @@ or write a story for it, never a script that clicks through the app.
   `data-highlighted` on the expected item before the next key, or the test flakes under load.
 - **Motion.** Story tests run with reduced motion, so components must honour
   `prefers-reduced-motion` for their screenshots to be stable.
-- **Updating several folders.** `--update` with more than one path has been seen to run only some
-  of them. Update one folder at a time, and check `git status` for the baselines you expected.
+- **Paths before `--update`.** Vitest's `--update` takes an optional value (`new`, `all`), so in
+  `--update <path>` the path is read as that value: the whole package runs and every differing
+  baseline is overwritten. Put the paths first (`-- src/components/Tabs src/components/Menu
+  --update`), and check `git status` for the baselines you expected.
 - **Stale styles.** Vitest's on-disk module cache is off in the shared projects
   (`packages/config/vitest.ts`), because a `.css.ts` is evaluated with what it imports. Leave it
   off; if styles ever look stale in Node tests, delete `node_modules/.vitest-cache`.
@@ -91,7 +93,8 @@ Vitest.
   use it too. Changes to `package.json`, the lockfile or a Vitest config make it run everything.
 - `-t` matches the full test name, `<file> > <story name>`, so a story name (spaced words, as
   `vitest list` shows it) matches on its own.
-- `--update` can be combined with any of these, to accept only the baselines you meant to change.
+- `--update` can be combined with any of these, after them, to accept only the baselines you meant
+  to change.
 
 ## 3. Dependencies
 

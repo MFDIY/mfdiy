@@ -90,12 +90,22 @@ export type MenuItemProps = {
   disabled?: boolean | undefined;
   /** An icon before the text. */
   icon?: IconName | undefined;
+  /** Leaves an icon's room empty, so an item without one lines up with those that have one. */
+  inset?: boolean | undefined;
   onClick: () => void;
   /** A key that does the same, shown dimmed at the end, e.g. `+` for Zoom in. */
   shortcut?: string | undefined;
 };
 
-export function MenuItem({ children, danger = false, disabled = false, icon, onClick, shortcut }: MenuItemProps) {
+export function MenuItem({
+  children,
+  danger = false,
+  disabled = false,
+  icon,
+  inset = false,
+  onClick,
+  shortcut
+}: MenuItemProps) {
   return (
     <BaseMenu.Item
       className={state => itemClass({ danger, disabled, highlighted: state.highlighted })}
@@ -103,7 +113,7 @@ export function MenuItem({ children, danger = false, disabled = false, icon, onC
       label={children}
       onClick={onClick}
     >
-      {icon ? <Icon name={icon} /> : null}
+      {icon ? <Icon name={icon} /> : inset ? <Box flexShrink='0' height='5x' width='5x' /> : null}
       <Text variant='body'>{children}</Text>
       {shortcut ? (
         <Box color={disabled ? 'text.faint' : 'text.dim'} marginLeft='auto' paddingLeft='4x' tagName='kbd'>

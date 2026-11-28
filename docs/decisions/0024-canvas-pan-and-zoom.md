@@ -1,7 +1,7 @@
 # 0024: Panning and zooming the canvas
 
-- **Status:** Accepted (first pass; limits and speeds to be tuned by feel)
-- **Date:** 2026-11-27
+- **Status:** Accepted
+- **Date:** 2026-11-27 (updated 2026-11-28: the maintainer tried it on a desktop and a phone and kept the first pass's numbers)
 
 ## Context
 
@@ -50,7 +50,6 @@ The display never pans or zooms (0007): it always shows the whole page.
 
 ## Open questions
 
-- The numbers are a first pass, to be tuned by feel: the 16 px margin, half of fit and 6× as limits, the quarter-viewport limit, wheel speed, and how long a fling glides.
 - Whether a mouse user without a trackpad finds Ctrl + scroll; if not, the zoom controls could leave ☰.
 
 ## Why

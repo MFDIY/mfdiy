@@ -41,9 +41,9 @@ export type EditorHeaderProps = {
  * page tabs with "+", then undo, redo, Save, a menu (☰) with every other profile action, and an
  * exit (×) back to the profile (0009), side by side. Save shows whether there's anything to save.
  * On a desktop a little room follows the exit; on narrower screens the logomark and its divider
- * give way, and on a phone undo and redo move into the menu, so the tabs have the row. Spans the
- * page, and answers to its width: the row and the menu, which opens outside the header, change
- * together. It draws no hairline: what it's placed in does.
+ * give way, and on a phone undo and redo move to the top of the menu, so the tabs have the row.
+ * Spans the page, and answers to its width: the row and the menu, which opens outside the header,
+ * change together. It draws no hairline: what it's placed in does.
  */
 export function EditorHeader({
   accent,
@@ -87,16 +87,16 @@ export function EditorHeader({
         </Button>
       </Box>
       <Menu trigger={<IconButton icon='menu' label='Menu' />}>
-        {menu}
         <PhoneOnly>
-          <MenuSeparator />
           <MenuItem disabled={!canUndo} icon='undo' onClick={onUndo}>
             Undo
           </MenuItem>
           <MenuItem disabled={!canRedo} icon='redo' onClick={onRedo}>
             Redo
           </MenuItem>
+          <MenuSeparator />
         </PhoneOnly>
+        {menu}
       </Menu>
       <IconButton icon='close' label={exitLabel} onClick={onExit} />
     </Box>
