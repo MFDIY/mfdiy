@@ -29,7 +29,7 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
   - The answer shows for 1.2 s; then the rim fades out as the corners fade back in. The corners hide while any rim shows.
   - **Unavailable** (not connected, not in the game's list, a deleted page): the corners hide, as the action can't be used, while the widget's data stays as it is, since it's still true. Pressing it shows it refused, without sending it.
   - With reduced motion, the rim is still and nothing pulses.
-  - Tried in `Primitives/Pressable` (Pressing, live, and States).
+  - Accepted by the maintainer on 2026-11-28, from `Primitives/Pressable` (Pressing, live, and States).
 - **A widget shows the state its action changes by being bound to it**, like any data: a gear button is a Light bound to the gear signal, whose action toggles the gear.
 
 ### Page shown is a signal
@@ -74,6 +74,5 @@ Covers what real MFD pages show and the data the game provides, in the order tha
 
 ## Open questions
 
-- **The press states** as built: to be felt on a tablet; the pulses' speeds and counts may need tuning.
 - **Which way to steady numbers**, from the comparison, and whether it's built in or an option per widget.
 - Mark **Accepted** once the maintainer has confirmed the list of types.
