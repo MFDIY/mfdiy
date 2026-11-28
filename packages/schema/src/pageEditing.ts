@@ -71,11 +71,7 @@ export function removePage(document: MfdDocument, id: string): { document: MfdDo
   return { document: { ...document, pages }, id: next?.id ?? id };
 }
 
-/**
- * The pages a player can't get to on the MFD: it opens on the first page, and from there only page
- * buttons (0018) switch pages, on a page or in a shared subgrid, which is on every page. The editor
- * warns about them; they can still be seen through it (0009, 0026).
- */
+/** The pages no page button leads to from the first page, directly or through others (0026). */
 export function unreachablePages(document: MfdDocument): Set<string> {
   const shared = (document.subgrids ?? []).flatMap(subgrid => subgrid.widgets);
   const targetsOf = (page: Page) =>

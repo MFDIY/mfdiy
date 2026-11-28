@@ -54,6 +54,7 @@ export type PageEditorProps = Omit<
   | 'label'
   | 'newWidgetArea'
   | 'onChange'
+  | 'onDoubleTap'
   | 'onDragChange'
   | 'onEmptyTap'
   | 'onOutsideTap'
@@ -81,7 +82,7 @@ export type PageEditorProps = Omit<
   onProfileChange?: ((profile: ProfileSettings, merge?: string) => void) | undefined;
   /** Changes the profile's shared subgrids; without it, none can be added (0026). */
   onSubgridsChange?: ((subgrids: SharedSubgrid[], merge?: string) => void) | undefined;
-  /** The profile's pages, which a page button can show (0018). Without them, only this page. */
+  /** The pages a page button can show (0018). */
   pages?: readonly PageChoice[] | undefined;
   /**
    * The profile the page belongs to: named with the page and its shape in a label above the canvas,
@@ -90,13 +91,12 @@ export type PageEditorProps = Omit<
   profile?: ProfileSettings | undefined;
   /** The profile's shared subgrids, shown above the page's widgets on every page (0026). */
   subgrids?: readonly SharedSubgrid[] | undefined;
-  /** No page button leads to the page; its properties say so (0026). */
+  /** No page button leads to the page (0026). */
   unreachable?: boolean | undefined;
   /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
   viewRef?: Ref<CanvasView> | undefined;
 };
 
-/** What the canvas edits: the page, with its shared subgrids standing on it, or the subgrid entered. */
 type Edited = {
   layout: Layout;
   onChange: (page: Page, merge?: string) => void;
@@ -189,7 +189,6 @@ export function PageEditor({
     pageTokens: page.tokens
   });
 
-  // Escape leaves a subgrid, as pressing outside it does (0026); not while typing or in a popup.
   useEffect(() => {
     if (!enteredSubgridId || !onEnterSubgrid) {
       return;
@@ -244,10 +243,7 @@ export function PageEditor({
       : smallest;
   }
 
-  /**
-   * Adds a widget of a type, without data yet (0006); its properties ask for that next. A shared
-   * subgrid starts empty, asking nothing (0026).
-   */
+  /** Adds a widget of a type, without data yet (0006); its properties ask for that next. */
   function add(type: string, point: GridPoint) {
     if (type === SUBGRID_TYPE) {
       const added = addSubgrid(subgrids, place(type, point), pageLayout.grid);
@@ -282,10 +278,7 @@ export function PageEditor({
     setOpenSheet('start');
   }
 
-  /**
-   * A click in the white space around the page, or on the hatching around an entered subgrid, lets
-   * go of whatever is active: a widget, the profile, a marked cell, and then the subgrid (0026).
-   */
+  /** A click in the white space around the page lets go of whatever is active: a widget, the profile, a marked cell. */
   function handleOutsideTap() {
     if (selectedId !== null) {
       handleSelect(null);
@@ -294,9 +287,19 @@ export function PageEditor({
       setMarked(null);
       library.reset();
       setOpenSheet(null);
-    } else if (entered) {
-      onEnterSubgrid?.(null);
     }
+  }
+
+  function handleDoubleTap(widgetId: string | null): boolean {
+    const id = subgridIdOf(widgetId);
+
+    if (!onEnterSubgrid || (widgetId === null ? !entered : entered || id === undefined)) {
+      return false;
+    }
+
+    onEnterSubgrid(id ?? null);
+
+    return true;
   }
 
   function handleSelect(widgetId: string | null) {
@@ -551,6 +554,7 @@ export function PageEditor({
             layout={layout}
             newWidgetArea={smallestPlace}
             onChange={edited.onChange}
+            onDoubleTap={handleDoubleTap}
             onDragChange={setWidgetDragging}
             onEmptyTap={handleEmptyTap}
             onOutsideTap={handleOutsideTap}
@@ -568,10 +572,6 @@ export function PageEditor({
   );
 }
 
-/**
- * The page, with the profile's shared subgrids standing on it as widgets above its own, under a
- * neutral hatching (0026). A change goes to the page or to the subgrids, whichever it touched.
- */
 function editPage(
   page: Page,
   layout: Layout,
@@ -602,10 +602,6 @@ function editPage(
   };
 }
 
-/**
- * An entered shared subgrid, edited as a page, with the page around it under a hatching that covers
- * everything but the subgrid (0026).
- */
 function editSubgrid(
   subgrid: SharedSubgrid,
   page: Page,

@@ -422,13 +422,34 @@ export const AddingASharedSubgrid: Story = {
   }
 };
 
-/** Edit subgrid enters it; pressing the hatching with nothing selected leaves it (0026). */
-export const EnteringAndLeaving: Story = {
+function doublePress(target: HTMLElement, coords: { clientX: number; clientY: number }) {
+  return [
+    { keys: '[MouseLeft>]', target, coords },
+    { keys: '[/MouseLeft]', target, coords },
+    { keys: '[MouseLeft>]', target, coords },
+    { keys: '[/MouseLeft]', target, coords }
+  ];
+}
+
+/** Double-tapping a shared subgrid enters it (0026). */
+export const DoubleTapToEnter: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    const subgrid = within(canvasElement).getByRole('button', { name: 'Shared subgrid' });
+    const { left, top } = subgrid.getBoundingClientRect();
+
+    await userEvent.pointer(doublePress(subgrid, { clientX: left + 200, clientY: top + 10 }));
+    await expect(screen.getByRole('button', { name: 'Exit subgrid' })).toBeInTheDocument();
+  }
+};
+
+/** Inside, a single tap on the hatching stays inside; a double tap leaves (0026). */
+export const DoubleTapToLeave: Story = {
   tags: ['!dev', '!visual'],
   args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
   play: async ({ canvasElement, userEvent }) => {
     await userEvent.click(screen.getByRole('button', { name: 'Edit subgrid' }));
-    await expect(screen.getByRole('button', { name: 'Exit subgrid' })).toBeInTheDocument();
     await expect(within(canvasElement).getByRole('button', { name: 'Button Flight' })).toBeInTheDocument();
 
     const { cover, coords } = coverOf(canvasElement);
@@ -437,6 +458,10 @@ export const EnteringAndLeaving: Story = {
       { keys: '[MouseLeft>]', target: cover, coords },
       { keys: '[/MouseLeft]', target: cover, coords }
     ]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await expect(screen.getByRole('button', { name: 'Exit subgrid' })).toBeInTheDocument();
+
+    await userEvent.pointer(doublePress(cover, coords));
     await expect(within(canvasElement).getByRole('button', { name: 'Shared subgrid' })).toBeInTheDocument();
   }
 };

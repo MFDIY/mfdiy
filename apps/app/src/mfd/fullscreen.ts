@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-/** Safari before 16.4 has only the prefixed Fullscreen API. */
 type WebkitDocument = Document & {
   webkitFullscreenElement?: Element | null;
   webkitFullscreenEnabled?: boolean;
@@ -15,7 +14,6 @@ export function canFullscreen(): boolean {
   return document.fullscreenEnabled || webkit.webkitFullscreenEnabled === true;
 }
 
-/** Shows the whole page fullscreen. It's left the way the device leaves fullscreen (0009). */
 export function enterFullscreen(): void {
   const root = document.documentElement as WebkitElement;
 
@@ -40,7 +38,7 @@ function isFullscreen(): boolean {
   return (document.fullscreenElement ?? (document as WebkitDocument).webkitFullscreenElement ?? null) !== null;
 }
 
-/** Whether the page is shown fullscreen right now. */
+/** Whether the page is shown fullscreen (0009). */
 export function useFullscreen(): boolean {
   return useSyncExternalStore(subscribe, isFullscreen, () => false);
 }

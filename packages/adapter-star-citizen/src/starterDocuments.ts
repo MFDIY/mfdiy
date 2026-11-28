@@ -2,10 +2,7 @@ import type { MfdDocument } from '@mfdiy/schema';
 
 import { DEFAULT_SHAPE, DOCUMENT_SCHEMA_VERSION, scaleLayout, seedGrid } from '@mfdiy/schema';
 
-/**
- * Hand-written on coarse grids, which are easier to read. The bottom row of every page is left to a
- * shared subgrid with a page button for each page: the MFD has no page tabs of its own (0026).
- */
+/** Hand-written on coarse grids, which are easier to read. */
 const demo: MfdDocument = {
   schema: DOCUMENT_SCHEMA_VERSION,
   fit: 'contain',

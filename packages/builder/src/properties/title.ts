@@ -4,7 +4,6 @@ import type { Page, WidgetInstance } from '@mfdiy/schema';
 import { widgetManifests } from '@mfdiy/instruments';
 import { gameActionOf, pageActionOf } from '@mfdiy/schema';
 
-/** A page a page button can show (0018). */
 export type PageChoice = Pick<Page, 'id' | 'name'>;
 
 /** What a widget is called on screen: its label, or what it shows or does, or its type. */

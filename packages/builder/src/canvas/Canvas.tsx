@@ -31,6 +31,8 @@ import { widgetMinSize } from './widgetInfo.js';
 /** How far a pointer travels, in pixels, before a press becomes a drag. Fingers are less steady. */
 const DRAG_THRESHOLD = { mouse: 4, touch: 8 };
 
+const DOUBLE_TAP = { distance: 24, time: 400 };
+
 /** How far one finger drags across the page before it's told that two fingers move it. */
 const PAN_HINT_DISTANCE = 32;
 
@@ -109,6 +111,8 @@ export type CanvasProps = {
    */
   newWidgetArea?: ((point: GridPoint) => Area) | undefined;
   onChange: (page: Page) => void;
+  /** A double tap on a widget, or around the grid (`null`); returns whether it was handled (0026). */
+  onDoubleTap?: ((widgetId: string | null) => boolean) | undefined;
   /** Fires when a press on a widget becomes a move or resize, and when that ends. */
   onDragChange?: ((dragging: boolean) => void) | undefined;
   /**
@@ -134,17 +138,12 @@ export type CanvasProps = {
    */
   reveal?: Area | null | undefined;
   selectedId: string | null;
-  /**
-   * When the grid being edited is a shared subgrid's (0026): the page around it, seen but not
-   * touched under a hatching that covers everything but the subgrid, at `area` on the page's `grid`.
-   * Pressing the hatching is pressing outside the grid (`onOutsideTap`).
-   */
+  /** The page around an entered shared subgrid, under a hatching (0026). */
   surround?: CanvasSurround | undefined;
 };
 
 export type CanvasSurround = {
   area: Area;
-  /** The page's widgets and other shared subgrids, as `LayoutArea`s on `grid`. */
   content: ReactNode;
   grid: Grid;
 };
@@ -162,6 +161,7 @@ export function Canvas({
   selectedId,
   onSelect,
   onChange,
+  onDoubleTap,
   onDragChange,
   ghost,
   newWidgetArea,
@@ -178,6 +178,7 @@ export function Canvas({
   /** Every finger on the canvas, so a second one can turn into a pinch. */
   const touchesRef = useRef(new Map<number, Point>());
   const backgroundPressRef = useRef<BackgroundPress | null>(null);
+  const lastTapRef = useRef<{ at: number; target: string | null; x: number; y: number } | null>(null);
   const view = useCanvasView({ aspectRatio, hasTouches: () => touchesRef.current.size > 0 });
   const cover = useSheetCover();
 
@@ -481,7 +482,8 @@ export function Canvas({
     if (
       press?.pointerId === event.pointerId &&
       !press.onGrid &&
-      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType)
+      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType) &&
+      !doubleTapped(null, event)
     ) {
       onOutsideTap?.();
     }
@@ -501,12 +503,29 @@ export function Canvas({
     }
   }
 
+  function doubleTapped(target: string | null, event: PointerEvent): boolean {
+    const last = lastTapRef.current;
+    const double =
+      last !== null &&
+      last.target === target &&
+      event.timeStamp - last.at < DOUBLE_TAP.time &&
+      Math.hypot(event.clientX - last.x, event.clientY - last.y) < DOUBLE_TAP.distance;
+
+    lastTapRef.current = double ? null : { at: event.timeStamp, target, x: event.clientX, y: event.clientY };
+
+    return double && (onDoubleTap?.(target) ?? false);
+  }
+
   /**
    * Selects the pressed widget. Pressing the selected widget again selects the next one underneath,
    * so widgets hidden behind others can be reached.
    */
   function handleTap(widgetId: string, event: PointerEvent) {
     const dots = dotsRef.current?.getBoundingClientRect();
+
+    if (doubleTapped(widgetId, event)) {
+      return;
+    }
 
     if (widgetId !== selectedId || !dots) {
       onSelect(widgetId);
@@ -737,10 +756,6 @@ type SurroundProps = {
   surround: CanvasSurround;
 };
 
-/**
- * The page around an entered shared subgrid (0026), painted in this order: the page, the hatching
- * over all of it, then the subgrid's cells above that.
- */
 function Surround({ children, surround }: SurroundProps) {
   return (
     <Box height='full' position='relative'>

@@ -7,15 +7,10 @@ import { resizeGrid } from './editing.js';
 import { Typing, useTyping } from './fields.js';
 
 export type SubgridPropertiesProps = {
-  /** Whether the subgrid is entered: its widgets are being edited (0026). */
   entered: boolean;
-  /** `merge` names a run of typing in one field; changes with the same one are one undo step (0023). */
   onChange: (subgrid: SharedSubgrid, merge?: string) => void;
-  /** Enters the subgrid, to edit its widgets; offered while it isn't entered. */
   onEnter?: (() => void) | undefined;
-  /** Leaves the subgrid; offered while it's entered. */
   onExit?: (() => void) | undefined;
-  /** Removes the subgrid from every page; offered while it isn't entered. */
   onRemove?: (() => void) | undefined;
   subgrid: SharedSubgrid;
 };

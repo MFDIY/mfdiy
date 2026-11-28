@@ -54,7 +54,6 @@ const manifests = Object.values(widgetManifests).sort((a, b) => a.label.localeCo
 
 const NO_ACTION = 'none';
 
-/** Picked page ids are told apart from game action ids, which can't hold a colon. */
 const PAGE_PREFIX = 'page:';
 
 /** The properties of one widget (0023), generated from its manifest. Key it by the widget's id. */

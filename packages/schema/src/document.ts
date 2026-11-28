@@ -30,13 +30,8 @@ export const BindingSchema = v.object({
 
 export type Binding = v.InferOutput<typeof BindingSchema>;
 
-/** A page's id, unique within its profile. */
 export const PageIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 
-/**
- * What pressing a widget does (0010): trigger a game action, by its id, or show a page of the same
- * profile, which makes the widget a page button (0018).
- */
 export const WidgetActionSchema = v.union([IdSchema, v.object({ page: PageIdSchema })]);
 
 export type WidgetActionRef = v.InferOutput<typeof WidgetActionSchema>;
@@ -130,17 +125,13 @@ export const SubgridPlaceSchema = v.pipe(
 
 export type SubgridPlace = v.InferOutput<typeof SubgridPlaceSchema>;
 
-/**
- * A grid of widgets placed once that shows on every page, in the same place, above the page's own
- * widgets (0026). It has its own columns and rows, and its widgets work as they do on a page.
- */
+/** Placed once, shown on every page in the same place, above the page's widgets (0026). */
 export const SharedSubgridSchema = v.pipe(
   v.object({
     /** Area per widget id, on its own grid. */
     areas: v.record(v.string(), AreaSchema),
     grid: GridSchema,
     id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
-    /** Kept as a share of the profile's shape, which every page has; see `subgridArea`. */
     place: SubgridPlaceSchema,
     widgets: v.array(WidgetInstanceSchema)
   }),

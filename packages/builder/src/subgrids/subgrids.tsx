@@ -8,17 +8,14 @@ import { Box } from '@mfdiy/ui/components';
 
 import * as styles from '../canvas/Canvas.css.js';
 
-/** The library's row for a shared subgrid, and the type it has while it stands on a page as one widget (0026). */
 export const SUBGRID_TYPE = 'shared-subgrid';
 
 const PREFIX = `${SUBGRID_TYPE}:`;
 
-/** The id a shared subgrid has while it stands on a page as one widget. */
 export function subgridWidgetId(id: string): string {
   return `${PREFIX}${id}`;
 }
 
-/** The shared subgrid a widget id on the page stands for, if it stands for one. */
 export function subgridIdOf(widgetId: string | null): string | undefined {
   return widgetId?.startsWith(PREFIX) ? widgetId.slice(PREFIX.length) : undefined;
 }
@@ -27,7 +24,6 @@ function Hatching() {
   return <Box backgroundImage='canvas.shared' height='full' width='full' />;
 }
 
-/** Offered in the widget library, like any widget (0026), though it's never stored as one. */
 export const subgridManifest: WidgetManifest = {
   type: SUBGRID_TYPE,
   label: 'Shared subgrid',
@@ -41,10 +37,7 @@ export const subgridManifest: WidgetManifest = {
   Component: Hatching
 };
 
-/**
- * A page with its profile's shared subgrids standing on it as widgets, above its own, so they're
- * selected, moved, resized and shown as overlap like any widget (0026).
- */
+/** The page with its shared subgrids standing on it as widgets, above its own (0026). */
 export function withSubgridsOnPage(
   page: Page,
   layout: Layout,
@@ -77,11 +70,7 @@ export function withSubgridsOnPage(
   };
 }
 
-/**
- * Takes an edit of a page made by `withSubgridsOnPage` apart again: the page, if its own widgets
- * changed, and the shared subgrids, if one was moved, resized or brought to the front. A subgrid
- * placed or resized keeps its own grid; its place is now on this page's cells (0026).
- */
+/** Splits an edit of a page from `withSubgridsOnPage` into what changed: the page or the subgrids. */
 export function splitSubgridsFromPage(
   edited: Page,
   page: Page,

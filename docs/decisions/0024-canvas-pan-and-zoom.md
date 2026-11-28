@@ -22,7 +22,7 @@ On a phone, the half-open properties sheet (0008) can cover the widget being edi
 - **Dragging pans**: around the page, or on its empty cells. A press that doesn't move is still a click, so marking a cell and letting go of a selection work as before. Letting go of a selection now happens on the click rather than the press, so the page can be dragged without losing it. The cursor is a hand. The middle button pans from anywhere, widgets included.
 - This rules out dragging a box around several widgets to select them. Multi-select isn't planned; if it comes, it needs another gesture.
 - **Scrolling pans** (Shift scrolls sideways), and **Ctrl or ⌘ + scroll zooms** at the pointer. A trackpad pinch reaches the browser as Ctrl + scroll, so it zooms the same way. Browsers can't tell a mouse wheel from a trackpad, so one rule serves both. One wheel notch zooms about 1.28×; a trackpad pinch follows the fingers. Safari's own trackpad pinch is handled too.
-- **`+`, `−` and `0`** zoom in, zoom out and fit, unless a field has focus. The same three are in the header's `⋯` menu (0008), with their keys shown, so they can be found.
+- **`+`, `−` and `0`** zoom in, zoom out and fit, unless a field has focus. The same three are in the header's menu (☰, 0008), with their keys shown, so they can be found.
 
 ### Limits
 
@@ -51,7 +51,7 @@ The display never pans or zooms (0007): it always shows the whole page.
 ## Open questions
 
 - The numbers are a first pass, to be tuned by feel: the 16 px margin, half of fit and 6× as limits, the quarter-viewport limit, wheel speed, and how long a fling glides.
-- Whether a mouse user without a trackpad finds Ctrl + scroll; if not, the zoom controls could leave `⋯`.
+- Whether a mouse user without a trackpad finds Ctrl + scroll; if not, the zoom controls could leave ☰.
 
 ## Why
 

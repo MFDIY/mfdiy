@@ -3,11 +3,11 @@ import { Box, IconButton, Logomark } from '@mfdiy/ui/components';
 export type AppHeaderProps = {
   /** The accent of the page shown, which the logomark takes. */
   accent?: string | undefined;
-  /** Opens the editor on the page shown; without it, there's no Edit. */
+  /** Opens the editor on the page shown. */
   onEdit?: (() => void) | undefined;
   /** Shows the MFD fullscreen; leave it out where the browser can't (0009). */
   onFullscreen?: (() => void) | undefined;
-  /** Leads to the home page from the logomark; without it, as on the home page itself, the logomark is only a mark. */
+  /** Leads home from the logomark. */
   onHome?: (() => void) | undefined;
 };
 

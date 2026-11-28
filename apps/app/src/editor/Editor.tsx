@@ -36,7 +36,7 @@ export type EditorProps = {
   id: string;
   /** The page shown when the editor opened (0009). */
   initialPageId: string;
-  /** Leaves the editor for the profile, on the page being edited, once nothing unsaved is in the way (0009). */
+  /** Leaves the editor for the profile, on the page being edited (0009). */
   onLeave: (pageId: string) => void;
 };
 
@@ -57,10 +57,8 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   const [saving, setSaving] = useState(false);
   const [dialog, setDialog] = useState<'conflict' | 'save-as-new' | null>(null);
   const [pageId, setPageId] = useState<string | null>(initialPageId);
-  /** Back was pressed with changes to save. */
   const [askingToLeave, setAskingToLeave] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  /** The shared subgrid entered, kept apart from the page shown, so switching pages stays inside (0026). */
   const [subgridId, setSubgridId] = useState<string | null>(null);
   /** A page just duplicated, whose name is focused when it's shown (0023). */
   const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
@@ -213,7 +211,6 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
     }
   }
 
-  /** Goes where leaving was asked to go: back to the profile, or wherever the browser was headed. */
   function proceed() {
     if (askingToLeave) {
       setAskingToLeave(false);
@@ -252,10 +249,10 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
         <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline' flexShrink='0'>
           <EditorHeader
             accent={pageToken('accent', document.tokens, page.tokens)}
-            backLabel={`Back to ${document.name}`}
             canRedo={current.future.length > 0}
             canUndo={current.past.length > 0}
             dirty={dirty}
+            exitLabel={`Back to ${document.name}`}
             menu={
               <>
                 <MenuItem icon='zoom_in' onClick={() => viewRef.current?.zoomIn()} shortcut='+'>
@@ -272,7 +269,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
               </>
             }
             onAddPage={handleAddPage}
-            onBack={leave}
+            onExit={leave}
             onPageChange={handlePageChange}
             onRedo={() => handleTimeTravel(redo)}
             onSave={() => (conflict ? setDialog('conflict') : void save())}

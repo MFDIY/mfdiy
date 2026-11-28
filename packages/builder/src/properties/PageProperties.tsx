@@ -29,7 +29,7 @@ export type PagePropertiesProps = {
   /** Duplicates the page; greyed out without it. */
   onDuplicate?: (() => void) | undefined;
   page: Page;
-  /** No page button leads to the page, so it can only be seen through the editor (0026). */
+  /** No page button leads to the page (0026). */
   unreachable?: boolean | undefined;
 };
 

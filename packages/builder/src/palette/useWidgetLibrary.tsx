@@ -10,7 +10,6 @@ import { matches } from './choices.js';
 
 type WidgetLibraryOptions = {
   documentTokens: TokenValues | undefined;
-  /** Offered besides the widgets, such as a shared subgrid (0026). */
   extra?: readonly WidgetManifest[] | undefined;
   pageTokens: TokenValues | undefined;
 };

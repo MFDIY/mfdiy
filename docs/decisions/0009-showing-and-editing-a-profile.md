@@ -22,7 +22,7 @@
 
 - The `display/:id` and `builder/:id` routes merge into `/:id`. On the home page, Show and Edit become opening the profile (0019).
 - Outside fullscreen the header takes a row from the screen; the MFD is fitted under it, keeping its shape or stretching (0006).
-- The editor's Back returns to the profile, not the home page (0008). 0008's preview mode is replaced by leaving the editor.
+- The editor's exit returns to the profile, not the home page (0008). 0008's preview mode is replaced by leaving the editor.
 - Entering the editor stays a deliberate control, never a gesture (0010), and automatic profiles never switch while editing (0012).
 - A page with no way to reach it on the MFD can still be reached through the editor: Edit, pick the page, leave. The editor warns about such pages (0026).
 - Tap to engage only starts keep-awake; it doesn't enter fullscreen (0005).

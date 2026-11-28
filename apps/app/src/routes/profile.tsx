@@ -33,7 +33,6 @@ function ProfileView({ id }: { id: string }) {
   const fullscreen = useFullscreen();
   const [editing, setEditing] = useState(() => (location.state as ProfileState | null)?.edit === true);
 
-  // Once read, so that a refresh shows the profile rather than reopening the editor.
   useEffect(() => {
     if (location.state !== null) {
       void navigate({ search: location.search }, { replace: true });

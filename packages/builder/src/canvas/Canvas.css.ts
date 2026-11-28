@@ -24,7 +24,6 @@ export const grid = style({ gap });
  */
 export const dots = style({ inset: `calc(${gap} / -2)` });
 
-/** Over the whole page around an entered shared subgrid, padding included (0026). */
 export const cover = style({ inset: `calc(${gap} * -1)` });
 
 /** The MFD's own background, so the dot grid doesn't show through widgets. */

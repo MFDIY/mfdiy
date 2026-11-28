@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
 import { Icon } from '../Icon/Icon.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Menu, MenuItem } from '../Menu/Menu.js';
 import { Text } from '../Text/Text.js';
 import { Tooltip, TooltipGroup } from '../Tooltip/Tooltip.js';
@@ -42,10 +42,7 @@ const tabClass = (active: boolean) =>
 
 export type TabsItem = {
   label: string;
-  /**
-   * Marks the tab with a warning and says why, e.g. "Overlap": in its tooltip and to assistive
-   * technology.
-   */
+  /** Marks the tab with a warning, and says why, e.g. "Overlap". */
   mark?: string | undefined;
   value: string;
 };
@@ -64,11 +61,11 @@ export type TabsProps = {
 };
 
 /**
- * A row of tabs, the active one underlined, over a hairline with `underline`, built on Base UI's Tabs (0003): arrow
- * keys move between them. Tabs sit flush (0022) and never scroll: those that don't fit go into a
- * menu that says how many there are, and the active tab is always one of those shown. A long name
- * is cut short with an ellipsis, and a tooltip shows it in full. Takes the width of its container.
- * Controlled: the page owns the value.
+ * A row of tabs, the active one underlined, over a hairline with `underline`, built on Base UI's
+ * Tabs (0003): arrow keys move between them. Tabs sit flush (0022) and never scroll: those that
+ * don't fit go into a menu, behind an icon button whose tooltip says how many there are, and the
+ * active tab is always one of those shown. A long name is cut short with an ellipsis, and a tooltip
+ * shows it in full. Takes the width of its container. Controlled: the page owns the value.
  */
 export function Tabs({ after, items, label, onValueChange, underline = false, value }: TabsProps) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -194,15 +191,5 @@ function TabLabel({ item }: { item: TabsItem }) {
 
 /** Says how many tabs didn't fit, and opens a menu of them. */
 function MoreButton({ count, open, ...restProps }: { count: number; open: boolean }) {
-  return (
-    <Button
-      {...restProps}
-      aria-label={`${count} more`}
-      icon='keyboard_arrow_down'
-      iconPosition='trailing'
-      variant={open ? 'default' : 'quiet'}
-    >
-      {`+${count}`}
-    </Button>
-  );
+  return <IconButton {...restProps} icon='list_arrow' label={`${count} more`} variant={open ? 'default' : 'quiet'} />;
 }
