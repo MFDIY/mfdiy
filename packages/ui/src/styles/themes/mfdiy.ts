@@ -70,7 +70,7 @@ export const mfdiy: Record<PrimitiveTokenName, string> = {
   radius: '0',
   'border.width': '1px',
   'corner.width': '2px',
-  'corner.gap': '0px',
+  'corner.gap': '3px',
   glow: '10px',
   duration: '150ms'
 };

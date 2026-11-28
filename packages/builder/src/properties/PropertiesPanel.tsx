@@ -1,8 +1,9 @@
 import type { PageChoice } from './title.js';
-import type { Catalogue } from '../palette/choices.js';
 import type { Layout, Page, TokenValues } from '@mfdiy/schema';
 
 import { widgetManifests } from '@mfdiy/instruments';
+
+import { withPageSignals, type Catalogue } from '../palette/choices.js';
 
 import { PageProperties, type PagePropertiesProps } from './PageProperties.js';
 import { ProfileProperties, type ProfileSettings } from './ProfileProperties.js';
@@ -52,7 +53,13 @@ export function PropertiesPanel({
   }
 
   return widget && manifest ? (
-    <WidgetProperties {...props} key={widget.id} manifest={manifest} widget={widget} />
+    <WidgetProperties
+      {...props}
+      catalogue={withPageSignals(props.catalogue, props.pages)}
+      key={widget.id}
+      manifest={manifest}
+      widget={widget}
+    />
   ) : (
     <PageProperties
       focusName={focusPageName}

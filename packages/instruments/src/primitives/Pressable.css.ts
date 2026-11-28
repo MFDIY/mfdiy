@@ -2,7 +2,6 @@ import { createVar, keyframes, style } from '@vanilla-extract/css';
 
 import { token } from '../theme/token.js';
 
-import { light } from './Light.css.js';
 import { glow, transition } from './styleHelpers.js';
 
 const cueColor = createVar();
@@ -16,7 +15,7 @@ const appear = keyframes({ to: { opacity: 1 } });
 
 /**
  * Room around every widget, pressable or not, so they line up: the outermost box of a widget, where
- * a pressable one draws its corners (0018).
+ * a pressable one draws its corners, with air between them and the widget (0018).
  */
 export const cornerBox = style({
   padding: `calc(${thickness} + ${token('corner.gap')})`
@@ -39,11 +38,8 @@ export const pressable = style({
       outline: `2px solid ${token('accent')}`,
       outlineOffset: '2px'
     },
-    '&[aria-current="page"]': {
-      vars: { [cueColor]: token('press.current') }
-    },
     '&[data-status="ok"]': {
-      vars: { [cueColor]: token('press.current') }
+      vars: { [cueColor]: token('press.accepted') }
     },
     '&[data-status="failed"]': {
       outline: `2px solid ${token('press.failed')}`,
@@ -52,42 +48,26 @@ export const pressable = style({
     },
     '&:disabled': {
       opacity: 0.4
-    },
-    [`&[data-cue^="frame-inked"]:has(${light}[data-state="on"])`]: {
-      vars: { [cueColor]: token('light.on.text') }
-    },
-    [`&[data-cue^="frame-inked"]:has(${light}[data-state="warning"])`]: {
-      vars: { [cueColor]: token('light.warning.text') }
-    },
-    [`&[data-cue^="frame-inked"]:has(${light}[data-state="critical"])`]: {
-      vars: { [cueColor]: token('light.critical.text') }
     }
   }
 });
 
 export const cue = style({
-  transition: transition('background', 'border-color', 'box-shadow'),
+  background: [
+    `linear-gradient(${cueColor}, ${cueColor}) top left / ${corner} ${thickness}`,
+    `linear-gradient(${cueColor}, ${cueColor}) top left / ${thickness} ${corner}`,
+    `linear-gradient(${cueColor}, ${cueColor}) top right / ${corner} ${thickness}`,
+    `linear-gradient(${cueColor}, ${cueColor}) top right / ${thickness} ${corner}`,
+    `linear-gradient(${cueColor}, ${cueColor}) bottom left / ${corner} ${thickness}`,
+    `linear-gradient(${cueColor}, ${cueColor}) bottom left / ${thickness} ${corner}`,
+    `linear-gradient(${cueColor}, ${cueColor}) bottom right / ${corner} ${thickness}`,
+    `linear-gradient(${cueColor}, ${cueColor}) bottom right / ${thickness} ${corner}`
+  ].join(', '),
+  backgroundRepeat: 'no-repeat',
+  transition: transition('background', 'filter'),
 
   selectors: {
-    [`${pressable}[data-cue="corners"] &`]: {
-      background: [
-        `linear-gradient(${cueColor}, ${cueColor}) top left / ${corner} ${thickness}`,
-        `linear-gradient(${cueColor}, ${cueColor}) top left / ${thickness} ${corner}`,
-        `linear-gradient(${cueColor}, ${cueColor}) top right / ${corner} ${thickness}`,
-        `linear-gradient(${cueColor}, ${cueColor}) top right / ${thickness} ${corner}`,
-        `linear-gradient(${cueColor}, ${cueColor}) bottom left / ${corner} ${thickness}`,
-        `linear-gradient(${cueColor}, ${cueColor}) bottom left / ${thickness} ${corner}`,
-        `linear-gradient(${cueColor}, ${cueColor}) bottom right / ${corner} ${thickness}`,
-        `linear-gradient(${cueColor}, ${cueColor}) bottom right / ${thickness} ${corner}`
-      ].join(', '),
-      backgroundRepeat: 'no-repeat'
-    },
-    [`${pressable}[data-cue="frame-inked"] &`]: {
-      border: `${token('border.width')} solid ${cueColor}`,
-      borderRadius: token('radius'),
-      inset: `calc(${thickness} + ${token('corner.gap')} + clamp(2px, 5cqmin, 5px))`
-    },
-    [`${pressable}[aria-current="page"] &, ${pressable}[data-status="ok"] &`]: {
+    [`${pressable}[data-status="ok"] &`]: {
       filter: `drop-shadow(${glow(cueColor)})`
     }
   }

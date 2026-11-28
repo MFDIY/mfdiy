@@ -11,20 +11,9 @@ export const pressStatuses = ['idle', 'pending', 'ok', 'failed'] as const;
 /** Where the last press stands: waiting for the game, accepted, or refused (0018). */
 export type PressStatus = (typeof pressStatuses)[number];
 
-/**
- * Temporary: the looks being compared for showing that a widget can be pressed (0018): corners in
- * the corner box around the widget, or a hairline frame inside it that takes a lit light's text
- * colour.
- */
-export const cues = ['corners', 'frame-inked'] as const;
-
-export type Cue = (typeof cues)[number];
-
 export type PressableProps = {
   children: ReactNode;
-  /** Temporary, while the looks are compared. */
-  cue?: Cue | undefined;
-  /** Marks a widget whose page is shown (0018). */
+  /** Announces a widget whose page is shown; it looks no different, as that's a signal of its own (0018). */
   current?: boolean | undefined;
   disabled?: boolean | undefined;
   onPress: () => void;
@@ -32,25 +21,17 @@ export type PressableProps = {
 };
 
 /**
- * Makes any widget pressable: it fires on touch (0010) and shows, with corners drawn in the corner
- * box around the widget, that it can be pressed, whether its page is shown, and how the game
- * answered (0018). It has no hover or pressed look, since the MFD is used by touch (0022). Widgets
- * without an action keep the same room in a `CornerBox`, so the two line up.
+ * Makes any widget pressable: it fires on touch (0010) and shows, with corners in the corner box
+ * around the widget, that it can be pressed and how the game answered the last press (0018). It
+ * has no hover or pressed look, since the MFD is used by touch (0022). Widgets without an action
+ * keep the same room in a `CornerBox`, so the two line up.
  */
-export function Pressable({
-  children,
-  cue = 'corners',
-  current = false,
-  disabled = false,
-  onPress,
-  status = 'idle'
-}: PressableProps) {
+export function Pressable({ children, current = false, disabled = false, onPress, status = 'idle' }: PressableProps) {
   return (
     <Frame
       {...pressHandlers(onPress, disabled)}
       aria-current={current ? 'page' : undefined}
       className={[styles.cornerBox, styles.pressable]}
-      data-cue={cue}
       data-status={status}
       disabled={disabled}
       tagName='button'

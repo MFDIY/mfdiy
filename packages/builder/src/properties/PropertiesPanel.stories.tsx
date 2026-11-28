@@ -99,7 +99,8 @@ const page: PageData = {
       options: { label: 'Low fuel' },
       bindings: { value: { signal: 'fuel', thresholds: { low: { warning: 20, critical: 10 } } } }
     },
-    { id: 'to-combat', type: 'label', action: { page: 'combat' } }
+    { id: 'to-combat', type: 'label', action: { page: 'combat' } },
+    { id: 'new-light', type: 'light' }
   ]
 };
 
@@ -241,6 +242,24 @@ export const PickingAction: Story = {
     await userEvent.click(await panel.findByRole('option', { name: /^Combat/ }));
 
     await expect(panel.getByRole('button', { name: 'Action: Show Combat' })).toBeInTheDocument();
+  }
+};
+
+/**
+ * A light given a page action while it has no data yet is lit by that page: it's on while the page
+ * is shown, like a page button in a cockpit (0018).
+ */
+export const PageActionLightsALight: Story = {
+  tags: ['!dev'],
+  args: { selectedId: 'new-light' },
+  play: async ({ canvasElement, userEvent }) => {
+    const panel = within(canvasElement);
+
+    await userEvent.click(panel.getByRole('button', { name: 'Action: No action' }));
+    await userEvent.click(await panel.findByRole('option', { name: /^Combat/ }));
+
+    await expect(panel.getByRole('button', { name: 'Action: Show Combat' })).toBeInTheDocument();
+    await expect(panel.getByRole('button', { name: 'Signal: Combat' })).toBeInTheDocument();
   }
 };
 

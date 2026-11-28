@@ -92,13 +92,13 @@ function LabelWidget(props: WidgetProps) {
 
 const labelOption = { label: 'Label', type: 'string', default: '' } as const;
 
-const pressTokens = ['press.cue', 'press.current', 'press.pending', 'press.failed'] as const;
+const pressTokens = ['press.cue', 'press.accepted', 'press.pending', 'press.failed'] as const;
 
 export const lightManifest: WidgetManifest = {
   type: 'light',
   label: 'Light',
   description: 'An annunciator light: lit by an on/off signal, or amber and red as a number crosses its thresholds.',
-  inputs: { value: { label: 'Lit by', accepts: ['boolean', 'number'], required: true } },
+  inputs: { value: { label: 'Lit by', accepts: ['boolean', 'number'], pageShown: true, required: true } },
   options: { label: labelOption },
   actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },

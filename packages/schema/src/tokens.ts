@@ -197,13 +197,13 @@ export const tokens = {
     tier: 'component',
     type: 'color',
     fallback: 'text.dim',
-    description: 'Pressable widgets: the cue that shows they can be pressed.'
+    description: 'Pressable widgets: the corners that show they can be pressed.'
   },
-  'press.current': {
+  'press.accepted': {
     tier: 'component',
     type: 'color',
     fallback: 'status.on',
-    description: 'Pressable widgets: the cue while their page is shown, or the game accepted the press.'
+    description: 'Pressable widgets: the corners once the game accepted the press.'
   },
   'press.pending': {
     tier: 'component',

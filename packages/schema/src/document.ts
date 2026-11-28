@@ -30,7 +30,8 @@ export const BindingSchema = v.object({
 
 export type Binding = v.InferOutput<typeof BindingSchema>;
 
-export const PageIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
+/** Shaped like a signal id, and short enough to be part of one: each page has a signal of its own (0018). */
+export const PageIdSchema = v.pipe(IdSchema, v.maxLength(48));
 
 export const WidgetActionSchema = v.union([IdSchema, v.object({ page: PageIdSchema })]);
 

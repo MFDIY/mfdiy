@@ -1,6 +1,6 @@
 import type { MfdDocument } from '@mfdiy/schema';
 
-import { DEFAULT_SHAPE, DOCUMENT_SCHEMA_VERSION, scaleLayout, seedGrid } from '@mfdiy/schema';
+import { DEFAULT_SHAPE, DOCUMENT_SCHEMA_VERSION, pageSignalId, scaleLayout, seedGrid } from '@mfdiy/schema';
 
 /** Hand-written on coarse grids, which are easier to read. */
 const demo: MfdDocument = {
@@ -165,8 +165,18 @@ const demo: MfdDocument = {
         'show-shields': { column: 2, row: 1, columnSpan: 1, rowSpan: 1 }
       },
       widgets: [
-        { id: 'show-flight', type: 'label', options: { label: 'Flight' }, action: { page: 'flight' } },
-        { id: 'show-shields', type: 'label', options: { label: 'Shields' }, action: { page: 'shields' } }
+        {
+          id: 'show-flight',
+          type: 'light',
+          bindings: { value: { signal: pageSignalId('flight') } },
+          action: { page: 'flight' }
+        },
+        {
+          id: 'show-shields',
+          type: 'light',
+          bindings: { value: { signal: pageSignalId('shields') } },
+          action: { page: 'shields' }
+        }
       ]
     }
   ]

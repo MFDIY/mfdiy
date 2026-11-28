@@ -4,7 +4,7 @@ import type { Catalogue } from '../palette/choices.js';
 import type { Area, Layout, Page, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { acceptsSignal, widgetManifests, type OptionSpec, type WidgetManifest } from '@mfdiy/instruments';
-import { bindingFor, duplicateWidget, gameActionOf, pageActionOf, removeWidget } from '@mfdiy/schema';
+import { bindingFor, duplicateWidget, gameActionOf, pageActionOf, pageSignalId, removeWidget } from '@mfdiy/schema';
 import {
   Accordion,
   Bleed,
@@ -121,13 +121,17 @@ export function WidgetProperties({
   }
 
   function pickAction(id: string) {
+    const target = id.startsWith(PAGE_PREFIX) ? id.slice(PAGE_PREFIX.length) : undefined;
+    const lit = Object.entries(manifest.inputs).find(([, spec]) => spec.pageShown)?.[0];
+
     setPicking(null);
-    change(current =>
-      withAction(
-        current,
-        id === NO_ACTION ? undefined : id.startsWith(PAGE_PREFIX) ? { page: id.slice(PAGE_PREFIX.length) } : id
-      )
-    );
+    change(current => {
+      const next = withAction(current, id === NO_ACTION ? undefined : target === undefined ? id : { page: target });
+
+      return target !== undefined && lit !== undefined && !current.bindings
+        ? withBinding(next, lit, { signal: pageSignalId(target) })
+        : next;
+    });
   }
 
   function pickTask(current: Picking): PanelTaskContent {

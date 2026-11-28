@@ -18,16 +18,22 @@ Primitives are the pure visual building blocks in `packages/instruments`; widget
 
 ### Pressable widgets show it
 
-- On a touch screen nothing can be found by pointing at it, and pressing to find out does something in the game. So a pressable widget carries a **cue** drawn over it (`Pressable` in `packages/instruments`), a fixed look rather than a hover or pressed state (0022). Never hover or cursor changes: the MFD is used by touch.
-- The cue also shows a widget **whose page is shown**, so a page button marks the current page in the same way whatever widget it is.
-- **The press's answer:** the game acknowledges every action (`TriggerGameAction` returns a status, sent on as `action-result`), so a press is **waiting** until it answers, then **accepted** or **refused**. While waiting, a light runs around the widget's edge, shown only after a moment so the usual quick answer doesn't flash; with reduced motion it's a still ring. A widget whose action can't be used (not connected, not in the game's list, a deleted page) is dimmed.
-- **Every widget has a corner box**, like a CSS box model: corner box, then border, then padding. A pressable widget draws its corners in it; one without an action keeps it empty (`CornerBox`), so the two line up and giving a widget an action moves nothing. Its thickness is the theme's `corner.width`; `corner.gap` adds air between the corners and the widget. The gap between widgets stays the theme's `gap` (0022).
-- Being compared: corners at 1 and 2 px with 3 px of air, in five colours they could fall back to: `line`, `text.dim`, `text`, `accent` and `secondary.8` (`Primitives/Pressable`, Compare Cues and Compare States). A theme can always set `press.cue` itself. Ruled out: no cue, an edge along the bottom, corners or a frame that shrink only pressable widgets, corners against the border, and a 2 px frame, which feels wrong among hairlines. Tap feedback (0010, 0022) isn't built yet.
+- On a touch screen nothing can be found by pointing at it, and pressing to find out does something in the game. So a pressable widget shows **corners** (`Pressable` in `packages/instruments`), a fixed look rather than a hover or pressed state (0022). Never hover or cursor changes: the MFD is used by touch.
+- **Every widget has a corner box**, like a CSS box model: corner box, then border, then padding. A pressable widget draws its corners in it; one without an action keeps it empty (`CornerBox`), so the two line up and giving a widget an action moves nothing. Theme tokens: `corner.width`, the corners' thickness (2 px), `corner.gap`, air between corners and widget (3 px), and `press.cue`, their colour, falling back to `text.dim`. The gap between widgets stays the theme's `gap` (0022).
+- Chosen by comparing, in Storybook: corners at 1, 2 and 3 px, flush or with air, in `line`, `text.dim`, `text`, `accent` and `secondary.8`. Ruled out: no cue; an edge along the bottom; corners or a frame that shrink only pressable widgets; corners against the border; a frame inside the widget, as a hairline or 2 px, which feels wrong among hairlines; and `accent`, which can't be told apart from an accepted press.
+- **Actions are only input.** The game answers a press with whether it took it (`TriggerGameAction` returns a status, sent on as `action-result`), never with what changed; that comes back through the signals. So the corners show only the press: **waiting** until the game answers, then **accepted** or **refused**. While waiting, a light runs around the corner box, shown only after a moment so the usual quick answer doesn't flash; with reduced motion it's a still ring. A widget whose action can't be used (not connected, not in the game's list, a deleted page) is dimmed. Tap feedback (0010, 0022) isn't built yet.
+- **A widget shows the state its action changes by being bound to it**, like any data: a gear button is a Light bound to the gear signal, whose action toggles the gear.
+
+### Page shown is a signal
+
+- The one state that doesn't come from the game is which page the MFD shows. **The MFD provides it as signals**, one on/off signal per page, on while it's shown (`mfd.page.<id>`, in a "Pages" group, named after the page; `pageSignals` in `packages/schema`). Signals the MFD provides start with `mfd.`, which game adapters don't use; page ids are shaped like signal ids for it.
+- A **page button that marks the shown page** is a Light bound to that page's signal, with "Show page" as its action. Giving a page action to a widget whose input asks for it (`pageShown`, the Light's) while it has no data binds the page's signal too, which can still be changed. A Label with a page action is a page button that doesn't mark it.
+- No special treatment otherwise: the page button lights through the Light's own tokens.
 
 ### Version 1
 
-- **Light:** annunciator. On an on/off signal it lights in `primary`; on a number signal it's off when normal, amber at its warning threshold and red at critical (0023). _Exists_; number signals still to do. With an action, a lit push-button showing its signal's state (gear, ESP, decoupled).
-- **Label:** static text. With an action, a button; with a page action, a **page button**, which switches the MFD page. The MFD has no page tabs of its own, so profiles with more than one page need page buttons, usually in a shared subgrid (0026). _Exists._
+- **Light:** annunciator. On an on/off signal it lights in `primary`; on a number signal it's off when normal, amber at its warning threshold and red at critical (0023). _Exists_; number signals still to do. With an action, a lit push-button showing its signal's state (gear, ESP, decoupled), or, bound to a page's signal, a page button lit while its page is shown.
+- **Label:** static text. With an action, a button. A widget with a page action is a **page button**, which switches the MFD page. The MFD has no page tabs of its own, so profiles with more than one page need page buttons, usually in a shared subgrid (0026); the starter profile's are Lights, so the shown page is lit. _Exists._
 - **Readout:** a value as text, with a unit. Numbers are right-aligned, with optional leading zeros (0022). _Redesign in progress._
 - **Bar:** linear gauge, coloured by its binding's thresholds (0023). _Exists_; its redesign covers **vertical**, **reversed**, **split** and **segmented** bars (counts like missiles or countermeasures).
 - **Dial:** arc or round gauge (speed, G-force, temperature).
@@ -60,7 +66,6 @@ Covers what real MFD pages show and the data the game provides, in the order tha
 
 ## Open questions
 
-- **Which cue**, and the default `corner.width` and `corner.gap`: chosen from the comparison. Its colours are tokens (`press.*`), so a theme can make it louder or quieter.
+- **The press states** (waiting, accepted, refused, unavailable): still to be discussed with the maintainer (`Primitives/Pressable`, Compare States).
 - **Which way to steady numbers**, from the comparison, and whether it's built in or an option per widget.
-- **Toggles:** a Light bound to the same thing its action toggles (gear) shows the state. A widget that doesn't show it (a Label that toggles the lights) could if the game adapter said which signal shows an action's state; then the cue could light like a page button's. Not decided.
 - Mark **Accepted** once the maintainer has confirmed the list of types.
