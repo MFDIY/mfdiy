@@ -10,7 +10,7 @@ const room = `calc(${thickness} + ${token('corner.gap')})`;
 const color = token('press.cue');
 const pending = token('press.pending');
 
-/** How long the game's answer shows: one slow pulse when accepted, three when refused. */
+/** How long the game's answer shows: fading out when accepted, pulsing three times when refused. */
 const answer = '1200ms';
 
 /** Where the tap landed, inside the tap layer. */
@@ -28,6 +28,8 @@ const spread = keyframes({
 /** One pulse of the answer's rim; its end, or `hold`'s with reduced motion, ends a refusal shown without asking the game. */
 export const pulse = keyframes({ '50%': { opacity: 0.25 } });
 export const hold = keyframes({ to: { opacity: 1 } });
+
+const fadeOut = keyframes({ from: { opacity: 1 }, to: { opacity: 0 } });
 
 /**
  * Room around every widget, pressable or not, so they line up: the outermost box of a widget, where
@@ -86,20 +88,17 @@ const rim = style({
 });
 
 /**
- * Waiting for the game: two lights chasing around a faint rim, shown only after a moment, so the
- * usual quick answer doesn't flash.
+ * Waiting for the game: two lights chasing around the rim, shown only after a moment, so the usual
+ * quick answer doesn't flash.
  */
 export const waiting = style([
   rim,
   {
-    background: [
-      `conic-gradient(from ${angle}, transparent 0deg 110deg, ${pending} 175deg, transparent 180deg 290deg, ${pending} 355deg, transparent 360deg)`,
-      `color-mix(in srgb, ${pending} 20%, transparent)`
-    ].join(', '),
+    background: `conic-gradient(from ${angle}, transparent 0deg 30deg, ${pending} 100deg, transparent 180deg 210deg, ${pending} 280deg, transparent 360deg)`,
 
     selectors: {
       [`${pressable}[data-rim="pending"] &`]: {
-        animation: `${spin} 1.6s linear infinite`,
+        animation: `${spin} 2.6s linear infinite`,
         opacity: 1,
         transitionDelay: '150ms'
       }
@@ -117,7 +116,7 @@ export const waiting = style([
   }
 ]);
 
-/** Accepted: the rim turns solid and pulses once, slowly. */
+/** Accepted: the rim turns solid and fades out. */
 export const accepted = style([
   rim,
   {
@@ -125,7 +124,7 @@ export const accepted = style([
     filter: `drop-shadow(${glow(token('press.accepted'))})`,
 
     selectors: {
-      [`${pressable}[data-rim="accepted"] &`]: { animation: `${pulse} ${answer} ease-in-out`, opacity: 1 }
+      [`${pressable}[data-rim="accepted"] &`]: { animation: `${fadeOut} ${answer} ease-in forwards`, opacity: 1 }
     },
 
     '@media': {
@@ -138,7 +137,7 @@ export const accepted = style([
   }
 ]);
 
-/** Refused: the rim turns solid critical and pulses three times in the time accepted pulses once. */
+/** Refused: the rim turns solid critical and pulses three times in the time accepted takes to fade. */
 export const refused = style([
   rim,
   {
