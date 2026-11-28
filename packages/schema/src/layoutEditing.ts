@@ -83,7 +83,7 @@ function scaleAxis(start: number, span: number, from: number, to: number) {
 }
 
 /** The free position nearest to `wanted` for an area of that size, if there is one. */
-function nearestFreeArea(wanted: Area, grid: Grid, placed: readonly Area[]): Area | undefined {
+export function nearestFreeArea(wanted: Area, grid: Grid, placed: readonly Area[]): Area | undefined {
   let best: Area | undefined;
   let bestDistance = Infinity;
 
@@ -343,6 +343,7 @@ export function duplicateWidget(page: Page, layout: Layout, id: string): { page:
 export type CopiedWidget = {
   area: Area;
   grid: Grid;
+  kind: 'widget';
   widget: WidgetInstance;
 };
 
@@ -351,7 +352,7 @@ export function copyWidget(page: Page, layout: Layout, id: string): CopiedWidget
   const widget = page.widgets.find(candidate => candidate.id === id);
   const area = layout.areas[id];
 
-  return widget && area ? { area, grid: layout.grid, widget: structuredClone(widget) } : undefined;
+  return widget && area ? { area, grid: layout.grid, kind: 'widget', widget: structuredClone(widget) } : undefined;
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { Area, Grid, Layout, MfdDocument, Page, SharedSubgrid, SubgridPlace } from './document.js';
 
 import { intersectAreas, type Overlap } from './layout.js';
+import { moveArea, nearestFreeArea, type CopiedWidget } from './layoutEditing.js';
 
 /* Shared subgrids (0026): geometry and edits, shared by the builder and the MFD. */
 
@@ -46,6 +47,58 @@ export function addSubgrid(
   };
 
   return { id: subgrid.id, subgrids: [...subgrids, subgrid] };
+}
+
+/** A shared subgrid as it was copied, with its widgets (0006, 0026). */
+export type CopiedSubgrid = {
+  kind: 'subgrid';
+  subgrid: SharedSubgrid;
+};
+
+/** What Copy takes: a widget, from a page or a shared subgrid, or a shared subgrid (0006). */
+export type Copied = CopiedWidget | CopiedSubgrid;
+
+/** A copy of a shared subgrid, to paste later; `undefined` if there's no such subgrid. */
+export function copySubgrid(subgrids: readonly SharedSubgrid[], id: string): CopiedSubgrid | undefined {
+  const subgrid = subgrids.find(candidate => candidate.id === id);
+
+  return subgrid ? { kind: 'subgrid', subgrid: structuredClone(subgrid) } : undefined;
+}
+
+/**
+ * The shared subgrids with a copied one pasted on top, exactly where it was (0006): on every page,
+ * over the one it was copied from, if that's still there, as overlap.
+ */
+export function pasteSubgrid(
+  subgrids: readonly SharedSubgrid[],
+  copied: CopiedSubgrid
+): { id: string; subgrids: SharedSubgrid[] } {
+  const subgrid = { ...structuredClone(copied.subgrid), id: newSubgridId(subgrids) };
+
+  return { id: subgrid.id, subgrids: [...subgrids, subgrid] };
+}
+
+/**
+ * The shared subgrids with a copy of one on top, at the same size in the nearest spot that's free
+ * on the page shown (0023), as a widget's Duplicate does. It keeps its own grid and widgets.
+ */
+export function duplicateSubgrid(
+  subgrids: readonly SharedSubgrid[],
+  id: string,
+  layout: Layout
+): { id: string; subgrids: SharedSubgrid[] } {
+  const subgrid = subgrids.find(candidate => candidate.id === id);
+
+  if (!subgrid) {
+    return { id, subgrids: [...subgrids] };
+  }
+
+  const { grid } = layout;
+  const area = subgridArea(subgrid.place, grid);
+  const taken = [...Object.values(layout.areas), ...subgrids.map(other => subgridArea(other.place, grid))];
+  const free = nearestFreeArea(area, grid, taken) ?? moveArea(area, { columns: 1, rows: 1 }, grid);
+
+  return pasteSubgrid(subgrids, { kind: 'subgrid', subgrid: { ...subgrid, place: { area: free, grid } } });
 }
 
 /** The shared subgrids without one of them. */

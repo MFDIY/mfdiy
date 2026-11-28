@@ -1,7 +1,7 @@
 import type { WatchedDocument } from '../documents/DocumentStore.js';
 import type { Edit } from '../documents/edit.js';
 import type { ProfileState } from '../routes/profile.js';
-import type { CopiedWidget, MfdDocument, Page } from '@mfdiy/schema';
+import type { Copied, MfdDocument, Page } from '@mfdiy/schema';
 
 import {
   EditorHeader,
@@ -69,8 +69,8 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   const [subgridId, setSubgridId] = useState<string | null>(null);
   /** A page just duplicated, whose name is focused when it's shown (0023). */
   const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
-  /** The widget last copied, to paste on any page or shared subgrid of the profile (0006). */
-  const [copied, setCopied] = useState<CopiedWidget | null>(null);
+  /** The widget or shared subgrid last copied, to paste on any page or shared subgrid of the profile (0006). */
+  const [copied, setCopied] = useState<Copied | null>(null);
 
   // Without unsaved changes there's nothing to keep once another device saves.
   const outdated =
@@ -115,7 +115,8 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
     ? entered.widgets.map(widget => widget.id)
     : [...(page?.widgets.map(widget => widget.id) ?? []), ...subgrids.map(subgrid => subgridWidgetId(subgrid.id))];
   const selected = selectedId !== null && selectable.includes(selectedId) ? selectedId : null;
-  const copyable = selected !== null && !subgrids.some(subgrid => subgridWidgetId(subgrid.id) === selected);
+  // Shared subgrids don't nest (0026).
+  const pastable = copied !== null && (copied.kind === 'widget' || !entered);
   const overlapping = pagesWithSubgridOverlap(document);
   const unreachable = unreachablePages(document);
 
@@ -267,7 +268,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             menu={
               <>
                 <MenuItem
-                  disabled={!copyable}
+                  disabled={selected === null}
                   icon='content_copy'
                   onClick={() => clipboardRef.current?.copy()}
                   shortcut={modifierShortcut('C')}
@@ -275,7 +276,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
                   Copy
                 </MenuItem>
                 <MenuItem
-                  disabled={!copied}
+                  disabled={!pastable}
                   icon='content_paste'
                   onClick={() => clipboardRef.current?.paste()}
                   shortcut={modifierShortcut('V')}

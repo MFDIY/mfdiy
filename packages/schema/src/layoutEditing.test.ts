@@ -337,7 +337,7 @@ describe('copyWidget and pasteWidget', () => {
   const copied = copyWidget(page, layout, 'bar-1');
 
   it('copies the widget and where it is', () => {
-    expect(copied).toEqual({ area: area(2, 2, 2, 1), grid, widget: page.widgets[0] });
+    expect(copied).toEqual({ area: area(2, 2, 2, 1), grid, kind: 'widget', widget: page.widgets[0] });
     expect(copied?.widget).not.toBe(page.widgets[0]);
     expect(copyWidget(page, layout, 'light-1')).toBeUndefined();
   });

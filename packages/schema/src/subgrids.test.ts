@@ -7,9 +7,12 @@ import { createBlankDocument } from './blankDocument.js';
 import { MfdDocumentSchema } from './document.js';
 import {
   addSubgrid,
+  copySubgrid,
+  duplicateSubgrid,
   findSubgridOverlaps,
   pagesWithSubgridOverlap,
   pageToSubgrid,
+  pasteSubgrid,
   removeSubgrid,
   subgridArea,
   subgridAsPage
@@ -141,5 +144,59 @@ describe('overlap (0026)', () => {
     };
 
     expect([...pagesWithSubgridOverlap(document)]).toEqual(['crowded']);
+  });
+});
+
+describe('copying and duplicating (0006, 0023)', () => {
+  const buttons: SharedSubgrid = {
+    ...strip,
+    areas: { show: { column: 1, row: 1, columnSpan: 4, rowSpan: 2 } },
+    widgets: [{ id: 'show', type: 'button', action: { page: 'page-1' } }]
+  };
+  const page: Layout = {
+    orientation: 'any',
+    grid: { columns: 24, rows: 15 },
+    areas: { speed: { column: 1, row: 1, columnSpan: 24, rowSpan: 4 } }
+  };
+
+  it('pastes a copy on top, in the same place, with its widgets and a new id', () => {
+    const copied = copySubgrid([buttons], 'subgrid-1');
+
+    if (!copied) {
+      throw new Error('Not copied');
+    }
+
+    const pasted = pasteSubgrid([buttons], copied);
+
+    expect(pasted.id).toBe('subgrid-2');
+    expect(pasted.subgrids[1]).toEqual({ ...buttons, id: 'subgrid-2' });
+    expect(pasted.subgrids[1]?.widgets).not.toBe(buttons.widgets);
+    expect(copySubgrid([buttons], 'subgrid-9')).toBeUndefined();
+
+    const document: MfdDocument = { ...createBlankDocument('Test', 'game'), subgrids: pasted.subgrids };
+
+    expect(v.safeParse(MfdDocumentSchema, document).issues).toBeUndefined();
+  });
+
+  it('duplicates into the nearest spot free on the page shown', () => {
+    const duplicated = duplicateSubgrid([buttons], 'subgrid-1', page);
+
+    expect(duplicated.id).toBe('subgrid-2');
+    expect(duplicated.subgrids[1]).toEqual({
+      ...buttons,
+      id: 'subgrid-2',
+      place: { area: { column: 1, row: 12, columnSpan: 24, rowSpan: 2 }, grid: page.grid }
+    });
+  });
+
+  it('duplicates on top, a cell further, when nothing is free', () => {
+    const full: Layout = { ...page, areas: { speed: { column: 1, row: 1, columnSpan: 24, rowSpan: 15 } } };
+
+    expect(duplicateSubgrid([buttons], 'subgrid-1', full).subgrids[1]?.place.area).toEqual({
+      column: 1,
+      row: 14,
+      columnSpan: 24,
+      rowSpan: 2
+    });
   });
 });

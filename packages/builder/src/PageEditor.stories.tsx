@@ -1,6 +1,6 @@
 import type { Catalogue } from './palette/choices.js';
 import type { ProfileSettings } from './properties/ProfileProperties.js';
-import type { CopiedWidget, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
+import type { Copied, CopiedWidget, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
@@ -82,6 +82,7 @@ const pageUnderStrip: Page = blankLayout
 const copiedBar: CopiedWidget = {
   area: { column: 2, row: 2, columnSpan: 3, rowSpan: 2 },
   grid: { columns: 12, rows: 8 },
+  kind: 'widget',
   widget: { id: 'fuel', type: 'bar', bindings: { value: { signal: 'fuel' } } }
 };
 
@@ -94,8 +95,8 @@ function shortcut(key: string) {
 
 type DemoProps = {
   catalogue: Catalogue;
-  /** The widget copied before the story starts (0006). */
-  copied?: CopiedWidget | null | undefined;
+  /** The widget or shared subgrid copied before the story starts (0006). */
+  copied?: Copied | null | undefined;
   /** The shared subgrid entered, if any (0026). */
   enteredSubgridId?: string | null | undefined;
   focusPageName?: boolean | undefined;
@@ -538,14 +539,51 @@ export const CopyAndPaste: Story = {
   }
 };
 
-/** A shared subgrid isn't copied: every page has it already (0026). */
-export const SharedSubgridIsNotCopied: Story = {
+/** A shared subgrid is copied too, with its widgets, and pasted on top of itself: on every page, where it was (0006). */
+export const CopyAndPasteASharedSubgrid: Story = {
   tags: ['!dev', '!visual'],
   args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
   play: async ({ canvasElement, userEvent }) => {
     await userEvent.keyboard(shortcut('c'));
     await userEvent.keyboard(shortcut('v'));
-    await expect(within(canvasElement).getAllByRole('button', { name: 'Shared subgrid' })).toHaveLength(1);
+
+    const subgrids = within(canvasElement).getAllByRole('button', { name: 'Shared subgrid' });
+
+    await expect(subgrids).toHaveLength(2);
+    await expect(subgrids[1]).toHaveAttribute('aria-pressed', 'true');
+    await expect(subgrids[1]?.getBoundingClientRect()).toEqual(subgrids[0]?.getBoundingClientRect());
+  }
+};
+
+/** Shared subgrids don't nest: inside one, a shared subgrid isn't pasted (0026). */
+export const NoSharedSubgridInsideAnother: Story = {
+  tags: ['!dev', '!visual'],
+  args: {
+    copied: { kind: 'subgrid', subgrid: strip },
+    enteredSubgridId: 'subgrid-1',
+    page: pageWithBar,
+    subgrids: [strip]
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const before = canvas.getAllByRole('button').length;
+
+    await userEvent.keyboard(shortcut('v'));
+    await expect(canvas.getAllByRole('button')).toHaveLength(before);
+  }
+};
+
+/** Duplicate, in its properties as a widget's (0023), adds a copy in the nearest free spot, selected. */
+export const DuplicatingASharedSubgrid: Story = {
+  tags: ['!dev'],
+  args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+    const subgrids = within(canvasElement).getAllByRole('button', { name: 'Shared subgrid' });
+
+    await expect(subgrids).toHaveLength(2);
+    await expect(subgrids[1]).toHaveAttribute('aria-pressed', 'true');
   }
 };
 
