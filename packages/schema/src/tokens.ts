@@ -176,14 +176,35 @@ export const tokens = {
   'readout.value': { tier: 'component', type: 'color', fallback: 'text', description: 'Readout: value.' },
   'readout.unit': { tier: 'component', type: 'color', fallback: 'text.dim', description: 'Readout: unit.' },
   'readout.label': { tier: 'component', type: 'color', fallback: 'text.dim', description: 'Readout: label.' },
-  'button.face': { tier: 'component', type: 'color', fallback: 'surface', description: 'Button: face.' },
-  'button.label': { tier: 'component', type: 'color', fallback: 'text', description: 'Button: label.' },
-  'button.outline': { tier: 'component', type: 'color', fallback: 'line', description: 'Button: outline.' },
-  'button.failed': {
+  'readout.zeros': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'neutral.5',
+    description: 'Readout: leading zeros, dimmer than the digits that count.'
+  },
+  'press.cue': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'text.dim',
+    description: 'Pressable widgets: the cue that shows they can be pressed.'
+  },
+  'press.current': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'status.on',
+    description: 'Pressable widgets: the cue while their page is shown, or the game accepted the press.'
+  },
+  'press.pending': {
+    tier: 'component',
+    type: 'color',
+    fallback: 'accent',
+    description: 'Pressable widgets: waiting for the game to answer.'
+  },
+  'press.failed': {
     tier: 'component',
     type: 'color',
     fallback: 'status.critical',
-    description: 'Button and light: the action failed.'
+    description: 'Pressable widgets: the game refused the press.'
   }
 } as const satisfies Record<string, TokenSpec>;
 

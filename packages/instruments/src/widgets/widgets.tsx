@@ -1,9 +1,12 @@
+import type { ReactElement } from 'react';
+
 import { Bar } from '../primitives/Bar.js';
-import { Button } from '../primitives/Button.js';
+import { Label } from '../primitives/Label.js';
 import { Light, type LightState } from '../primitives/Light.js';
+import { Pressable } from '../primitives/Pressable.js';
 import { Readout } from '../primitives/Readout.js';
 
-import { formatValue, normalise } from './format.js';
+import { formatNumber, formatValue, normalise } from './format.js';
 import { readOption, type ResolvedInput, type WidgetManifest, type WidgetProps } from './manifest.js';
 
 /*
@@ -13,6 +16,19 @@ import { readOption, type ResolvedInput, type WidgetManifest, type WidgetProps }
 
 function inputLabel(props: WidgetProps, input: string, fallback: string): string {
   return readOption(props, 'label', '') || props.inputs[input]?.signal.label || fallback;
+}
+
+/** Any widget with an action can be pressed (0018). */
+function pressable(props: WidgetProps, content: ReactElement): ReactElement {
+  const { action } = props;
+
+  return action ? (
+    <Pressable current={action.current} disabled={!action.available} onPress={action.trigger} status={action.status}>
+      {content}
+    </Pressable>
+  ) : (
+    content
+  );
 }
 
 /** On an on/off signal, lit while it's on; on a number, off while normal and amber or red as it crosses its thresholds. */
@@ -25,15 +41,11 @@ function lightState(input: ResolvedInput | undefined): LightState {
 }
 
 function LightWidget(props: WidgetProps) {
-  const state = lightState(props.inputs['value']);
-
-  return (
+  return pressable(
+    props,
     <Light
-      disabled={props.action ? !props.action.available : undefined}
       label={inputLabel(props, 'value', props.action?.label ?? 'Light')}
-      onPress={props.action?.trigger}
-      state={state}
-      status={props.action?.status}
+      state={lightState(props.inputs['value'])}
     />
   );
 }
@@ -42,7 +54,8 @@ function BarWidget(props: WidgetProps) {
   const input = props.inputs['value'];
   const level = normalise(input);
 
-  return (
+  return pressable(
+    props,
     <Bar
       displayValue={level === null ? '—' : `${Math.round(level * 100)}%`}
       label={inputLabel(props, 'value', 'Bar')}
@@ -55,38 +68,35 @@ function BarWidget(props: WidgetProps) {
 function ReadoutWidget(props: WidgetProps) {
   const input = props.inputs['value'];
   const unit = input?.signal.kind === 'number' ? input.signal.unit : undefined;
+  const decimals = readOption(props, 'decimals', 0);
 
-  return (
+  return pressable(
+    props,
     <Readout
       label={inputLabel(props, 'value', 'Readout')}
       state={input?.state ?? 'normal'}
       unit={unit}
-      value={formatValue(input, readOption(props, 'decimals', 0))}
+      value={
+        typeof input?.value === 'number'
+          ? formatNumber(input.value, { decimals, digits: readOption(props, 'digits', 0) })
+          : formatValue(input, decimals)
+      }
     />
   );
 }
 
-function ButtonWidget(props: WidgetProps) {
-  const label = readOption(props, 'label', '') || props.action?.label || 'Button';
-
-  return (
-    <Button
-      current={props.action?.current}
-      disabled={!props.action?.available}
-      label={label}
-      onPress={() => props.action?.trigger()}
-      status={props.action?.status ?? 'idle'}
-    />
-  );
+function LabelWidget(props: WidgetProps) {
+  return pressable(props, <Label text={readOption(props, 'label', '') || props.action?.label || 'Label'} />);
 }
 
 const labelOption = { label: 'Label', type: 'string', default: '' } as const;
 
+const pressTokens = ['press.cue', 'press.current', 'press.pending', 'press.failed'] as const;
+
 export const lightManifest: WidgetManifest = {
   type: 'light',
   label: 'Light',
-  description:
-    'An annunciator light: lit by an on/off signal, or amber and red as a number crosses its thresholds. Can trigger an action when pressed.',
+  description: 'An annunciator light: lit by an on/off signal, or amber and red as a number crosses its thresholds.',
   inputs: { value: { label: 'Lit by', accepts: ['boolean', 'number'], required: true } },
   options: { label: labelOption },
   actionable: true,
@@ -101,7 +111,7 @@ export const lightManifest: WidgetManifest = {
     'light.warning.text',
     'light.critical',
     'light.critical.text',
-    'button.failed'
+    ...pressTokens
   ],
   Component: LightWidget
 };
@@ -112,10 +122,10 @@ export const barManifest: WidgetManifest = {
   description: 'A linear gauge for a number signal, with warning and critical thresholds.',
   inputs: { value: { label: 'Value', accepts: ['number'], bounded: true, required: true } },
   options: { label: labelOption },
-  actionable: false,
+  actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['bar.fill', 'bar.fill.warning', 'bar.fill.critical', 'bar.track', 'bar.value'],
+  tokens: ['bar.fill', 'bar.fill.warning', 'bar.fill.critical', 'bar.track', 'bar.value', ...pressTokens],
   Component: BarWidget
 };
 
@@ -126,28 +136,37 @@ export const readoutManifest: WidgetManifest = {
   inputs: { value: { label: 'Value', accepts: ['number', 'boolean', 'enum', 'string'], required: true } },
   options: {
     label: labelOption,
-    decimals: { label: 'Decimals', type: 'number', default: 0, min: 0, max: 3 }
+    decimals: { label: 'Decimals', type: 'number', default: 0, min: 0, max: 3 },
+    digits: { label: 'Pad to digits', type: 'number', default: 0, min: 0, max: 9 }
   },
-  actionable: false,
+  actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['readout.label', 'readout.value', 'readout.unit', 'status.warning', 'status.critical'],
+  tokens: [
+    'readout.label',
+    'readout.value',
+    'readout.unit',
+    'readout.zeros',
+    'status.warning',
+    'status.critical',
+    ...pressTokens
+  ],
   Component: ReadoutWidget
 };
 
-export const buttonManifest: WidgetManifest = {
-  type: 'button',
-  label: 'Button',
-  description: 'Triggers a game action and shows whether the game accepted it, or shows another page.',
+export const labelManifest: WidgetManifest = {
+  type: 'label',
+  label: 'Label',
+  description: 'Static text. Given an action, it makes a button, such as one that shows another page.',
   inputs: {},
   options: { label: labelOption },
   actionable: true,
   defaultSize: { width: 1 / 6, height: 1 / 4 },
   minSize: { columns: 1, rows: 1 },
-  tokens: ['button.face', 'button.label', 'button.outline', 'button.failed'],
-  Component: ButtonWidget
+  tokens: ['text', ...pressTokens],
+  Component: LabelWidget
 };
 
 export const widgetManifests: Record<string, WidgetManifest> = Object.fromEntries(
-  [lightManifest, barManifest, readoutManifest, buttonManifest].map(manifest => [manifest.type, manifest])
+  [lightManifest, barManifest, readoutManifest, labelManifest].map(manifest => [manifest.type, manifest])
 );

@@ -1,4 +1,4 @@
-import type { ButtonStatus, WidgetAction } from '@mfdiy/instruments';
+import type { PressStatus, WidgetAction } from '@mfdiy/instruments';
 import type { SignalValue } from '@mfdiy/schema';
 
 import {
@@ -66,7 +66,7 @@ const STATUS_RESET_MS = 1500;
 export function useWidgetAction(actionId: string | undefined): WidgetAction | undefined {
   const store = useTelemetryStore();
   const connection = useConnection();
-  const [status, setStatus] = useState<ButtonStatus>('idle');
+  const [status, setStatus] = useState<PressStatus>('idle');
 
   const definition = connection.hello?.actions.find(action => action.id === actionId);
 

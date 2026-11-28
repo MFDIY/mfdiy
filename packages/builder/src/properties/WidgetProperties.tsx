@@ -197,9 +197,9 @@ export function WidgetProperties({
       };
     }
 
-    const optional = Object.keys(manifest.inputs).length > 0;
+    const shows = Object.keys(manifest.inputs).length > 0 ? 'Only shows its data' : 'Only shows its text';
     const items: PickItem[] = [
-      ...(optional ? [{ id: NO_ACTION, label: 'No action', description: 'Only shows its data' }] : []),
+      { id: NO_ACTION, label: 'No action', description: shows },
       ...pages.map(({ id, name }) => ({
         id: `${PAGE_PREFIX}${id}`,
         label: name,
@@ -378,11 +378,10 @@ export function WidgetProperties({
           ) : null}
           {manifest.actionable ? (
             <OpensRow
-              description={inputs.length > 0 ? 'Pressing it triggers this.' : undefined}
-              empty={inputs.length > 0 ? 'No action' : 'Not connected'}
+              description='Pressing it triggers this.'
+              empty='No action'
               label='Action'
               onOpen={() => setPicking({ kind: 'action' })}
-              required={inputs.length === 0}
               value={actionText}
             />
           ) : null}

@@ -107,7 +107,7 @@ describe('MfdDocumentSchema', () => {
 describe('unreachablePages (0026)', () => {
   const three = addPage(addPage(blank).document).document;
   const [first, second, third] = three.pages;
-  const button = (id: string, page: string) => ({ id, type: 'button', action: { page } });
+  const button = (id: string, page: string) => ({ id, type: 'label', action: { page } });
   const withButtons = (page: MfdDocument['pages'][number] | undefined, targets: string[]) =>
     page && {
       ...page,

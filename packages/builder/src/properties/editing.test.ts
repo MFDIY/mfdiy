@@ -1,7 +1,7 @@
 import type { Catalogue } from '../palette/choices.js';
 import type { Layout, Page, WidgetInstance } from '@mfdiy/schema';
 
-import { barManifest, buttonManifest, lightManifest, readoutManifest } from '@mfdiy/instruments';
+import { barManifest, labelManifest, lightManifest, readoutManifest } from '@mfdiy/instruments';
 import { describe, expect, it } from 'vitest';
 
 import { placeWidget, resizeGrid, swapType, withAction, withBinding, withOption } from './editing.js';
@@ -41,11 +41,11 @@ describe('swapType', () => {
   it('keeps the action for a type that takes one', () => {
     const light = { id: 'l', type: 'light', action: 'gear-toggle', bindings: { value: { signal: 'gear' } } };
 
-    expect(swapType(light, lightManifest, buttonManifest, catalogue)).toEqual({
-      widget: { id: 'l', type: 'button', action: 'gear-toggle' },
+    expect(swapType(light, lightManifest, labelManifest, catalogue)).toEqual({
+      widget: { id: 'l', type: 'label', action: 'gear-toggle' },
       lost: ['Lit by: Gear']
     });
-    expect(swapType(light, lightManifest, readoutManifest, catalogue).lost).toEqual(['Action: Landing gear']);
+    expect(swapType(light, lightManifest, readoutManifest, catalogue).widget.action).toBe('gear-toggle');
   });
 });
 
@@ -93,10 +93,10 @@ describe('resizeGrid', () => {
 
 describe('withAction', () => {
   it('sets a game action, a page to show, or none (0018)', () => {
-    const widget: WidgetInstance = { id: 'button-1', type: 'button', action: 'lights-toggle' };
+    const widget: WidgetInstance = { id: 'button-1', type: 'label', action: 'lights-toggle' };
 
     expect(withAction(widget, { page: 'combat' }).action).toEqual({ page: 'combat' });
     expect(withAction(widget, 'gear-toggle').action).toBe('gear-toggle');
-    expect(withAction(widget, undefined)).toEqual({ id: 'button-1', type: 'button' });
+    expect(withAction(widget, undefined)).toEqual({ id: 'button-1', type: 'label' });
   });
 });

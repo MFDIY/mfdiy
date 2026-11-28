@@ -11,7 +11,7 @@ import {
 } from './document.js';
 
 describe('widget actions (0018)', () => {
-  const button = (action: unknown) => v.safeParse(WidgetInstanceSchema, { id: 'button-1', type: 'button', action });
+  const button = (action: unknown) => v.safeParse(WidgetInstanceSchema, { id: 'button-1', type: 'label', action });
 
   it('accepts a game action or a page to show', () => {
     expect(button('vehicle.gear-toggle').success).toBe(true);
@@ -25,8 +25,8 @@ describe('widget actions (0018)', () => {
   });
 
   it('tells the two apart', () => {
-    const game: WidgetInstance = { id: 'a', type: 'button', action: 'vehicle.gear-toggle' };
-    const page: WidgetInstance = { id: 'b', type: 'button', action: { page: 'page-2' } };
+    const game: WidgetInstance = { id: 'a', type: 'label', action: 'vehicle.gear-toggle' };
+    const page: WidgetInstance = { id: 'b', type: 'label', action: { page: 'page-2' } };
 
     expect([gameActionOf(game), pageActionOf(game)]).toEqual(['vehicle.gear-toggle', undefined]);
     expect([gameActionOf(page), pageActionOf(page)]).toEqual([undefined, 'page-2']);
@@ -43,7 +43,7 @@ describe('widget actions (0018)', () => {
       pages: [
         {
           ...page,
-          widgets: [{ id: 'to-nowhere', type: 'button', action: { page: 'deleted' } }],
+          widgets: [{ id: 'to-nowhere', type: 'label', action: { page: 'deleted' } }],
           layouts: page?.layouts.map(layout => ({
             ...layout,
             areas: { 'to-nowhere': { column: 1, row: 1, columnSpan: 1, rowSpan: 1 } }

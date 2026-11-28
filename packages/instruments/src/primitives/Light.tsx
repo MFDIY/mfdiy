@@ -1,8 +1,5 @@
-import type { ButtonStatus } from './Button.js';
-
 import { Frame } from './Frame.js';
 import * as styles from './Light.css.js';
-import { pressHandlers } from './pressHandlers.js';
 
 export const lightStates = ['off', 'on', 'warning', 'critical'] as const;
 
@@ -11,39 +8,10 @@ export type LightState = (typeof lightStates)[number];
 export type LightProps = {
   label: string;
   state: LightState;
-  /** Makes the light pressable, like a lit push-button in a cockpit. */
-  onPress?: (() => void) | undefined;
-  status?: ButtonStatus | undefined;
-  disabled?: boolean | undefined;
 };
 
-/** An annunciator light, optionally pressable. */
-export function Light({ label, state, onPress, status = 'idle', disabled = false }: LightProps) {
-  if (onPress) {
-    return (
-      <Frame
-        {...pressHandlers(onPress, disabled)}
-        alignItems='center'
-        appearance='none'
-        className={[styles.light, styles.pressable]}
-        cursor={{ default: 'pointer', disabled: 'not-allowed' }}
-        data-state={state}
-        data-status={status}
-        disabled={disabled}
-        display='flex'
-        justifyContent='center'
-        overflow='hidden'
-        tagName='button'
-        touchAction='none'
-        type='button'
-        userSelect='none'
-        whiteSpace='nowrap'
-      >
-        {label}
-      </Frame>
-    );
-  }
-
+/** An annunciator light. Given an action, it's a lit push-button, like in a cockpit (0018). */
+export function Light({ label, state }: LightProps) {
   return (
     <Frame
       alignItems='center'

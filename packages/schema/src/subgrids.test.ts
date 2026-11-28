@@ -82,7 +82,7 @@ describe('editing as a page', () => {
     const page = subgridAsPage(strip);
     const edited = {
       ...page,
-      widgets: [{ id: 'button-1', type: 'button' }],
+      widgets: [{ id: 'button-1', type: 'label' }],
       layouts: [
         {
           orientation: 'any' as const,
@@ -96,7 +96,7 @@ describe('editing as a page', () => {
       ...strip,
       areas: { 'button-1': { column: 1, row: 1, columnSpan: 1, rowSpan: 1 } },
       grid: { columns: 6, rows: 1 },
-      widgets: [{ id: 'button-1', type: 'button' }]
+      widgets: [{ id: 'button-1', type: 'label' }]
     });
   });
 });
@@ -151,7 +151,7 @@ describe('copying and duplicating (0006, 0023)', () => {
   const buttons: SharedSubgrid = {
     ...strip,
     areas: { show: { column: 1, row: 1, columnSpan: 4, rowSpan: 2 } },
-    widgets: [{ id: 'show', type: 'button', action: { page: 'page-1' } }]
+    widgets: [{ id: 'show', type: 'label', action: { page: 'page-1' } }]
   };
   const page: Layout = {
     orientation: 'any',

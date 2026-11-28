@@ -1,17 +1,22 @@
-import { Box } from '@mfdiy/ui/components';
+import { Frame } from './Frame.js';
+import * as styles from './Label.css.js';
 
-import * as styles from './shared.css.js';
-
-type LabelProps = {
-  children: string;
-  className?: string | undefined;
+export type LabelProps = {
+  text: string;
 };
 
-/** The name of a value, cut off with an ellipsis when it doesn't fit. */
-export function Label({ children, className }: LabelProps) {
+/** Static text, e.g. a heading or, given an action, a button's legend (0018). */
+export function Label({ text }: LabelProps) {
   return (
-    <Box className={[styles.label, className]} overflow='hidden' textOverflow='ellipsis' whiteSpace='nowrap'>
-      {children}
-    </Box>
+    <Frame
+      alignItems='center'
+      className={styles.label}
+      display='flex'
+      justifyContent='center'
+      overflow='hidden'
+      whiteSpace='nowrap'
+    >
+      {text}
+    </Frame>
   );
 }

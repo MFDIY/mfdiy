@@ -63,8 +63,8 @@ const strip: SharedSubgrid = {
   id: 'subgrid-1',
   place: { area: { column: 1, row: 14, columnSpan: 24, rowSpan: 2 }, grid: { columns: 24, rows: 15 } },
   widgets: [
-    { id: 'show-flight', type: 'button', options: { label: 'Flight' }, action: { page: 'page-1' } },
-    { id: 'show-combat', type: 'button', options: { label: 'Combat' }, action: { page: 'combat' } }
+    { id: 'show-flight', type: 'label', options: { label: 'Flight' }, action: { page: 'page-1' } },
+    { id: 'show-combat', type: 'label', options: { label: 'Combat' }, action: { page: 'combat' } }
   ]
 };
 
@@ -472,7 +472,7 @@ export const DoubleTapToLeave: Story = {
   args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
   play: async ({ canvasElement, userEvent }) => {
     await userEvent.click(screen.getByRole('button', { name: 'Edit subgrid' }));
-    await expect(within(canvasElement).getByRole('button', { name: 'Button Flight' })).toBeInTheDocument();
+    await expect(within(canvasElement).getByRole('button', { name: 'Label Flight' })).toBeInTheDocument();
 
     const { cover, coords } = coverOf(canvasElement);
 
@@ -599,7 +599,7 @@ export const PastedIntoASharedSubgrid: Story = {
     const pasted = canvas.getAllByRole('button', { name: 'Bar fuel' }).find(bar => bar.ariaPressed === 'true');
 
     await expect(pasted).toBeDefined();
-    await expect(canvas.getAllByRole('button', { name: /^Button / })).toHaveLength(2);
+    await expect(canvas.getAllByRole('button', { name: /^Label / })).toHaveLength(2);
   }
 };
 

@@ -90,14 +90,14 @@ const demo: MfdDocument = {
         },
         {
           id: 'lights',
-          type: 'button',
+          type: 'label',
 
           options: { label: 'Lights' },
           action: 'vehicle.lights-toggle'
         },
         {
           id: 'doors',
-          type: 'button',
+          type: 'label',
 
           options: { label: 'Doors' },
           action: 'vehicle.doors-toggle'
@@ -165,8 +165,8 @@ const demo: MfdDocument = {
         'show-shields': { column: 2, row: 1, columnSpan: 1, rowSpan: 1 }
       },
       widgets: [
-        { id: 'show-flight', type: 'button', options: { label: 'Flight' }, action: { page: 'flight' } },
-        { id: 'show-shields', type: 'button', options: { label: 'Shields' }, action: { page: 'shields' } }
+        { id: 'show-flight', type: 'label', options: { label: 'Flight' }, action: { page: 'flight' } },
+        { id: 'show-shields', type: 'label', options: { label: 'Shields' }, action: { page: 'shields' } }
       ]
     }
   ]
