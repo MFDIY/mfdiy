@@ -19,6 +19,8 @@ Help text called the same thing a screen, a display and a profile, and the landi
 | A control placed on a page                                                       | **widget**                                                             |                                          |
 | A grid of widgets placed once that shows on every page, in the same place (0026) | **shared subgrid**                                                     | bar, strip, overlay                      |
 | The program on the gaming PC                                                     | **bridge**                                                             |                                          |
+| Stopping a device's screen from turning off (0005)                               | **keep the screen on** ("Screen stays on")                             | keep awake, wake lock, no sleep          |
+| The tap that starts it                                                           | **tap to engage**                                                      | start, unlock                            |
 
 - **Page** is the MFD term, kept even though people also know web pages. Where the browser page is meant, say something else ("Reload and try again").
 - **Screen** and **device** are different things: a device is what you hold and connect; its screen is the part with a shape.

@@ -2,7 +2,7 @@ import { Popover } from '@base-ui/react/popover';
 
 import { usePopupLayer } from '../../contexts/PopupLayer/popupLayer.js';
 import { designSystem } from '../../styles/design-system.js';
-import { Icon } from '../Icon/Icon.js';
+import { Icon, type IconName } from '../Icon/Icon.js';
 import { Text } from '../Text/Text.js';
 
 import * as styles from './Toggletip.css.js';
@@ -49,6 +49,8 @@ const DELAY = 200;
 export type ToggletipProps = {
   /** The hint. */
   children: string;
+  /** The button's icon; `info` unless the hint is about a state, such as keeping the screen on. */
+  icon?: IconName | undefined;
   /** Names the button for assistive technology, e.g. "About Grid". */
   label: string;
 };
@@ -62,13 +64,13 @@ export type ToggletipProps = {
  * as its description for assistive technology. The icon stays small; its hit area is a control's
  * size, without taking up that room.
  */
-export function Toggletip({ children, label }: ToggletipProps) {
+export function Toggletip({ children, icon = 'info', label }: ToggletipProps) {
   const layer = usePopupLayer();
 
   return (
     <Popover.Root>
       <Popover.Trigger aria-label={label} className={triggerClass} delay={DELAY} openOnHover>
-        <Icon name='info' size='small' />
+        <Icon name={icon} size='small' />
       </Popover.Trigger>
       <Popover.Portal {...layer.portal}>
         <Popover.Positioner {...layer.positioner} className={styles.positioner} side='top' sideOffset={OFFSET}>

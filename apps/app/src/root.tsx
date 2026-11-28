@@ -7,6 +7,7 @@ import martianMono from '@mfdiy/ui/fonts/MartianMono.woff2?url';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
 import { DocumentsProvider } from './documents/DocumentsProvider.js';
+import { KeepAwakeProvider } from './keepAwake/KeepAwakeProvider.js';
 import { TelemetryProvider } from './telemetry/TelemetryProvider.js';
 
 const favicon = `data:image/svg+xml,${encodeURIComponent(
@@ -40,9 +41,11 @@ export default function App() {
   return (
     <TelemetryProvider>
       <DocumentsProvider>
-        <ToastProvider>
-          <Outlet />
-        </ToastProvider>
+        <KeepAwakeProvider>
+          <ToastProvider>
+            <Outlet />
+          </ToastProvider>
+        </KeepAwakeProvider>
       </DocumentsProvider>
     </TelemetryProvider>
   );

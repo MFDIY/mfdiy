@@ -21,6 +21,7 @@ const names = [
   'info',
   'keyboard_arrow_down',
   'keyboard_arrow_up',
+  'light_mode',
   'list_arrow',
   'menu',
   'more_horiz',
