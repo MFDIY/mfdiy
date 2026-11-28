@@ -7,7 +7,7 @@
 
 1. **Plain HTTP on the LAN.** The bridge serves the app over `http://` and telemetry over `ws://` on the same origin (see 0003). No HTTPS in version 1.
 2. **A friendly name via mDNS.** The bridge advertises itself as `mfdiy.local`, so users open `http://mfdiy.local` instead of an IP address.
-   - Listen on port 80 when it's free, so no port is needed in the address; otherwise fall back to another port and show the full address.
+   - Listen on port 80 when it's free, so no port is needed in the address; otherwise fall back to 8420, then to any free port (8420 can fall in a range Windows reserves for Hyper-V or WSL), and show the full address. Windows lets any program use port 80 without admin rights; it's only unavailable when another program (IIS, another web server) has it.
    - If the name is taken (e.g. two bridges on one network), rename automatically (`mfdiy-2.local`) and show the actual name.
 3. **A QR code as the primary way to connect.** The bridge's window shows a QR code containing a working address. It also lists the IP-and-port address as a fallback for devices that can't resolve `.local` names.
    - Until the bridge has a window of its own (the Windows download, 0020), its window is the console: it prints a QR code of its likeliest address, lists the others, and points to `/connect` on the PC.
@@ -26,7 +26,7 @@
 - The app is not a **secure context** on LAN addresses. APIs that need one (service workers and installable PWAs, Wake Lock, clipboard, `crypto.subtle`) are unavailable by default. See 0005 for keeping the display awake.
 - The app cannot be hosted on the public site (GitHub Pages) and talk to the bridge; the public site only hosts marketing material and a simulated-data demo.
 - Android support for `.local` names varies by version and browser; the QR code and IP fallback cover it.
-- The Windows firewall must allow the bridge's HTTP port and mDNS (UDP 5353). The bridge installer or first-run flow must handle this.
+- The Windows firewall must allow the bridge's HTTP port and mDNS (UDP 5353). On first start, Windows asks whether `node.exe` ("Node.js JavaScript Runtime") may use the network. In the zip (0003), the console tells the player beforehand to allow it on private networks, and afterwards how to allow it if they clicked Cancel; the README adds that a network Windows treats as public must be set to private. An installer could add the rule itself later.
 
 ## Revisit when
 

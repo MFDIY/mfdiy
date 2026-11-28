@@ -1,7 +1,7 @@
 # 0003: Tech stack and styling architecture
 
 - **Status:** Accepted
-- **Date:** 2026-11-24
+- **Date:** 2026-11-24 (updated 2026-11-28, when the Windows download was built: a zip first)
 
 ## Decision
 
@@ -52,6 +52,17 @@
 - **Renderer vs editor**: the same widgets render in both; the editor wraps instances in a frame for selection, drag and resize.
 - **Telemetry store**: an external store outside React. Widgets subscribe per signal with `useSyncExternalStore`, so a 20 Hz stream re-renders only the widgets bound to changed signals.
 
+### Packaging the bridge for Windows
+
+Players on Windows get the bridge as **one zip, with Node in it**, so nothing needs installing first (no Node, npm or Git). A single `.exe` (Node SEA or similar) comes later; the zip is the first pass (0020).
+
+- **What's in it:** a `MFDIY` folder with `MFDIY.cmd` (the launcher), a `README.txt`, the official portable `node.exe` for Windows x64 with its licence, the bridge bundled into one file by esbuild (`bridge/bridge.mjs`, with the licences of what it bundles), and the built app (`app/`). Not the monorepo, `node_modules` or `tsx`.
+- **The launcher** starts the bridge with the bundled Node, passes on its own arguments, and keeps the window open when the bridge stops. Opened from inside the zip (Explorer extracts only that file), it says to extract the zip first.
+- **The console is the bridge's window** for now (0004): what it's simulating or connected to, the QR code, the addresses, `/connect`, the firewall prompt and where profiles are saved.
+- **The telemetry source is the bridge's choice, not the launcher's:** `--source simulator|game`, defaulting to the simulator while it's the only one. When the game connection exists, the default moves to it and the same launcher keeps working.
+- **Profiles are saved outside the zip,** in the bridge's data folder (`%APPDATA%\MFDIY`), so replacing the folder with a newer version keeps them. The folder is always called `MFDIY`, so extracting a new version in the same place keeps the firewall rule Windows made for its `node.exe`.
+- **Built on any OS** by `npm run package:windows`, which downloads a pinned Node version from nodejs.org at build time and checks it against the release's `SHASUMS256.txt`. The binary is never committed. CI builds the zip on every push and pull request and keeps it as the run's artifact (`.github/workflows/windows-download.yml`).
+
 ## Why
 
 - Plays to the maintainer's strengths and reuses a proven design-system setup instead of inventing one.
@@ -67,5 +78,5 @@
 
 ## Open questions
 
-- **Packaging the bridge** for non-technical Windows users (a single `.exe` via Node SEA or similar, auto-update, firewall prompt).
-  - **Code signing:** an unsigned `.exe` runs but shows a SmartScreen warning ("More info → Run anyway"). Plan (see 0013): ship unsigned to early testers, then sign the open-source core through the **SignPath Foundation** (free for OSI-licensed open-source projects; the certificate names SignPath Foundation as publisher; requires a public repository, no proprietary components and automated CI builds). Paid add-ons are separate packages and are not covered by SignPath; how to sign them is decided when the first one ships.
+- **A single `.exe`** in place of the zip (Node SEA or similar), and auto-update. The zip comes first (see "Packaging the bridge for Windows").
+  - **Code signing:** an unsigned download runs (the zip's `MFDIY.cmd` and `node.exe` included) but shows a SmartScreen warning ("More info → Run anyway"). Plan (see 0013): ship unsigned to early testers, then sign the open-source core through the **SignPath Foundation** (free for OSI-licensed open-source projects; the certificate names SignPath Foundation as publisher; requires a public repository, no proprietary components and automated CI builds). Paid add-ons are separate packages and are not covered by SignPath; how to sign them is decided when the first one ships.
