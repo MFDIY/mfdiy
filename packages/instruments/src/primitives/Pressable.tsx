@@ -12,11 +12,10 @@ export const pressStatuses = ['idle', 'pending', 'ok', 'failed'] as const;
 export type PressStatus = (typeof pressStatuses)[number];
 
 /**
- * Temporary: the looks being compared for showing that a widget can be pressed (0018). Inked: over
- * a lit light, the cue takes the light's text colour. Outside: the widget is set in from its cell,
- * and the cue sits around it, never on it.
+ * Temporary: the looks being compared for showing that a widget can be pressed (0018): a frame
+ * inside the widget, a hairline or 2 px thick. Over a lit light, it takes the light's text colour.
  */
-export const cues = ['corners', 'corners-inked', 'corners-outside', 'frame', 'frame-inked', 'frame-outside'] as const;
+export const cues = ['frame-inked', 'frame-inked-2px'] as const;
 
 export type Cue = (typeof cues)[number];
 
@@ -38,7 +37,7 @@ export type PressableProps = {
  */
 export function Pressable({
   children,
-  cue = 'corners',
+  cue = 'frame-inked',
   current = false,
   disabled = false,
   onPress,
