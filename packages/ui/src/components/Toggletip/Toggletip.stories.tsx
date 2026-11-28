@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, screen, userEvent } from 'storybook/test';
 
+import { iconNames } from '../Icon/Icon.js';
 import { NumberField } from '../NumberField/NumberField.js';
 
 import { Toggletip } from './Toggletip.js';
@@ -12,10 +13,12 @@ const meta = {
   component: Toggletip,
   argTypes: {
     children: { control: { type: 'text' } },
+    icon: { control: { type: 'select' }, options: [undefined, ...iconNames] },
     label: { control: { type: 'text' } }
   },
   args: {
     children: 'Widgets keep their share of the page when the grid changes.',
+    icon: undefined,
     label: 'About Grid'
   },
   decorators: [
@@ -32,6 +35,11 @@ type Story = StoryObj<typeof meta>;
 
 /** A small info button; its hint stays out of the way until asked for. */
 export const Default = {} satisfies Story;
+
+/** About a state rather than a label, with an icon of its own. */
+export const WithIcon = {
+  args: { children: 'Keeping the screen on.', icon: 'light_mode', label: 'Screen stays on' }
+} satisfies Story;
 
 /** Pressed (or tapped, or hovered with a mouse), it shows its hint above it. */
 export const Open = {

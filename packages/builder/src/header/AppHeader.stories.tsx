@@ -4,7 +4,7 @@ import { amberCrt, pageToken } from '@mfdiy/instruments';
 import { Box } from '@mfdiy/ui/components';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { AppHeader } from './AppHeader.js';
+import { AppHeader, keepAwakeMethods } from './AppHeader.js';
 
 const phone = { viewport: { value: 'mobile2', isRotated: false } };
 
@@ -17,10 +17,12 @@ const meta = {
   title: 'Builder/AppHeader',
   component: AppHeader,
   argTypes: {
-    accent: { control: { type: 'select' }, options: [undefined, ...Object.values(accents)] }
+    accent: { control: { type: 'select' }, options: [undefined, ...Object.values(accents)] },
+    keepAwake: { control: { type: 'select' }, options: [undefined, ...keepAwakeMethods] }
   },
   args: {
     accent: undefined,
+    keepAwake: undefined,
     onEdit: undefined,
     onFullscreen: undefined,
     onHome: undefined
@@ -45,6 +47,21 @@ export const Profile = {
 
 export const ProfileAmber = {
   args: { accent: accents['Amber CRT'], onEdit: fn(), onFullscreen: fn(), onHome: fn() }
+} satisfies Story;
+
+/** Once engaged, how the screen is kept on, with a hint behind it (0005). */
+export const KeptAwake = {
+  args: { accent: accents.Phosphor, keepAwake: 'video', onEdit: fn(), onFullscreen: fn(), onHome: fn() }
+} satisfies Story;
+
+/** Where the browser refused, a warning, whose hint points to the device's settings. */
+export const ScreenMayTurnOff = {
+  args: { accent: accents.Phosphor, keepAwake: 'unavailable', onEdit: fn(), onFullscreen: fn(), onHome: fn() },
+  globals: phone,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Screen may turn off' }));
+    await expect(await within(canvasElement.ownerDocument.body).findByText(/won’t keep the screen on/)).toBeVisible();
+  }
 } satisfies Story;
 
 /** Where the browser can't go fullscreen (Safari on an iPhone), there's no button for it. */

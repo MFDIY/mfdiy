@@ -3,6 +3,7 @@ export { Button, buttonStatuses, type ButtonProps, type ButtonStatus } from './p
 export { Light, lightStates, type LightProps, type LightState } from './primitives/Light.js';
 export { pressHandlers } from './primitives/pressHandlers.js';
 export { Readout, readoutStates, type ReadoutProps, type ReadoutState } from './primitives/Readout.js';
+export { EngageScreen, type EngageScreenProps } from './screens/EngageScreen.js';
 
 export { LayoutArea, LayoutGrid } from './layout/Layout.js';
 

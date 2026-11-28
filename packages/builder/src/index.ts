@@ -1,7 +1,7 @@
 export { PageEditor, type PageEditorClipboard, type PageEditorProps } from './PageEditor.js';
 export { modifierShortcut } from './keys.js';
 export { Canvas, type CanvasHandle, type CanvasProps, type CanvasView } from './canvas/Canvas.js';
-export { AppHeader, type AppHeaderProps } from './header/AppHeader.js';
+export { AppHeader, keepAwakeMethods, type AppHeaderProps, type KeepAwakeMethod } from './header/AppHeader.js';
 export { EditorHeader, type EditorHeaderProps } from './header/EditorHeader.js';
 export { PropertiesPanel, type PropertiesPanelProps } from './properties/PropertiesPanel.js';
 export type { Catalogue } from './palette/choices.js';
