@@ -1,4 +1,7 @@
+import type { AddressInfo } from 'node:net';
+
 import { starCitizen } from '@mfdiy/adapter-star-citizen';
+import { bridgeSources } from '@mfdiy/schema';
 import { existsSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { networkInterfaces } from 'node:os';
@@ -7,15 +10,17 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import QRCode from 'qrcode';
 import sirv from 'sirv';
+import * as v from 'valibot';
 import { WebSocketServer } from 'ws';
 
 import { lanAddresses } from './addresses.js';
 import { createHub } from './hub.js';
 import { defaultDataDirectory, openLibrary } from './library.js';
 import { isAllowedOrigin } from './origin.js';
-import { createSimulator } from './simulator.js';
+import { createSource, DEFAULT_SOURCE } from './sources.js';
 
-const DEFAULT_PORTS = [80, 8420];
+/** Port 0 is any free port: 8420 can fall in a range Windows reserves (Hyper-V, WSL). */
+const DEFAULT_PORTS = [80, 8420, 0];
 
 /** Room for a very large document; anything bigger closes the connection. */
 const MAX_MESSAGE_BYTES = 1024 * 1024;
@@ -25,12 +30,26 @@ const { values: args } = parseArgs({
     data: { type: 'string' },
     port: { type: 'string' },
     'no-static': { type: 'boolean', default: false },
+    source: { type: 'string', default: DEFAULT_SOURCE },
     static: { type: 'string', default: fileURLToPath(new URL('../../app/build/client', import.meta.url)) }
   }
 });
 
-// Only the simulator exists so far. Connecting to the game's gRPC stream is the next step.
-const source = createSimulator(starCitizen);
+const isWindows = process.platform === 'win32';
+
+if (!v.is(v.picklist(bridgeSources), args.source)) {
+  console.error(`--source must be one of: ${bridgeSources.join(', ')}.`);
+  process.exit(1);
+}
+
+const created = createSource(args.source, starCitizen);
+
+if ('unavailable' in created) {
+  console.error(created.unavailable);
+  process.exit(1);
+}
+
+const { source } = created;
 const dataDirectory = args.data ? resolve(args.data) : defaultDataDirectory();
 const library = await openLibrary(dataDirectory, source.adapter.starterDocuments);
 let port = 0;
@@ -80,15 +99,29 @@ function listen(server: Server, [port, ...fallbacks]: number[]): Promise<number>
       }
     });
 
-    server.listen(port, () => settle(port));
+    server.listen(port, () => settle((server.address() as AddressInfo).port));
   });
+}
+
+const build = process.env['MFDIY_BUILD'];
+
+console.log(build ? `MFDIY bridge, ${build}` : 'MFDIY bridge');
+console.log(
+  source.kind === 'simulator'
+    ? `Simulating ${source.adapter.game.name}: what your MFDs show is made up, not read from the game.`
+    : `Connected to ${source.adapter.game.name}`
+);
+console.log();
+
+if (isWindows && serveApp) {
+  console.log('Windows may ask whether "Node.js JavaScript Runtime" may use the network.');
+  console.log("Allow it on private networks, or your phone and tablet can't connect.");
+  console.log();
 }
 
 port = await listen(server, ports);
 const local = `http://localhost${port === 80 ? '' : `:${port}`}`;
 const addresses = lanAddresses(networkInterfaces(), port);
-
-console.log(`MFDIY bridge, ${source.kind === 'simulator' ? 'simulating' : 'connected to'} ${source.adapter.game.name}`);
 
 if (serveApp) {
   const [first] = addresses;
@@ -104,6 +137,13 @@ if (serveApp) {
   }
 
   console.log(`To connect another device, open ${local}/connect on this PC.`);
+
+  if (isWindows) {
+    console.log();
+    console.log("A device can't connect? If you clicked Cancel when Windows asked, open Windows Security,");
+    console.log('Firewall & network protection, "Allow an app through firewall", choose "Change settings"');
+    console.log('and tick Private next to "Node.js JavaScript Runtime". README.txt has more help.');
+  }
 } else {
   console.log('Telemetry WebSocket available at /ws on:');
   for (const address of [local, ...addresses]) {
@@ -111,7 +151,12 @@ if (serveApp) {
   }
 }
 
+console.log();
 console.log(`Profiles are saved in ${dataDirectory}`);
+
+if (isWindows) {
+  console.log('Close this window to stop the bridge.');
+}
 
 function shutdown() {
   hub.stop();

@@ -1,0 +1,32 @@
+name: Windows download
+
+# Builds the zip players download (0003, 0020) and keeps it as this run's artifact. GitHub wraps
+# the artifact in a zip of its own: extract that first to get MFDIY-windows-x64.zip.
+# Only run by hand (Actions → Windows download → Run workflow), on the branch to package.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-download-${{ github.ref }}
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run package:windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MFDIY-windows-x64
+          path: dist/MFDIY-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 30

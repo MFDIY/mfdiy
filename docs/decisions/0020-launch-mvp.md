@@ -1,7 +1,7 @@
 # 0020: What the first public beta contains
 
 - **Status:** Accepted
-- **Date:** 2026-11-25
+- **Date:** 2026-11-25 (updated 2026-11-28: the Windows download is a zip for now)
 
 ## Context
 
@@ -17,7 +17,7 @@ Several telemetry tools for the game appeared within days of its telemetry becom
 4. **Widgets:** the four that exist (Light, Bar, Readout, Button), with the annunciators added as signals to bind.
 5. **Starting point:** three polished starter profiles and three built-in themes to pick from.
 6. **Connecting a tablet:** QR code and IP address (0004), tap to engage and keep-awake (0005).
-7. **Windows download:** an unsigned `.exe`, or a zip with Node and a launcher if packaging an `.exe` takes too long (0003).
+7. **Windows download:** an unsigned zip with Node and a launcher (0003). An `.exe` replaces it later.
 
 ### If time allows, in this order
 
@@ -47,5 +47,4 @@ Several telemetry tools for the game appeared within days of its telemetry becom
 ## Open questions
 
 - **Where the choice of theme is kept.** A profile never holds or points at a theme (0019). Per display device is the obvious candidate, but it isn't decided.
-- **`.exe` or zip** is decided while building it.
 - Confirm that the maintainer's PC has PTU access; otherwise actions can't be tested (reported as 5.0 only).
