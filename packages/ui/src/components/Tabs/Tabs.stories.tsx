@@ -68,6 +68,18 @@ export const Default = {} satisfies Story;
 /** With a hairline under the whole row, where nothing around the tabs draws one. */
 export const Underlined = { args: { underline: true } } satisfies Story;
 
+/** A tab with something to look at, such as a page with overlap (0026): marked, with the reason in its tooltip and name. */
+export const Marked = {
+  args: {
+    items: [pages[0], { label: 'Combat', mark: 'Overlap', value: 'combat' }, pages[2]].filter(
+      item => item !== undefined
+    )
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('tab', { name: 'Combat, Overlap' })).toBeInTheDocument();
+  }
+} satisfies Story;
+
 export const WithAdd = {
   args: { after: <IconButton icon='add' label='Add page' /> }
 } satisfies Story;

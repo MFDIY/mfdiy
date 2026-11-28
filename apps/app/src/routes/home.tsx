@@ -1,5 +1,7 @@
+import type { ProfileState } from './profile.js';
 import type { DocumentSummary } from '@mfdiy/schema';
 
+import { AppHeader } from '@mfdiy/builder';
 import { createBlankDocument } from '@mfdiy/schema';
 import { Box, Button, ButtonLink, Inline, Stack, Surface, Text } from '@mfdiy/ui/components';
 import { useState } from 'react';
@@ -30,34 +32,36 @@ export default function Home() {
   const openProfile = profiles?.find(profile => profile.id === openId);
 
   return (
-    <Box padding='6x' tagName='main'>
-      <Stack spacing='5x'>
-        <Text tagName='h1' variant='heading'>
-          MFDIY
-        </Text>
-        <Text variant='body'>Build your MFD. No code required.</Text>
-        <Text color='text.dim' role='status' variant='body'>
-          {status === 'open' && hello
-            ? `${hello.source === 'simulator' ? 'Simulating' : 'Connected to'} ${hello.game.name}`
-            : statusText[status]}
-        </Text>
-        <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
-          <Text tagName='h2' variant='heading'>
-            Profiles
+    <Box tagName='main'>
+      <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline'>
+        <AppHeader />
+      </Box>
+      <Box padding='6x'>
+        <Stack spacing='5x'>
+          <Text variant='body'>Build your MFD. No code required.</Text>
+          <Text color='text.dim' role='status' variant='body'>
+            {status === 'open' && hello
+              ? `${hello.source === 'simulator' ? 'Simulating' : 'Connected to'} ${hello.game.name}`
+              : statusText[status]}
           </Text>
-          <Button disabled={status !== 'open'} onClick={() => setCreating(true)} variant='primary'>
-            New
-          </Button>
-        </Inline>
-        {profiles?.length === 0 ? <Text variant='body'>No profiles yet.</Text> : null}
-        {profiles?.map(profile => (
-          <ProfileCard key={profile.id} onMore={() => setOpenId(profile.id)} profile={profile} />
-        ))}
-      </Stack>
+          <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
+            <Text tagName='h1' variant='heading'>
+              Profiles
+            </Text>
+            <Button disabled={status !== 'open'} onClick={() => setCreating(true)} variant='primary'>
+              New
+            </Button>
+          </Inline>
+          {profiles?.length === 0 ? <Text variant='body'>No profiles yet.</Text> : null}
+          {profiles?.map(profile => (
+            <ProfileCard key={profile.id} onMore={() => setOpenId(profile.id)} profile={profile} />
+          ))}
+        </Stack>
+      </Box>
       {creating && hello ? (
         <ShapeDialog
           onClose={() => setCreating(false)}
-          onDone={id => void navigate(`/builder/${id}`)}
+          onDone={id => void navigate(`/${id}`, { state: { edit: true } satisfies ProfileState })}
           onSubmit={shape =>
             request({ type: 'document-create', document: createBlankDocument('New profile', hello.game.id, shape) })
           }
@@ -75,7 +79,7 @@ function ProfileCard({ onMore, profile }: { onMore: () => void; profile: Documen
     <Surface elevation='raised' padding='4x' tagName='article'>
       <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
         <Stack spacing='2x'>
-          <Text tagName='h3' variant='heading'>
+          <Text tagName='h2' variant='heading'>
             {profile.name}
           </Text>
           <Text color='text.dim' variant='body'>
@@ -83,8 +87,7 @@ function ProfileCard({ onMore, profile }: { onMore: () => void; profile: Documen
           </Text>
         </Stack>
         <Inline spacing='3x'>
-          <ButtonLink to={`/display/${profile.id}`}>Show</ButtonLink>
-          <ButtonLink to={`/builder/${profile.id}`}>Edit</ButtonLink>
+          <ButtonLink to={`/${profile.id}`}>Open</ButtonLink>
           <Button aria-label={`More for ${profile.name}`} onClick={onMore} variant='quiet'>
             …
           </Button>

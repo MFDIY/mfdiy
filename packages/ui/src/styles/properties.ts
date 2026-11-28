@@ -56,7 +56,8 @@ export const backgroundImage = {
   'canvas.dots': ['0 0', '100% 0', '0 100%', '100% 100%']
     .map(corner => `radial-gradient(circle at ${corner}, ${v['canvas.dot']} 1.5px, transparent 2px)`)
     .join(', '),
-  'canvas.overlap': `repeating-linear-gradient(45deg, ${v['canvas.overlap.fill']} 0 6px, transparent 6px 12px)`
+  'canvas.overlap': `repeating-linear-gradient(45deg, ${v['canvas.overlap.fill']} 0 6px, transparent 6px 12px)`,
+  'canvas.shared': `repeating-linear-gradient(-45deg, ${v['canvas.shared.fill']} 0 3px, transparent 3px 9px)`
 } as const;
 
 export const backgroundRepeat = ['no-repeat'] as const;
@@ -258,7 +259,7 @@ export const margin = {
 
 export const objectFit = ['contain', 'cover'] as const;
 
-export const opacity = ['0', '1'] as const;
+export const opacity = ['0', '0.5', '1'] as const;
 
 export const overflow = ['auto', 'clip', 'hidden', 'scroll', 'visible'] as const;
 

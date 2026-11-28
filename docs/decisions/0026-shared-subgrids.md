@@ -19,10 +19,10 @@ With no chrome on the MFD beyond the header (0009), whatever a player needs on e
 
 ### Entering and leaving a shared subgrid
 
-- **Outside it**, a shared subgrid is one widget on the canvas. Its contents are visible but can't be touched, under a **neutral hatching** (like the overlap's, but not red, so it doesn't read as overlap). It has no label, which could cover its neighbours. Pressing anywhere on it selects it, to move or resize it, and the properties panel shows its columns × rows and **Edit subgrid**.
-- **Edit subgrid enters it:** the hatching inverts, covering the canvas with the subgrid cut out. Its widgets can be selected, moved, resized and added, as on a page, and the library adds to it.
+- **Outside it**, a shared subgrid is one widget on the canvas. Its contents are visible, faded to half, but can't be touched, under a **neutral hatching** (like the overlap's, but not red, so it doesn't read as overlap). It has no label, which could cover its neighbours. Pressing anywhere on it selects it, to move or resize it, and the properties panel shows its columns × rows and **Edit subgrid**. **Double-tapping it enters it** (on trial, 2026-11-28).
+- **Edit subgrid enters it:** the hatching inverts, covering the canvas with the subgrid cut out, and the page's contents under it fade to half. Its widgets can be selected, moved, resized and added, as on a page, and the library adds to it.
 - **The properties panel follows one level down**, in the same panel rather than a stacked task, so the canvas stays usable (a stacked task is modal, 0008). With nothing selected it shows the subgrid's properties, with **Exit subgrid**. With a widget selected it shows that widget's properties, as on a page. A widget's own side tasks stack on it as usual.
-- **Leaving it:** with a widget selected, pressing the cover outside the subgrid only lets go of the selection, as tapping empty cells does (0006). With nothing selected, pressing it leaves the subgrid. So do Exit subgrid and Escape.
+- **Leaving it:** a single press on the cover outside the subgrid only lets go of the selection, as tapping empty cells does (0006). **Double-tapping the cover leaves the subgrid** (on trial, 2026-11-28; a single press with nothing selected used to). So do Exit subgrid and Escape.
 - **Switching pages stays inside**, so a subgrid can be checked against each page's widgets.
 
 ## Why

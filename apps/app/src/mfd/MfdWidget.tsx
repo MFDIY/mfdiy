@@ -1,18 +1,33 @@
 import type { WidgetInstance } from '@mfdiy/schema';
 
 import { resolveInput, useHeldStates, widgetManifests, type ResolvedInput } from '@mfdiy/instruments';
+import { gameActionOf, pageActionOf } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 
 import { useConnection, useSignalValues, useWidgetAction } from '../telemetry/TelemetryProvider.js';
 
 import * as styles from './MfdRenderer.css.js';
+import { usePageNavigation } from './PageNavigation.js';
 
 /** A widget connected to live data. Its position and theme tokens are up to whatever renders it. */
 export function MfdWidget({ widget }: { widget: WidgetInstance }) {
   const connection = useConnection();
   const bindings = Object.entries(widget.bindings ?? {});
   const values = useSignalValues(bindings.map(([, binding]) => binding.signal));
-  const action = useWidgetAction(widget.action);
+  const gameAction = useWidgetAction(gameActionOf(widget));
+  const navigation = usePageNavigation();
+  const target = pageActionOf(widget);
+  const targetPage = navigation.pages.find(candidate => candidate.id === target);
+  const action =
+    target === undefined
+      ? gameAction
+      : {
+          available: targetPage !== undefined,
+          current: target === navigation.pageId,
+          label: targetPage?.name ?? 'Page',
+          status: 'idle' as const,
+          trigger: () => navigation.showPage(target)
+        };
   const manifest = widgetManifests[widget.type];
   const resolved: Partial<Record<string, ResolvedInput>> = {};
 

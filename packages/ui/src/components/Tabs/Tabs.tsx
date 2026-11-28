@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
-import { Button } from '../Button/Button.js';
+import { Icon } from '../Icon/Icon.js';
+import { IconButton } from '../IconButton/IconButton.js';
 import { Menu, MenuItem } from '../Menu/Menu.js';
 import { Text } from '../Text/Text.js';
 import { Tooltip, TooltipGroup } from '../Tooltip/Tooltip.js';
@@ -28,6 +29,7 @@ const tabClass = (active: boolean) =>
     display: 'flex',
     flexShrink: '0',
     fontFamily: 'inherit',
+    gap: '2x',
     height: 'control',
     maxWidth: 'tab',
     outlineColor: 'focus',
@@ -40,6 +42,8 @@ const tabClass = (active: boolean) =>
 
 export type TabsItem = {
   label: string;
+  /** Marks the tab with a warning, and says why, e.g. "Overlap". */
+  mark?: string | undefined;
   value: string;
 };
 
@@ -57,11 +61,11 @@ export type TabsProps = {
 };
 
 /**
- * A row of tabs, the active one underlined, over a hairline with `underline`, built on Base UI's Tabs (0003): arrow
- * keys move between them. Tabs sit flush (0022) and never scroll: those that don't fit go into a
- * menu that says how many there are, and the active tab is always one of those shown. A long name
- * is cut short with an ellipsis, and a tooltip shows it in full. Takes the width of its container.
- * Controlled: the page owns the value.
+ * A row of tabs, the active one underlined, over a hairline with `underline`, built on Base UI's
+ * Tabs (0003): arrow keys move between them. Tabs sit flush (0022) and never scroll: those that
+ * don't fit go into a menu, behind an icon button whose tooltip says how many there are, and the
+ * active tab is always one of those shown. A long name is cut short with an ellipsis, and a tooltip
+ * shows it in full. Takes the width of its container. Controlled: the page owns the value.
  */
 export function Tabs({ after, items, label, onValueChange, underline = false, value }: TabsProps) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -122,9 +126,7 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
               }}
               tagName='span'
             >
-              <Text truncate variant='body'>
-                {item.label}
-              </Text>
+              <TabLabel item={item} />
             </Box>
           ))}
           <Box ref={moreRef} tagName='span'>
@@ -136,11 +138,13 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
         <BaseTabs.List aria-label={label} className={listClass}>
           <TooltipGroup>
             {shown.map(item => (
-              <Tooltip key={item.value} label={item.label}>
-                <BaseTabs.Tab className={tabClass(item.value === value)} value={item.value}>
-                  <Text truncate variant='body'>
-                    {item.label}
-                  </Text>
+              <Tooltip key={item.value} label={item.mark ? `${item.label} · ${item.mark}` : item.label}>
+                <BaseTabs.Tab
+                  aria-label={item.mark ? `${item.label}, ${item.mark}` : undefined}
+                  className={tabClass(item.value === value)}
+                  value={item.value}
+                >
+                  <TabLabel item={item} />
                 </BaseTabs.Tab>
               </Tooltip>
             ))}
@@ -151,8 +155,12 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
       {overflow.length > 0 ? (
         <Menu trigger={open => <MoreButton count={overflow.length} open={open} />}>
           {overflow.map(item => (
-            <MenuItem key={item.value} onClick={() => onValueChange(item.value)}>
-              {item.label}
+            <MenuItem
+              icon={item.mark ? 'warning' : undefined}
+              key={item.value}
+              onClick={() => onValueChange(item.value)}
+            >
+              {item.mark ? `${item.label} · ${item.mark}` : item.label}
             </MenuItem>
           ))}
         </Menu>
@@ -166,17 +174,22 @@ export function Tabs({ after, items, label, onValueChange, underline = false, va
   );
 }
 
+function TabLabel({ item }: { item: TabsItem }) {
+  return (
+    <>
+      <Text truncate variant='body'>
+        {item.label}
+      </Text>
+      {item.mark ? (
+        <Box color='status.critical' flexShrink='0'>
+          <Icon name='warning' size='small' />
+        </Box>
+      ) : null}
+    </>
+  );
+}
+
 /** Says how many tabs didn't fit, and opens a menu of them. */
 function MoreButton({ count, open, ...restProps }: { count: number; open: boolean }) {
-  return (
-    <Button
-      {...restProps}
-      aria-label={`${count} more`}
-      icon='keyboard_arrow_down'
-      iconPosition='trailing'
-      variant={open ? 'default' : 'quiet'}
-    >
-      {`+${count}`}
-    </Button>
-  );
+  return <IconButton {...restProps} icon='list_arrow' label={`${count} more`} variant={open ? 'default' : 'quiet'} />;
 }

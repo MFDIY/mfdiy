@@ -9,7 +9,7 @@ export function DocumentPlaceholder({ status }: { status: Exclude<WatchedDocumen
   const connection = useConnection();
 
   return (
-    <Box padding='6x' tagName='main'>
+    <Box padding='6x'>
       <Stack spacing='5x'>
         <Text role='status' variant='body'>
           {status === 'missing'

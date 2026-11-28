@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createBlankDocument } from './blankDocument.js';
 import { MAX_PAGE_NAME_LENGTH, MfdDocumentSchema, type MfdDocument } from './document.js';
-import { addPage, cloneName, duplicatePage, newPageId, removePage } from './pageEditing.js';
+import { addPage, cloneName, duplicatePage, newPageId, removePage, unreachablePages } from './pageEditing.js';
 
 const blank = createBlankDocument('Test', 'star-citizen');
 
@@ -101,5 +101,57 @@ describe('MfdDocumentSchema', () => {
     const twice = { ...blank, pages: page ? [page, { ...page, name: 'Other' }] : [] };
 
     expect(v.safeParse(MfdDocumentSchema, twice).success).toBe(false);
+  });
+});
+
+describe('unreachablePages (0026)', () => {
+  const three = addPage(addPage(blank).document).document;
+  const [first, second, third] = three.pages;
+  const button = (id: string, page: string) => ({ id, type: 'button', action: { page } });
+  const withButtons = (page: MfdDocument['pages'][number] | undefined, targets: string[]) =>
+    page && {
+      ...page,
+      widgets: targets.map(target => button(`to-${target}`, target)),
+      layouts: page.layouts.map(layout => ({
+        ...layout,
+        areas: Object.fromEntries(
+          targets.map((target, index) => [`to-${target}`, { column: index + 1, row: 1, columnSpan: 1, rowSpan: 1 }])
+        )
+      }))
+    };
+
+  it('is every page but the first without page buttons', () => {
+    expect([...unreachablePages(three)]).toEqual([second?.id, third?.id]);
+  });
+
+  it('follows page buttons from the first page, and only from pages that are reached', () => {
+    const chained = {
+      ...three,
+      pages: [withButtons(first, [second?.id ?? '']), second, withButtons(third, [first?.id ?? ''])].filter(
+        page => page !== undefined
+      )
+    };
+
+    expect([...unreachablePages(chained)]).toEqual([third?.id]);
+  });
+
+  it('counts page buttons in a shared subgrid, which is on every page', () => {
+    const shared: MfdDocument = {
+      ...three,
+      subgrids: [
+        {
+          areas: {
+            'to-2': { column: 1, row: 1, columnSpan: 1, rowSpan: 1 },
+            'to-3': { column: 2, row: 1, columnSpan: 1, rowSpan: 1 }
+          },
+          grid: { columns: 2, rows: 1 },
+          id: 'subgrid-1',
+          place: { area: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 }, grid: { columns: 24, rows: 15 } },
+          widgets: [button('to-2', second?.id ?? ''), button('to-3', third?.id ?? '')]
+        }
+      ]
+    };
+
+    expect(unreachablePages(shared).size).toBe(0);
   });
 });

@@ -10,6 +10,7 @@ import { matches } from './choices.js';
 
 type WidgetLibraryOptions = {
   documentTokens: TokenValues | undefined;
+  extra?: readonly WidgetManifest[] | undefined;
   pageTokens: TokenValues | undefined;
 };
 
@@ -24,7 +25,7 @@ export type WidgetLibrary = {
   reset: () => void;
 };
 
-const manifests = Object.values(widgetManifests).sort((a, b) => a.label.localeCompare(b.label));
+const widgets = Object.values(widgetManifests);
 
 const rowId = (manifest: WidgetManifest) => `widget ${manifest.type}`;
 
@@ -32,7 +33,8 @@ const rowId = (manifest: WidgetManifest) => `widget ${manifest.type}`;
  * The widget library (0006, 0008): widget types, searchable. A widget is added as a type, and
  * what it shows or does is chosen in its properties (0023), since a widget may take several signals.
  */
-export function useWidgetLibrary({ documentTokens, pageTokens }: WidgetLibraryOptions): WidgetLibrary {
+export function useWidgetLibrary({ documentTokens, extra = [], pageTokens }: WidgetLibraryOptions): WidgetLibrary {
+  const manifests = [...widgets, ...extra].sort((a, b) => a.label.localeCompare(b.label));
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState<string | null>(null);
 

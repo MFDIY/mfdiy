@@ -1,13 +1,21 @@
 import type { WatchedDocument } from '../documents/DocumentStore.js';
 import type { Edit } from '../documents/edit.js';
+import type { ProfileState } from '../routes/profile.js';
 import type { MfdDocument, Page } from '@mfdiy/schema';
 
-import { EditorHeader, PageEditor, type CanvasView } from '@mfdiy/builder';
+import { EditorHeader, PageEditor, subgridWidgetId, type CanvasView } from '@mfdiy/builder';
 import { pageToken } from '@mfdiy/instruments';
-import { addPage, duplicatePage, removePage, shapeRatio } from '@mfdiy/schema';
+import {
+  addPage,
+  duplicatePage,
+  pagesWithSubgridOverlap,
+  removePage,
+  shapeRatio,
+  unreachablePages
+} from '@mfdiy/schema';
 import { Box, Button, Dialog, MenuItem, MenuSeparator, Text, useToast } from '@mfdiy/ui/components';
 import { useRef, useState } from 'react';
-import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
+import { useBeforeUnload, useBlocker, useNavigate } from 'react-router';
 
 import { DocumentPlaceholder } from '../documents/DocumentPlaceholder.js';
 import { useDocumentRequest, useWatchedDocument } from '../documents/DocumentsProvider.js';
@@ -15,13 +23,8 @@ import { NameDialog } from '../documents/NameDialog.js';
 import { copyName, failureText } from '../documents/documentText.js';
 import { change, changedPageId, isDirty, redo, saved, startEdit, undo } from '../documents/edit.js';
 import { MfdWidget } from '../mfd/MfdWidget.js';
+import { PageNavigationProvider } from '../mfd/PageNavigation.js';
 import { useConnection } from '../telemetry/TelemetryProvider.js';
-
-export default function Builder() {
-  const { id = '' } = useParams();
-
-  return <Editor id={id} key={id} />;
-}
 
 /** Says why saving failed, until it's dismissed or saving works. */
 const SAVE_FAILED_TOAST = 'save-failed';
@@ -29,11 +32,20 @@ const SAVE_FAILED_TOAST = 'save-failed';
 /** Shown after deleting a page, with Undo; the id lets it be closed once anything else changes. */
 const PAGE_DELETED_TOAST = 'page-deleted';
 
+export type EditorProps = {
+  id: string;
+  /** The page shown when the editor opened (0009). */
+  initialPageId: string;
+  /** Leaves the editor for the profile, on the page being edited (0009). */
+  onLeave: (pageId: string) => void;
+};
+
 /**
  * Edits one profile, under its header (0008). Changes stay in the builder until saved; without any,
- * it follows what other devices save.
+ * it follows what other devices save. Back leaves it for the profile, asking first if anything is
+ * unsaved (0009).
  */
-function Editor({ id }: { id: string }) {
+export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   const watched = useWatchedDocument(id);
   const request = useDocumentRequest();
   const navigate = useNavigate();
@@ -44,8 +56,10 @@ function Editor({ id }: { id: string }) {
   const [lastEdit, setEdit] = useState<Edit | null>(null);
   const [saving, setSaving] = useState(false);
   const [dialog, setDialog] = useState<'conflict' | 'save-as-new' | null>(null);
-  const [pageId, setPageId] = useState<string | null>(null);
+  const [pageId, setPageId] = useState<string | null>(initialPageId);
+  const [askingToLeave, setAskingToLeave] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [subgridId, setSubgridId] = useState<string | null>(null);
   /** A page just duplicated, whose name is focused when it's shown (0023). */
   const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
 
@@ -85,7 +99,14 @@ function Editor({ id }: { id: string }) {
   // Version 1 has exactly one layout per page (0006).
   const layout = page?.layouts[0];
   const conflict = saving || !dirty ? null : findConflict(edit, watched);
-  const selected = page?.widgets.some(widget => widget.id === selectedId) ? selectedId : null;
+  const subgrids = document.subgrids ?? [];
+  const entered = subgrids.find(subgrid => subgrid.id === subgridId);
+  const selectable = entered
+    ? entered.widgets.map(widget => widget.id)
+    : [...(page?.widgets.map(widget => widget.id) ?? []), ...subgrids.map(subgrid => subgridWidgetId(subgrid.id))];
+  const selected = selectedId !== null && selectable.includes(selectedId) ? selectedId : null;
+  const overlapping = pagesWithSubgridOverlap(document);
+  const unreachable = unreachablePages(document);
 
   /** Every change but the delete it undoes makes the Undo of a page's delete out of date. */
   function setEditAndDismiss(next: Edit) {
@@ -182,11 +203,36 @@ function Editor({ id }: { id: string }) {
     return outcome.status === 'ok';
   }
 
+  function leave() {
+    if (dirty) {
+      setAskingToLeave(true);
+    } else if (page) {
+      onLeave(page.id);
+    }
+  }
+
+  function proceed() {
+    if (askingToLeave) {
+      setAskingToLeave(false);
+
+      if (page) {
+        onLeave(page.id);
+      }
+    } else {
+      blocker.proceed?.();
+    }
+  }
+
+  function stay() {
+    setAskingToLeave(false);
+    blocker.reset?.();
+  }
+
   async function saveAndLeave() {
     if (await save()) {
-      blocker.proceed?.();
+      proceed();
     } else {
-      blocker.reset?.();
+      stay();
     }
   }
 
@@ -206,6 +252,7 @@ function Editor({ id }: { id: string }) {
             canRedo={current.future.length > 0}
             canUndo={current.past.length > 0}
             dirty={dirty}
+            exitLabel={`Back to ${document.name}`}
             menu={
               <>
                 <MenuItem icon='zoom_in' onClick={() => viewRef.current?.zoomIn()} shortcut='+'>
@@ -222,13 +269,23 @@ function Editor({ id }: { id: string }) {
               </>
             }
             onAddPage={handleAddPage}
-            onBack={() => void navigate('/')}
+            onExit={leave}
             onPageChange={handlePageChange}
             onRedo={() => handleTimeTravel(redo)}
             onSave={() => (conflict ? setDialog('conflict') : void save())}
             onUndo={() => handleTimeTravel(undo)}
             pageId={page.id}
-            pages={document.pages.map(candidate => ({ label: candidate.name, value: candidate.id }))}
+            pages={document.pages.map(candidate => ({
+              label: candidate.name,
+              mark:
+                [
+                  overlapping.has(candidate.id) ? 'Overlap' : null,
+                  unreachable.has(candidate.id) ? 'No page button shows it' : null
+                ]
+                  .filter(Boolean)
+                  .join(', ') || undefined,
+              value: candidate.id
+            }))}
             saving={saving}
           />
         </Box>
@@ -239,37 +296,52 @@ function Editor({ id }: { id: string }) {
             aspectRatio={shapeRatio(document.shape)}
             catalogue={hello ?? emptyCatalogue}
             documentTokens={document.tokens}
+            enteredSubgridId={entered?.id ?? null}
             focusPageName={focusNameOf === page.id}
             key={page.id}
             layout={layout}
             onChange={handleChange}
             onDeletePage={document.pages.length > 1 ? () => handleDeletePage(page) : undefined}
             onDuplicatePage={() => handleDuplicatePage(page.id)}
+            onEnterSubgrid={id => {
+              setSubgridId(id);
+              setSelectedId(null);
+            }}
             onProfileChange={(profile, merge) => setEditAndDismiss(change(current, { ...document, ...profile }, merge))}
             onSelect={setSelectedId}
+            onSubgridsChange={(next, merge) =>
+              setEditAndDismiss(change(current, { ...document, subgrids: next }, merge))
+            }
             page={page}
+            pages={document.pages}
             profile={{ fit: document.fit, name: document.name, shape: document.shape }}
-            renderWidget={widget => <MfdWidget widget={widget} />}
+            renderWidget={widget => (
+              <PageNavigationProvider value={{ pageId: page.id, pages: document.pages, showPage: () => undefined }}>
+                <MfdWidget widget={widget} />
+              </PageNavigationProvider>
+            )}
             selectedId={selected}
+            subgrids={subgrids}
+            unreachable={unreachable.has(page.id)}
             viewRef={viewRef}
           />
         ) : null}
       </Box>
 
-      {blocker.state === 'blocked' ? (
+      {blocker.state === 'blocked' || askingToLeave ? (
         <Dialog
           actions={
             <>
               <Button disabled={saving} onClick={() => void saveAndLeave()} variant='primary'>
                 Save
               </Button>
-              <Button onClick={() => blocker.proceed()} variant='danger'>
+              <Button onClick={proceed} variant='danger'>
                 Discard
               </Button>
-              <Button onClick={() => blocker.reset()}>Keep editing</Button>
+              <Button onClick={stay}>Keep editing</Button>
             </>
           }
-          onClose={() => blocker.reset()}
+          onClose={stay}
           title={`Save changes to “${document.name}”?`}
         />
       ) : null}
@@ -312,7 +384,9 @@ function Editor({ id }: { id: string }) {
           onClose={() => setDialog(null)}
           onDone={newId => {
             leavingRef.current = true;
-            void navigate(`/builder/${newId}`);
+            void navigate(`/${newId}?page=${encodeURIComponent(page?.id ?? '')}`, {
+              state: { edit: true } satisfies ProfileState
+            });
           }}
           onSubmit={name => request({ type: 'document-create', document: { ...document, name } })}
           submitLabel='Save'

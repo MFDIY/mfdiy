@@ -6,6 +6,7 @@ import {
   Button,
   Columns,
   Group,
+  Icon,
   IconButton,
   NumberField,
   Stack,
@@ -28,6 +29,8 @@ export type PagePropertiesProps = {
   /** Duplicates the page; greyed out without it. */
   onDuplicate?: (() => void) | undefined;
   page: Page;
+  /** No page button leads to the page (0026). */
+  unreachable?: boolean | undefined;
 };
 
 /**
@@ -40,7 +43,8 @@ export function PageProperties({
   onChange,
   onDelete,
   onDuplicate,
-  page
+  page,
+  unreachable = false
 }: PagePropertiesProps) {
   const typing = useTyping(page.id, page);
   const sidebar = usePanelForm() === 'sidebars';
@@ -97,6 +101,15 @@ export function PageProperties({
         )}
       </Box>
       <Stack spacing='5x'>
+        {unreachable ? (
+          <Box alignItems='flex-start' color='status.warning' display='flex' gap='2x' role='note'>
+            <Icon name='warning' size='small' />
+            <Text color='status.warning' variant='body'>
+              No page button shows this page, so it can only be seen here. Add a page button for it, such as in a shared
+              subgrid.
+            </Text>
+          </Box>
+        ) : null}
         <Box
           onBlur={event => {
             setDraft(null);

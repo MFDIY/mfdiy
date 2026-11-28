@@ -10,6 +10,7 @@ import { EditorHeader } from './EditorHeader.js';
 /** The header answers to the page's width, so narrower stories set the viewport (Storybook's own sizes). */
 const phone = { viewport: { value: 'mobile2', isRotated: false } };
 const tablet = { viewport: { value: 'tablet', isRotated: false } };
+const smallPhone = { viewport: { value: 'mobile1', isRotated: false } };
 
 /** Accents of the built-in themes, as the logomark would take them from the page shown. */
 const accents = {
@@ -68,9 +69,10 @@ const meta = {
     canRedo: false,
     canUndo: false,
     dirty: false,
+    exitLabel: undefined,
     menu: <MenuItem onClick={() => undefined}>Save as new…</MenuItem>,
     onAddPage: () => undefined,
-    onBack: () => undefined,
+    onExit: () => undefined,
     onPageChange: () => undefined,
     onRedo: () => undefined,
     onSave: () => undefined,
@@ -107,6 +109,17 @@ export const PageAccentAmber = {
   args: { accent: accents['Amber CRT'], pageId: 'flight', pages: twoPages }
 } satisfies Story;
 
+/** A page where shared subgrids overlap its widgets is marked, so room can be made (0026). */
+export const PageWithOverlap = {
+  args: {
+    pageId: 'flight',
+    pages: [
+      { label: 'Flight', value: 'flight' },
+      { label: 'Combat', mark: 'Overlap', value: 'combat' }
+    ]
+  }
+} satisfies Story;
+
 /** Tabs that don't fit go into a menu; the page shown is always one of those in view. */
 export const ManyPages = {
   args: {
@@ -119,7 +132,7 @@ export const ManyPages = {
   globals: tablet
 } satisfies Story;
 
-/** On a phone, the logomark gives way, and undo and redo move into `⋯`, so the tabs have the row. */
+/** On a phone, the logomark gives way, and undo and redo move into the menu, so the tabs have the row. */
 export const Phone = { args: { pageId: 'flight', pages: twoPages }, globals: phone } satisfies Story;
 
 export const PhoneUnsaved = {
@@ -127,12 +140,23 @@ export const PhoneUnsaved = {
   globals: phone
 } satisfies Story;
 
-/** On a phone, `⋯` holds the other profile actions, then undo and redo. */
+/** At 320 px, with changes to save: tabs that don't fit go behind the overflow icon. */
+export const SmallPhone = {
+  args: {
+    canUndo: true,
+    dirty: true,
+    pageId: 'combat',
+    pages: ['Flight', 'Combat', 'Shields', 'Power'].map(label => ({ label, value: label.toLowerCase() }))
+  },
+  globals: smallPhone
+} satisfies Story;
+
+/** On a phone, the menu holds the other profile actions, then undo and redo. */
 export const PhoneMenu = {
   args: { canUndo: true, dirty: true, pageId: 'flight', pages: twoPages },
   globals: phone,
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'More' }));
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Menu' }));
     await expect(await screen.findByRole('menuitem', { name: 'Undo' })).not.toHaveAttribute('aria-disabled', 'true');
     await expect(screen.getByRole('menuitem', { name: 'Redo' })).toHaveAttribute('aria-disabled', 'true');
   }
@@ -149,10 +173,10 @@ export const AddingAPage = {
   }
 } satisfies Story;
 
-/** Every profile action but Save is in `⋯`; undo and redo only join it on a phone. */
+/** Every profile action but Save is in the menu; undo and redo only join it on a phone. */
 export const MoreMenu = {
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'More' }));
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Menu' }));
     await expect(await screen.findByRole('menuitem', { name: 'Save as new…' })).toBeVisible();
     await expect(screen.queryByRole('menuitem', { name: 'Undo' })).toBeNull();
   }

@@ -1,10 +1,10 @@
 import type { Catalogue } from './palette/choices.js';
 import type { ProfileSettings } from './properties/ProfileProperties.js';
-import type { Page, WidgetInstance } from '@mfdiy/schema';
+import type { Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
-import { addWidget, createBlankDocument, shapeRatio } from '@mfdiy/schema';
+import { addWidget, createBlankDocument, gameActionOf, shapeRatio } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { useState } from 'react';
 import { expect, screen, waitFor, within } from 'storybook/test';
@@ -24,7 +24,7 @@ function renderWidget(widget: WidgetInstance) {
   const manifest = widgetManifests[widget.type];
   const binding = widget.bindings?.['value'];
   const signal = catalogue.signals.find(candidate => candidate.id === binding?.signal);
-  const action = catalogue.actions.find(candidate => candidate.id === widget.action);
+  const action = catalogue.actions.find(candidate => candidate.id === gameActionOf(widget));
 
   return manifest ? (
     <manifest.Component
@@ -52,24 +52,57 @@ const pageWithBar: Page = blankLayout
     )
   : blankPage;
 
+/** A strip along the bottom of the page with two page buttons, as starter profiles have (0026). */
+const strip: SharedSubgrid = {
+  areas: {
+    'show-flight': { column: 1, row: 1, columnSpan: 4, rowSpan: 2 },
+    'show-combat': { column: 5, row: 1, columnSpan: 4, rowSpan: 2 }
+  },
+  grid: { columns: 24, rows: 2 },
+  id: 'subgrid-1',
+  place: { area: { column: 1, row: 14, columnSpan: 24, rowSpan: 2 }, grid: { columns: 24, rows: 15 } },
+  widgets: [
+    { id: 'show-flight', type: 'button', options: { label: 'Flight' }, action: { page: 'page-1' } },
+    { id: 'show-combat', type: 'button', options: { label: 'Combat' }, action: { page: 'combat' } }
+  ]
+};
+
+/** A page whose bar reaches under the strip: overlap, in red (0026). */
+const pageUnderStrip: Page = blankLayout
+  ? addWidget(
+      blankPage,
+      blankLayout,
+      { id: 'fuel', type: 'bar', bindings: { value: { signal: 'fuel' } } },
+      { column: 3, row: 10, columnSpan: 6, rowSpan: 5 }
+    )
+  : blankPage;
+
 type DemoProps = {
   catalogue: Catalogue;
+  /** The shared subgrid entered, if any (0026). */
+  enteredSubgridId?: string | null | undefined;
   focusPageName?: boolean | undefined;
   page?: Page | undefined;
   /** At a phone's width, where the panels are sheets (0008). */
   phone?: boolean | undefined;
   selectedId?: string | null | undefined;
+  /** The profile's shared subgrids (0026). */
+  subgrids?: SharedSubgrid[] | undefined;
   themeName: string;
 };
 
 function Demo({
   catalogue,
+  enteredSubgridId: initialEntered = null,
   focusPageName = false,
   page: initialPage = blankPage,
   phone = false,
   selectedId: initialSelection = null,
+  subgrids: initialSubgrids = [],
   themeName
 }: DemoProps) {
+  const [subgrids, setSubgrids] = useState(initialSubgrids);
+  const [entered, setEntered] = useState(initialEntered);
   const [page, setPage] = useState(initialPage);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelection);
   const [profile, setProfile] = useState(blankProfile);
@@ -82,17 +115,25 @@ function Demo({
           aspectRatio={shapeRatio(profile.shape)}
           catalogue={catalogue}
           documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
+          enteredSubgridId={entered}
           focusPageName={focusPageName}
           layout={layout}
           onChange={setPage}
           onDeletePage={() => undefined}
           onDuplicatePage={() => undefined}
+          onEnterSubgrid={id => {
+            setEntered(id);
+            setSelectedId(null);
+          }}
           onProfileChange={setProfile}
           onSelect={setSelectedId}
+          onSubgridsChange={setSubgrids}
           page={page}
+          pages={[page, { id: 'combat', name: 'Combat' }]}
           profile={profile}
           renderWidget={renderWidget}
           selectedId={selectedId}
+          subgrids={subgrids}
         />
       </div>
     </Box>
@@ -326,5 +367,120 @@ export const PhoneProfileSettings: Story = {
     await waitFor(() => expect(within(sheet).getByRole('textbox', { name: 'Shape' })).toBeVisible());
     await Promise.all(sheet.getAnimations().map(animation => animation.finished));
     blurActive();
+  }
+};
+
+/** The hatching around an entered subgrid, which a press there reaches. */
+function coverOf(canvasElement: HTMLElement) {
+  const cover = canvasElement.querySelector('[data-canvas="cover"]');
+
+  if (!(cover instanceof HTMLElement)) {
+    throw new Error('No cover');
+  }
+
+  const { left, top } = cover.getBoundingClientRect();
+
+  return { cover, coords: { clientX: left + 20, clientY: top + 20 } };
+}
+
+/** A shared subgrid on the page: one widget, its contents under a neutral hatching (0026). */
+export const SharedSubgridOnThePage: Story = { args: { page: pageWithBar, subgrids: [strip] } };
+
+/** A page's widget under a shared subgrid is overlap, in red, as between widgets (0026). */
+export const SharedSubgridOverlap: Story = { args: { page: pageUnderStrip, subgrids: [strip] } };
+
+/** Selected, its properties show its columns × rows and Edit subgrid (0026). */
+export const SharedSubgridSelected: Story = {
+  args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] }
+};
+
+/** Entered: the hatching covers the page with the subgrid cut out, and its widgets can be edited (0026). */
+export const InsideASharedSubgrid: Story = {
+  args: { enteredSubgridId: 'subgrid-1', page: pageUnderStrip, subgrids: [strip] }
+};
+
+/** Inside, a widget's properties are as on a page; the panel follows one level down (0026). */
+export const InsideASharedSubgridEditingAWidget: Story = {
+  args: { enteredSubgridId: 'subgrid-1', page: pageWithBar, selectedId: 'show-combat', subgrids: [strip] }
+};
+
+/** Added from the library like any widget: empty, and selected (0026). */
+export const AddingASharedSubgrid: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar },
+  play: async ({ canvasElement, userEvent }) => {
+    const { grid, at } = gridOf(canvasElement);
+
+    await userEvent.pointer({ keys: '[MouseLeft]', target: grid, coords: at(0.8, 0.2) });
+    await userEvent.click(screen.getByRole('option', { name: /^Shared subgrid/ }));
+
+    await expect(within(canvasElement).getByRole('button', { name: 'Shared subgrid' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await expect(screen.getByRole('button', { name: 'Edit subgrid' })).toBeInTheDocument();
+  }
+};
+
+function doublePress(target: HTMLElement, coords: { clientX: number; clientY: number }) {
+  return [
+    { keys: '[MouseLeft>]', target, coords },
+    { keys: '[/MouseLeft]', target, coords },
+    { keys: '[MouseLeft>]', target, coords },
+    { keys: '[/MouseLeft]', target, coords }
+  ];
+}
+
+/** Double-tapping a shared subgrid enters it (0026). */
+export const DoubleTapToEnter: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    const subgrid = within(canvasElement).getByRole('button', { name: 'Shared subgrid' });
+    const { left, top } = subgrid.getBoundingClientRect();
+
+    await userEvent.pointer(doublePress(subgrid, { clientX: left + 200, clientY: top + 10 }));
+    await expect(screen.getByRole('button', { name: 'Exit subgrid' })).toBeInTheDocument();
+  }
+};
+
+/** Inside, a single tap on the hatching stays inside; a double tap leaves (0026). */
+export const DoubleTapToLeave: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(screen.getByRole('button', { name: 'Edit subgrid' }));
+    await expect(within(canvasElement).getByRole('button', { name: 'Button Flight' })).toBeInTheDocument();
+
+    const { cover, coords } = coverOf(canvasElement);
+
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: cover, coords },
+      { keys: '[/MouseLeft]', target: cover, coords }
+    ]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await expect(screen.getByRole('button', { name: 'Exit subgrid' })).toBeInTheDocument();
+
+    await userEvent.pointer(doublePress(cover, coords));
+    await expect(within(canvasElement).getByRole('button', { name: 'Shared subgrid' })).toBeInTheDocument();
+  }
+};
+
+/** Inside, the first press on the hatching only lets go of the selected widget; Escape leaves (0026). */
+export const LeavingWithASelection: Story = {
+  tags: ['!dev', '!visual'],
+  args: { enteredSubgridId: 'subgrid-1', page: pageWithBar, selectedId: 'show-combat', subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    const { cover, coords } = coverOf(canvasElement);
+
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: cover, coords },
+      { keys: '[/MouseLeft]', target: cover, coords }
+    ]);
+    await expect(screen.getByRole('button', { name: 'Exit subgrid' })).toBeInTheDocument();
+
+    blurActive();
+    await userEvent.keyboard('{Escape}');
+    await expect(within(canvasElement).getByRole('button', { name: 'Shared subgrid' })).toBeInTheDocument();
   }
 };

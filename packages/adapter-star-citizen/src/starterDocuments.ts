@@ -16,7 +16,7 @@ const demo: MfdDocument = {
       layouts: [
         {
           orientation: 'any',
-          grid: { columns: 4, rows: 4 },
+          grid: { columns: 4, rows: 5 },
           areas: {
             speed: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 },
             mode: { column: 3, row: 1, columnSpan: 2, rowSpan: 1 },
@@ -110,13 +110,13 @@ const demo: MfdDocument = {
       layouts: [
         {
           orientation: 'any',
-          grid: { columns: 2, rows: 3 },
+          grid: { columns: 2, rows: 5 },
           areas: {
             front: { column: 1, row: 1, columnSpan: 2, rowSpan: 1 },
-            left: { column: 1, row: 2, columnSpan: 1, rowSpan: 1 },
-            right: { column: 2, row: 2, columnSpan: 1, rowSpan: 1 },
-            rear: { column: 1, row: 3, columnSpan: 1, rowSpan: 1 },
-            hull: { column: 2, row: 3, columnSpan: 1, rowSpan: 1 }
+            left: { column: 1, row: 2, columnSpan: 1, rowSpan: 2 },
+            right: { column: 2, row: 2, columnSpan: 1, rowSpan: 2 },
+            rear: { column: 1, row: 4, columnSpan: 1, rowSpan: 1 },
+            hull: { column: 2, row: 4, columnSpan: 1, rowSpan: 1 }
           }
         }
       ],
@@ -153,6 +153,21 @@ const demo: MfdDocument = {
         }
       ],
       tokens: { 'primary.8': '#5ad8ff', 'neutral.7': '#1f5a73', line: '#1f5a73', 'primary.2': '#0a1c24' }
+    }
+  ],
+  subgrids: [
+    {
+      id: 'pages',
+      grid: { columns: 4, rows: 1 },
+      place: { area: { column: 1, row: 5, columnSpan: 4, rowSpan: 1 }, grid: { columns: 4, rows: 5 } },
+      areas: {
+        'show-flight': { column: 1, row: 1, columnSpan: 1, rowSpan: 1 },
+        'show-shields': { column: 2, row: 1, columnSpan: 1, rowSpan: 1 }
+      },
+      widgets: [
+        { id: 'show-flight', type: 'button', options: { label: 'Flight' }, action: { page: 'flight' } },
+        { id: 'show-shields', type: 'button', options: { label: 'Shields' }, action: { page: 'shields' } }
+      ]
     }
   ]
 };

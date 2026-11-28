@@ -30,6 +30,12 @@ export const BindingSchema = v.object({
 
 export type Binding = v.InferOutput<typeof BindingSchema>;
 
+export const PageIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
+
+export const WidgetActionSchema = v.union([IdSchema, v.object({ page: PageIdSchema })]);
+
+export type WidgetActionRef = v.InferOutput<typeof WidgetActionSchema>;
+
 export const WidgetInstanceSchema = v.object({
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
   /** Widget type from the manifest registry, e.g. `light`. */
@@ -37,13 +43,23 @@ export const WidgetInstanceSchema = v.object({
   /** Static, non-bound options declared by the widget manifest (e.g. its label). */
   options: v.optional(v.record(v.string(), v.union([v.string(), v.number(), v.boolean()]))),
   bindings: v.optional(v.record(v.string(), BindingSchema)),
-  /** Game action triggered when the widget is pressed. */
-  action: v.optional(IdSchema),
+  /** What pressing the widget does: a game action, or showing a page (0018). */
+  action: v.optional(WidgetActionSchema),
   /** Per-widget theme overrides. */
   tokens: v.optional(TokenValuesSchema)
 });
 
 export type WidgetInstance = v.InferOutput<typeof WidgetInstanceSchema>;
+
+/** The game action a widget triggers, if that's what it does. */
+export function gameActionOf(widget: WidgetInstance): string | undefined {
+  return typeof widget.action === 'string' ? widget.action : undefined;
+}
+
+/** The page a page button shows, if that's what it does (0018). */
+export function pageActionOf(widget: WidgetInstance): string | undefined {
+  return typeof widget.action === 'object' ? widget.action.page : undefined;
+}
 
 export const MAX_GRID_SIZE = 48;
 
@@ -75,7 +91,7 @@ export const MAX_PAGE_NAME_LENGTH = 32;
 
 export const PageSchema = v.pipe(
   v.object({
-    id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+    id: PageIdSchema,
     name: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_PAGE_NAME_LENGTH)),
     widgets: v.array(WidgetInstanceSchema),
     /** Version 1 uses exactly one layout; orientation variants come later (0006). */
@@ -95,6 +111,42 @@ export const PageSchema = v.pipe(
 );
 
 export type Page = v.InferOutput<typeof PageSchema>;
+
+/** Where a shared subgrid sits: the cells it covered on the page it was placed on (0026). */
+export const SubgridPlaceSchema = v.pipe(
+  v.object({ area: AreaSchema, grid: GridSchema }),
+  v.check(
+    place =>
+      validateLayout({ orientation: 'any', grid: place.grid, areas: { place: place.area } }, [{ id: 'place' }])
+        .length === 0,
+    'A shared subgrid must lie within the grid it was placed on.'
+  )
+);
+
+export type SubgridPlace = v.InferOutput<typeof SubgridPlaceSchema>;
+
+/** Placed once, shown on every page in the same place, above the page's widgets (0026). */
+export const SharedSubgridSchema = v.pipe(
+  v.object({
+    /** Area per widget id, on its own grid. */
+    areas: v.record(v.string(), AreaSchema),
+    grid: GridSchema,
+    id: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+    place: SubgridPlaceSchema,
+    widgets: v.array(WidgetInstanceSchema)
+  }),
+  v.check(
+    subgrid => new Set(subgrid.widgets.map(widget => widget.id)).size === subgrid.widgets.length,
+    'Widget ids must be unique within a shared subgrid.'
+  ),
+  v.check(
+    subgrid =>
+      validateLayout({ orientation: 'any', grid: subgrid.grid, areas: subgrid.areas }, subgrid.widgets).length === 0,
+    'Invalid layout.'
+  )
+);
+
+export type SharedSubgrid = v.InferOutput<typeof SharedSubgridSchema>;
 
 export const MAX_DOCUMENT_NAME_LENGTH = 64;
 
@@ -134,6 +186,16 @@ export const MfdDocumentSchema = v.object({
   ),
   /** The shape the builder shows its pages in, and displays keep unless told to stretch (0006). */
   shape: v.optional(ShapeSchema, DEFAULT_SHAPE),
+  /** Shown on every page, above its widgets; later ones on top (0026). */
+  subgrids: v.optional(
+    v.pipe(
+      v.array(SharedSubgridSchema),
+      v.check(
+        subgrids => new Set(subgrids.map(subgrid => subgrid.id)).size === subgrids.length,
+        'Shared subgrid ids must be unique.'
+      )
+    )
+  ),
   /** Document-wide theme overrides. */
   tokens: v.optional(TokenValuesSchema)
 });

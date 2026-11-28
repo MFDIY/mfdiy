@@ -1,4 +1,4 @@
-import type { Area, GridPoint, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
+import type { Area, Grid, GridPoint, Layout, Page, ResizeHandle, TokenValues, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, LayoutArea, LayoutGrid, mfdRoot } from '@mfdiy/instruments';
 import {
@@ -30,6 +30,8 @@ import { widgetMinSize } from './widgetInfo.js';
 
 /** How far a pointer travels, in pixels, before a press becomes a drag. Fingers are less steady. */
 const DRAG_THRESHOLD = { mouse: 4, touch: 8 };
+
+const DOUBLE_TAP = { distance: 24, time: 400 };
 
 /** How far one finger drags across the page before it's told that two fingers move it. */
 const PAN_HINT_DISTANCE = 32;
@@ -109,6 +111,8 @@ export type CanvasProps = {
    */
   newWidgetArea?: ((point: GridPoint) => Area) | undefined;
   onChange: (page: Page) => void;
+  /** A double tap on a widget, or around the grid (`null`); returns whether it was handled (0026). */
+  onDoubleTap?: ((widgetId: string | null) => boolean) | undefined;
   /** Fires when a press on a widget becomes a move or resize, and when that ends. */
   onDragChange?: ((dragging: boolean) => void) | undefined;
   /**
@@ -134,6 +138,14 @@ export type CanvasProps = {
    */
   reveal?: Area | null | undefined;
   selectedId: string | null;
+  /** The page around an entered shared subgrid, under a hatching (0026). */
+  surround?: CanvasSurround | undefined;
+};
+
+export type CanvasSurround = {
+  area: Area;
+  content: ReactNode;
+  grid: Grid;
 };
 
 /**
@@ -149,6 +161,7 @@ export function Canvas({
   selectedId,
   onSelect,
   onChange,
+  onDoubleTap,
   onDragChange,
   ghost,
   newWidgetArea,
@@ -158,12 +171,14 @@ export function Canvas({
   renderWidget,
   reveal,
   handleRef,
-  label
+  label,
+  surround
 }: CanvasProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
   /** Every finger on the canvas, so a second one can turn into a pinch. */
   const touchesRef = useRef(new Map<number, Point>());
   const backgroundPressRef = useRef<BackgroundPress | null>(null);
+  const lastTapRef = useRef<{ at: number; target: string | null; x: number; y: number } | null>(null);
   const view = useCanvasView({ aspectRatio, hasTouches: () => touchesRef.current.size > 0 });
   const cover = useSheetCover();
 
@@ -467,7 +482,8 @@ export function Canvas({
     if (
       press?.pointerId === event.pointerId &&
       !press.onGrid &&
-      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType)
+      Math.hypot(event.clientX - press.x, event.clientY - press.y) < dragThreshold(press.pointerType) &&
+      !doubleTapped(null, event)
     ) {
       onOutsideTap?.();
     }
@@ -487,12 +503,29 @@ export function Canvas({
     }
   }
 
+  function doubleTapped(target: string | null, event: PointerEvent): boolean {
+    const last = lastTapRef.current;
+    const double =
+      last !== null &&
+      last.target === target &&
+      event.timeStamp - last.at < DOUBLE_TAP.time &&
+      Math.hypot(event.clientX - last.x, event.clientY - last.y) < DOUBLE_TAP.distance;
+
+    lastTapRef.current = double ? null : { at: event.timeStamp, target, x: event.clientX, y: event.clientY };
+
+    return double && (onDoubleTap?.(target) ?? false);
+  }
+
   /**
    * Selects the pressed widget. Pressing the selected widget again selects the next one underneath,
    * so widgets hidden behind others can be reached.
    */
   function handleTap(widgetId: string, event: PointerEvent) {
     const dots = dotsRef.current?.getBoundingClientRect();
+
+    if (doubleTapped(widgetId, event)) {
+      return;
+    }
 
     if (widgetId !== selectedId || !dots) {
       onSelect(widgetId);
@@ -558,6 +591,73 @@ export function Canvas({
       : null;
   const marked = ghost ?? invitation;
   const overlaps = findOverlaps(drag ? withArea(layout, drag.widgetId, drag.area) : layout);
+  const editable = (
+    <LayoutGrid
+      className={styles.grid}
+      cursor={view.panning ? 'grabbing' : invitation ? 'pointer' : 'grab'}
+      data-canvas='grid'
+      grid={layout.grid}
+      height='full'
+      onClick={handleEmptyClick}
+      onPointerDown={handleEmptyPointerDown}
+      onPointerLeave={() => setHovered(null)}
+      onPointerMove={handleHover}
+      position='relative'
+    >
+      <Box
+        backgroundImage='canvas.dots'
+        className={styles.dots}
+        data-canvas='dots'
+        pointerEvents='none'
+        position='absolute'
+        ref={dotsRef}
+        style={{ backgroundSize: `${100 / layout.grid.columns}% ${100 / layout.grid.rows}%` }}
+      />
+      {page.widgets.map(widget => {
+        const area = layout.areas[widget.id];
+
+        if (!area) {
+          return null;
+        }
+
+        const dragged = drag?.widgetId === widget.id ? drag : null;
+
+        return (
+          <CanvasWidget
+            // A resize happens in place; a moved widget follows the pointer above its ghost.
+            area={dragged?.handle ? dragged.area : area}
+            key={widget.id}
+            lifted={dragged && !dragged.handle ? { x: dragged.x, y: dragged.y } : null}
+            onPointerDown={handlePointerDown}
+            onSelect={onSelect}
+            selected={widget.id === selectedId}
+            widget={widget}
+          >
+            {renderWidget(widget)}
+          </CanvasWidget>
+        );
+      })}
+      {drag ? <Ghost area={drag.area} /> : ghost ? <Ghost area={ghost} /> : null}
+      {invitation ? <Ghost area={invitation} quiet /> : null}
+      {marked ? <Plus area={marked} /> : null}
+      {overlaps.map(({ widgetIds, area }) => (
+        // Striped and dashed as well as red, so it doesn't rely on colour alone.
+        <LayoutArea
+          area={area}
+          backgroundImage='canvas.overlap'
+          borderColor='canvas.overlap'
+          borderStyle='dashed'
+          borderWidth='edit'
+          boxShadow='canvas.halo'
+          data-canvas='overlap'
+          key={widgetIds.join(' ')}
+          pointerEvents='none'
+          position='relative'
+          zIndex='3'
+        />
+      ))}
+    </LayoutGrid>
+  );
 
   return (
     <Box
@@ -630,72 +730,8 @@ export function Canvas({
           touchAction='none'
           userSelect='none'
         >
-          <LayoutGrid
-            className={styles.grid}
-            cursor={view.panning ? 'grabbing' : invitation ? 'pointer' : 'grab'}
-            data-canvas='grid'
-            grid={layout.grid}
-            height='full'
-            onClick={handleEmptyClick}
-            onPointerDown={handleEmptyPointerDown}
-            onPointerLeave={() => setHovered(null)}
-            onPointerMove={handleHover}
-            position='relative'
-          >
-            <Box
-              backgroundImage='canvas.dots'
-              className={styles.dots}
-              data-canvas='dots'
-              pointerEvents='none'
-              position='absolute'
-              ref={dotsRef}
-              style={{ backgroundSize: `${100 / layout.grid.columns}% ${100 / layout.grid.rows}%` }}
-            />
-            {page.widgets.map(widget => {
-              const area = layout.areas[widget.id];
-
-              if (!area) {
-                return null;
-              }
-
-              const dragged = drag?.widgetId === widget.id ? drag : null;
-
-              return (
-                <CanvasWidget
-                  // A resize happens in place; a moved widget follows the pointer above its ghost.
-                  area={dragged?.handle ? dragged.area : area}
-                  key={widget.id}
-                  lifted={dragged && !dragged.handle ? { x: dragged.x, y: dragged.y } : null}
-                  onPointerDown={handlePointerDown}
-                  onSelect={onSelect}
-                  selected={widget.id === selectedId}
-                  widget={widget}
-                >
-                  {renderWidget(widget)}
-                </CanvasWidget>
-              );
-            })}
-            {drag ? <Ghost area={drag.area} /> : ghost ? <Ghost area={ghost} /> : null}
-            {invitation ? <Ghost area={invitation} quiet /> : null}
-            {marked ? <Plus area={marked} /> : null}
-            {overlaps.map(({ widgetIds, area }) => (
-              // Striped and dashed as well as red, so it doesn't rely on colour alone.
-              <LayoutArea
-                area={area}
-                backgroundImage='canvas.overlap'
-                borderColor='canvas.overlap'
-                borderStyle='dashed'
-                borderWidth='edit'
-                boxShadow='canvas.halo'
-                data-canvas='overlap'
-                key={widgetIds.join(' ')}
-                pointerEvents='none'
-                position='relative'
-                zIndex='3'
-              />
-            ))}
-          </LayoutGrid>
-          {onEmptyTap && page.widgets.length === 0 && !marked ? (
+          {surround ? <Surround surround={surround}>{editable}</Surround> : editable}
+          {onEmptyTap && !surround && page.widgets.length === 0 && !marked ? (
             <Box
               alignItems='center'
               display='flex'
@@ -711,6 +747,40 @@ export function Canvas({
           ) : null}
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+type SurroundProps = {
+  children: ReactNode;
+  surround: CanvasSurround;
+};
+
+function Surround({ children, surround }: SurroundProps) {
+  return (
+    <Box height='full' position='relative'>
+      <LayoutGrid
+        className={styles.grid}
+        grid={surround.grid}
+        height='full'
+        isolation='isolate'
+        opacity='0.5'
+        pointerEvents='none'
+      >
+        {surround.content}
+      </LayoutGrid>
+      <Box backgroundImage='canvas.shared' className={styles.cover} data-canvas='cover' position='absolute' />
+      <LayoutGrid className={styles.grid} grid={surround.grid} inset='none' pointerEvents='none' position='absolute'>
+        <LayoutArea
+          area={surround.area}
+          className={styles.content}
+          minHeight='none'
+          minWidth='none'
+          pointerEvents='auto'
+        >
+          {children}
+        </LayoutArea>
+      </LayoutGrid>
     </Box>
   );
 }

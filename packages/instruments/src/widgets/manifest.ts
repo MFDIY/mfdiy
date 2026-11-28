@@ -57,9 +57,11 @@ export function resolveInput(
 }
 
 export type WidgetAction = {
+  available: boolean;
+  /** A page button's page is shown (0018). */
+  current?: boolean | undefined;
   label: string;
   status: ButtonStatus;
-  available: boolean;
   trigger: () => void;
 };
 
@@ -80,7 +82,7 @@ export type WidgetManifest = {
   description: string;
   inputs: Record<string, InputSpec>;
   options: Record<string, OptionSpec>;
-  /** Whether the widget can trigger a game action when pressed. */
+  /** Whether the widget can trigger an action when pressed: a game action, or showing a page (0018). */
   actionable: boolean;
   /** Size of a new widget as a share of the page, so it looks the same on any grid density (0006). */
   defaultSize: { width: number; height: number };
