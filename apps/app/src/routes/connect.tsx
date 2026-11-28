@@ -1,9 +1,10 @@
 import { AppHeader, ConnectDevice } from '@mfdiy/builder';
-import { Box, Text } from '@mfdiy/ui/components';
+import { Text } from '@mfdiy/ui/components';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 
 import { useLibrary } from '../documents/DocumentsProvider.js';
+import { HeaderLayout } from '../layout/HeaderLayout.js';
 import { useConnection } from '../telemetry/TelemetryProvider.js';
 
 /**
@@ -23,27 +24,22 @@ export default function Connect() {
   const profiles = (library ?? []).toSorted((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
 
   return (
-    <Box tagName='main'>
-      <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline'>
-        <AppHeader onHome={() => void navigate('/')} />
-      </Box>
-      <Box padding='6x'>
-        {hello === undefined ? (
-          <Text color='text.dim' role='status' variant='body'>
-            {status === 'closed' ? 'Not connected. Is the bridge running?' : 'Connecting to the bridge…'}
-          </Text>
-        ) : (
-          <ConnectDevice
-            address={address}
-            addresses={addresses}
-            onAddressChange={setAddress}
-            onProfileChange={setProfile}
-            profile={profile}
-            profiles={profiles}
-          />
-        )}
-      </Box>
-    </Box>
+    <HeaderLayout header={<AppHeader onHome={() => void navigate('/')} />}>
+      {hello === undefined ? (
+        <Text color='text.dim' role='status' variant='body'>
+          {status === 'closed' ? 'Not connected. Is the bridge running?' : 'Connecting to the bridge…'}
+        </Text>
+      ) : (
+        <ConnectDevice
+          address={address}
+          addresses={addresses}
+          onAddressChange={setAddress}
+          onProfileChange={setProfile}
+          profile={profile}
+          profiles={profiles}
+        />
+      )}
+    </HeaderLayout>
   );
 }
 

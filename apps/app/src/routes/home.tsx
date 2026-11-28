@@ -3,13 +3,14 @@ import type { DocumentSummary } from '@mfdiy/schema';
 
 import { AppHeader } from '@mfdiy/builder';
 import { createBlankDocument } from '@mfdiy/schema';
-import { Box, Button, ButtonLink, Inline, Stack, Surface, Text } from '@mfdiy/ui/components';
+import { Button, ButtonLink, Inline, Stack, Surface, Text } from '@mfdiy/ui/components';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useDocumentRequest, useLibrary } from '../documents/DocumentsProvider.js';
 import { ProfileDialog } from '../documents/ProfileDialog.js';
 import { ShapeDialog } from '../documents/ShapeDialog.js';
+import { HeaderLayout } from '../layout/HeaderLayout.js';
 import { useConnection } from '../telemetry/TelemetryProvider.js';
 
 const statusText = {
@@ -32,32 +33,27 @@ export default function Home() {
   const openProfile = profiles?.find(profile => profile.id === openId);
 
   return (
-    <Box tagName='main'>
-      <Box borderBottomColor='line' borderBottomStyle='solid' borderBottomWidth='hairline'>
-        <AppHeader onConnect={() => void navigate('/connect')} />
-      </Box>
-      <Box padding='6x'>
-        <Stack spacing='5x'>
-          <Text variant='body'>Build your MFD. No code required.</Text>
-          <Text color='text.dim' role='status' variant='body'>
-            {status === 'open' && hello
-              ? `${hello.source === 'simulator' ? 'Simulating' : 'Connected to'} ${hello.game.name}`
-              : statusText[status]}
+    <HeaderLayout header={<AppHeader onConnect={() => void navigate('/connect')} />}>
+      <Stack spacing='5x'>
+        <Text variant='body'>Build your MFD. No code required.</Text>
+        <Text color='text.dim' role='status' variant='body'>
+          {status === 'open' && hello
+            ? `${hello.source === 'simulator' ? 'Simulating' : 'Connected to'} ${hello.game.name}`
+            : statusText[status]}
+        </Text>
+        <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
+          <Text tagName='h1' variant='heading'>
+            Profiles
           </Text>
-          <Inline alignItems='center' justifyContent='space-between' spacing='4x'>
-            <Text tagName='h1' variant='heading'>
-              Profiles
-            </Text>
-            <Button disabled={status !== 'open'} onClick={() => setCreating(true)} variant='primary'>
-              New
-            </Button>
-          </Inline>
-          {profiles?.length === 0 ? <Text variant='body'>No profiles yet.</Text> : null}
-          {profiles?.map(profile => (
-            <ProfileCard key={profile.id} onMore={() => setOpenId(profile.id)} profile={profile} />
-          ))}
-        </Stack>
-      </Box>
+          <Button disabled={status !== 'open'} onClick={() => setCreating(true)} variant='primary'>
+            New
+          </Button>
+        </Inline>
+        {profiles?.length === 0 ? <Text variant='body'>No profiles yet.</Text> : null}
+        {profiles?.map(profile => (
+          <ProfileCard key={profile.id} onMore={() => setOpenId(profile.id)} profile={profile} />
+        ))}
+      </Stack>
       {creating && hello ? (
         <ShapeDialog
           onClose={() => setCreating(false)}
@@ -70,7 +66,7 @@ export default function Home() {
       {openProfile ? (
         <ProfileDialog key={openProfile.id} onClose={() => setOpenId(null)} profile={openProfile} />
       ) : null}
-    </Box>
+    </HeaderLayout>
   );
 }
 

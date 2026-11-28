@@ -1,7 +1,7 @@
 # 0005: Keeping the display awake
 
 - **Status:** Accepted
-- **Date:** 2026-11-24 (updated 2026-11-28, when it was built; not checked yet on real devices)
+- **Date:** 2026-11-24 (updated 2026-11-28, when it was built and checked on an Android phone: Wake Lock on `localhost`, the video over the LAN, and the screen stayed on. Not checked yet on iOS)
 
 ## Decision
 

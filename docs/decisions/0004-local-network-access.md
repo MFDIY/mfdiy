@@ -1,7 +1,7 @@
 # 0004: Reaching the bridge on the local network
 
 - **Status:** Accepted
-- **Date:** 2026-11-24 (updated 2026-11-28, when the QR code was built; not checked yet on real devices)
+- **Date:** 2026-11-24 (updated 2026-11-28, when the QR code was built and `/connect` checked with a phone; the bridge's own QR code isn't checked yet)
 
 ## Decision
 
@@ -11,7 +11,7 @@
    - If the name is taken (e.g. two bridges on one network), rename automatically (`mfdiy-2.local`) and show the actual name.
 3. **A QR code as the primary way to connect.** The bridge's window shows a QR code containing a working address. It also lists the IP-and-port address as a fallback for devices that can't resolve `.local` names.
    - Until the bridge has a window of its own (the Windows download, 0020), its window is the console: it prints a QR code of its likeliest address, lists the others, and points to `/connect` on the PC.
-   - `/connect` is the app's **Connect a device** page, reached from the home page's header: a QR code, the address to type, and what it opens (the profiles, or one profile straight away, which then shows tap to engage, 0005). _On trial, not checked yet on real devices._
+   - `/connect` is the app's **Connect a device** page, reached from the home page's header: a QR code, the address to type, and what it opens (the profiles, or one profile straight away, which then shows tap to engage, 0005). Its content scrolls under the header, as the home page's does. _On trial._
    - A gaming PC is often on several networks (VPNs, WSL, Hyper-V, VirtualBox). The bridge sends its addresses to the app, home network ranges and real adapters first, and the page offers the others when the first doesn't work.
 
 ## Why

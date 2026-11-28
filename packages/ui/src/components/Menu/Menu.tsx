@@ -8,7 +8,10 @@ import { usePopupLayer } from '../../contexts/PopupLayer/popupLayer.js';
 import { designSystem } from '../../styles/design-system.js';
 import { Box } from '../Box/Box.js';
 import { Icon } from '../Icon/Icon.js';
+import { ScrollContainer } from '../ScrollContainer/ScrollContainer.js';
 import { Text } from '../Text/Text.js';
+
+import * as styles from './Menu.css.js';
 
 /** A floating layer, so on the raised surface (0022). */
 const popupClass = designSystem({
@@ -17,6 +20,8 @@ const popupClass = designSystem({
   borderStyle: 'solid',
   borderWidth: 'hairline',
   color: 'text',
+  display: 'flex',
+  flexDirection: 'column',
   outlineStyle: 'none'
 });
 
@@ -58,7 +63,8 @@ export type MenuProps = {
 
 /**
  * A list of actions that opens from a control, built on Base UI's Menu (0003): arrow keys move,
- * Enter chooses, typing jumps to an item, Escape closes.
+ * Enter chooses, typing jumps to an item, Escape closes. A menu longer than the room beside its
+ * trigger scrolls inside itself, so the page never does.
  */
 export function Menu({ children, onOpenChange, trigger }: MenuProps) {
   const [open, setOpen] = useState(false);
@@ -75,7 +81,9 @@ export function Menu({ children, onOpenChange, trigger }: MenuProps) {
       <BaseMenu.Trigger render={typeof trigger === 'function' ? trigger(open) : trigger} />
       <BaseMenu.Portal {...layer.portal}>
         <BaseMenu.Positioner {...layer.positioner} align='start' sideOffset={OFFSET}>
-          <BaseMenu.Popup className={popupClass}>{children}</BaseMenu.Popup>
+          <BaseMenu.Popup className={`${popupClass} ${styles.popup}`}>
+            <ScrollContainer hideEdges>{children}</ScrollContainer>
+          </BaseMenu.Popup>
         </BaseMenu.Positioner>
       </BaseMenu.Portal>
     </BaseMenu.Root>
@@ -90,12 +98,22 @@ export type MenuItemProps = {
   disabled?: boolean | undefined;
   /** An icon before the text. */
   icon?: IconName | undefined;
+  /** Leaves an icon's room empty, so an item without one lines up with those that have one. */
+  inset?: boolean | undefined;
   onClick: () => void;
   /** A key that does the same, shown dimmed at the end, e.g. `+` for Zoom in. */
   shortcut?: string | undefined;
 };
 
-export function MenuItem({ children, danger = false, disabled = false, icon, onClick, shortcut }: MenuItemProps) {
+export function MenuItem({
+  children,
+  danger = false,
+  disabled = false,
+  icon,
+  inset = false,
+  onClick,
+  shortcut
+}: MenuItemProps) {
   return (
     <BaseMenu.Item
       className={state => itemClass({ danger, disabled, highlighted: state.highlighted })}
@@ -103,7 +121,7 @@ export function MenuItem({ children, danger = false, disabled = false, icon, onC
       label={children}
       onClick={onClick}
     >
-      {icon ? <Icon name={icon} /> : null}
+      {icon ? <Icon name={icon} /> : inset ? <Box flexShrink='0' height='5x' width='5x' /> : null}
       <Text variant='body'>{children}</Text>
       {shortcut ? (
         <Box color={disabled ? 'text.faint' : 'text.dim'} marginLeft='auto' paddingLeft='4x' tagName='kbd'>

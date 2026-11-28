@@ -294,7 +294,9 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
                   Zoom to fit
                 </MenuItem>
                 <MenuSeparator />
-                <MenuItem onClick={() => setDialog('save-as-new')}>Save as new…</MenuItem>
+                <MenuItem inset onClick={() => setDialog('save-as-new')}>
+                  Save as new…
+                </MenuItem>
               </>
             }
             onAddPage={handleAddPage}
