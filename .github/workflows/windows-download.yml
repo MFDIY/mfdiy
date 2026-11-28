@@ -2,13 +2,9 @@ name: Windows download
 
 # Builds the zip players download (0003, 0020) and keeps it as this run's artifact. GitHub wraps
 # the artifact in a zip of its own: extract that first to get MFDIY-windows-x64.zip.
+# Only run by hand (Actions → Windows download → Run workflow), on the branch to package.
 
 on:
-  push:
-    branches: [main]
-    paths-ignore: ['docs/**', 'site/**', '**/*.md']
-  pull_request:
-    paths-ignore: ['docs/**', 'site/**', '**/*.md']
   workflow_dispatch:
 
 permissions:
@@ -16,7 +12,6 @@ permissions:
 
 concurrency:
   group: windows-download-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   package:

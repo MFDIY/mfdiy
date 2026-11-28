@@ -61,7 +61,7 @@ Players on Windows get the bridge as **one zip, with Node in it**, so nothing ne
 - **The console is the bridge's window** for now (0004): what it's simulating or connected to, the QR code, the addresses, `/connect`, the firewall prompt and where profiles are saved.
 - **The telemetry source is the bridge's choice, not the launcher's:** `--source simulator|game`, defaulting to the simulator while it's the only one. When the game connection exists, the default moves to it and the same launcher keeps working.
 - **Profiles are saved outside the zip,** in the bridge's data folder (`%APPDATA%\MFDIY`), so replacing the folder with a newer version keeps them. The folder is always called `MFDIY`, so extracting a new version in the same place keeps the firewall rule Windows made for its `node.exe`.
-- **Built on any OS** by `npm run package:windows`, which downloads a pinned Node version from nodejs.org at build time and checks it against the release's `SHASUMS256.txt`. The binary is never committed. CI builds the zip on every push and pull request and keeps it as the run's artifact (`.github/workflows/windows-download.yml`).
+- **Built on any OS** by `npm run package:windows`, which downloads a pinned Node version from nodejs.org at build time and checks it against the release's `SHASUMS256.txt`. The binary is never committed. A workflow builds the zip and keeps it as the run's artifact (`.github/workflows/windows-download.yml`), only when run by hand: not on every push, while there are no releases yet.
 
 ## Why
 
