@@ -32,9 +32,10 @@ const UnreadableRequestSchema = v.object({
 
 /**
  * Fans telemetry and saved documents out to connected browsers and validates what they send back.
- * Only actions the adapter declares can be triggered (the allowlist from CLAUDE.md).
+ * Only actions the adapter declares can be triggered (the allowlist from CLAUDE.md). `addresses`
+ * is asked on every connection, as the gaming PC's network can change while the bridge runs.
  */
-export function createHub(source: TelemetrySource, library: Library) {
+export function createHub(source: TelemetrySource, library: Library, addresses: () => string[] = () => []) {
   const clients = new Map<WebSocket, Client>();
   let pending: SignalValues = {};
 
@@ -149,6 +150,7 @@ export function createHub(source: TelemetrySource, library: Library) {
     send(socket, {
       type: 'hello',
       protocol: PROTOCOL_VERSION,
+      addresses: addresses(),
       game: source.adapter.game,
       source: source.kind,
       signals: source.adapter.signals,
