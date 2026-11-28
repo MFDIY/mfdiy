@@ -1,17 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ReactNode } from 'react';
 
+import { toCssVariableName, type TokenName } from '@mfdiy/schema';
 import { Box } from '@mfdiy/ui/components';
 import { expect, fn, within } from 'storybook/test';
 
 import { applyTokens } from '../theme/applyTokens.js';
+import { token } from '../theme/token.js';
 
 import { Bar } from './Bar.js';
 import { Comparison } from './Comparison.js';
 import { CornerBox } from './CornerBox.js';
 import { Label } from './Label.js';
 import { Light } from './Light.js';
-import { Pressable, cues, pressStatuses, type Cue, type PressableProps } from './Pressable.js';
+import { Pressable, cues, pressStatuses, type PressableProps } from './Pressable.js';
 import { Readout } from './Readout.js';
 import { mfdFrame } from './mfdFrame.js';
 
@@ -62,19 +64,25 @@ const widgets: { name: string; content: ReactNode; current?: boolean }[] = [
   { name: 'Bar', content: <Bar displayValue='62%' label='Shield front' state='normal' value={0.62} /> }
 ];
 
-const looks: { cue: Cue; gap: string; name: string; width: string }[] = [
-  { cue: 'corners', gap: '0', name: 'corners, 1 px', width: '1px' },
-  { cue: 'corners', gap: '0', name: 'corners, 2 px', width: '2px' },
-  { cue: 'corners', gap: '0', name: 'corners, 3 px', width: '3px' },
-  { cue: 'corners', gap: '3px', name: 'corners, 1 px, 3 px air', width: '1px' },
-  { cue: 'corners', gap: '3px', name: 'corners, 2 px, 3 px air', width: '2px' },
-  { cue: 'frame-inked', gap: '0', name: 'frame-inked, 2 px box', width: '2px' }
-];
+const anchors = ['line', 'text.dim', 'text', 'accent', 'secondary.8'] as const satisfies readonly TokenName[];
+
+const looks: { color: TokenName; gap: string; name: string; width: string }[] = anchors.flatMap(color => [
+  { color, gap: '3px', name: `${color}, 1 px`, width: '1px' },
+  { color, gap: '3px', name: `${color}, 2 px`, width: '2px' }
+]);
+
+/** The look's thickness and air, and its corners in another token's colour, as a theme falling back to it would. */
+function lookVariables(look: (typeof looks)[number]) {
+  return {
+    ...applyTokens({ 'corner.gap': look.gap, 'corner.width': look.width }),
+    [`--${toCssVariableName('press.cue')}`]: token(look.color)
+  };
+}
 
 function press(look: (typeof looks)[number], content: ReactNode, props: Partial<PressableProps> = {}) {
   return (
-    <Box cssVariables={applyTokens({ 'corner.gap': look.gap, 'corner.width': look.width })} height='full'>
-      <Pressable cue={look.cue} onPress={() => undefined} {...props}>
+    <Box cssVariables={lookVariables(look)} height='full'>
+      <Pressable onPress={() => undefined} {...props}>
         {content}
       </Pressable>
     </Box>
@@ -83,23 +91,23 @@ function press(look: (typeof looks)[number], content: ReactNode, props: Partial<
 
 function still(look: (typeof looks)[number], content: ReactNode) {
   return (
-    <Box cssVariables={applyTokens({ 'corner.gap': look.gap, 'corner.width': look.width })} height='full'>
+    <Box cssVariables={lookVariables(look)} height='full'>
       <CornerBox>{content}</CornerBox>
     </Box>
   );
 }
 
 /**
- * Temporary: how a widget shows it can be pressed, one look per row. Every widget keeps a corner
- * box around it, pressable or not, so a light without an action (last but two) lines up with the
- * rest. On a touch screen nothing can be found by pointing at it (0018).
+ * Temporary: which colour the corners of a pressable widget fall back to, at 1 and 2 px with 3 px
+ * of air, one per row. A theme can always set `press.cue` itself. Every widget keeps a corner box,
+ * so a light without an action (last but two) lines up with the rest (0018).
  */
 export const CompareCues: Story = {
   tags: ['!autodocs'],
   parameters: { mfdFrame: false },
   render: (_args, context) => (
     <Comparison
-      cell={{ height: 88, width: 120 }}
+      cell={{ height: 68, width: 120 }}
       columns={[...widgets.slice(0, 5).map(widget => widget.name), 'Light, no action', 'Readout', 'Bar']}
       rows={looks.map(look => ({
         name: look.name,
@@ -139,6 +147,7 @@ export const CompareStates: Story = {
   parameters: { mfdFrame: false },
   render: (_args, context) => (
     <Comparison
+      cell={{ height: 68, width: 150 }}
       columns={states.map(state => state.name)}
       rows={looks.map(look => ({
         name: look.name,
