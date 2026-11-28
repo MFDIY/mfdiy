@@ -132,3 +132,28 @@ export const ReportsOpening = {
     await waitFor(() => expect(onOpenChange).toHaveBeenLastCalledWith(false));
   }
 } satisfies Story;
+
+/**
+ * A menu longer than the room below its trigger scrolls inside itself; the page doesn't scroll, and
+ * the arrow keys bring the highlighted item into view.
+ */
+export const LongerThanTheScreen = {
+  tags: ['!dev'],
+  args: {
+    children: Array.from({ length: 40 }, (_, index) => (
+      <MenuItem key={index} onClick={fn()}>{`Action ${index + 1}`}</MenuItem>
+    ))
+  },
+  play: async ({ userEvent: user }) => {
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    const menu = await screen.findByRole('menu');
+    await expect(menu.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+    await expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+    await user.keyboard('{ArrowDown}');
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Action 1' })).toHaveAttribute('data-highlighted'));
+    await user.keyboard('{ArrowUp}');
+    const last = screen.getByRole('menuitem', { name: 'Action 40' });
+    await waitFor(() => expect(last).toHaveAttribute('data-highlighted'));
+    await waitFor(() => expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight));
+  }
+} satisfies Story;
