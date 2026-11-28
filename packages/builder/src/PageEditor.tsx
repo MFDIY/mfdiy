@@ -1,16 +1,21 @@
 import type { CanvasHandle, CanvasProps, CanvasSurround, CanvasView } from './canvas/Canvas.js';
 import type { Catalogue } from './palette/choices.js';
 import type { ProfileSettings } from './properties/ProfileProperties.js';
-import type { Area, GridPoint, Layout, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
+import type { Area, Copied, GridPoint, Layout, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
 
 import { applyTokens, LayoutArea, widgetManifests, type WidgetManifest } from '@mfdiy/instruments';
 import {
   addSubgrid,
   addWidget,
+  copySubgrid,
+  copyWidget,
+  duplicateSubgrid,
   formatShape,
   growArea,
   newWidgetId,
   pageToSubgrid,
+  pasteSubgrid,
+  pasteWidget,
   placeArea,
   removeSubgrid,
   subgridArea,
@@ -26,12 +31,22 @@ import {
   type PanelSide,
   type SearchListProps
 } from '@mfdiy/ui/components';
-import { useEffect, useImperativeHandle, useRef, useState, type PointerEvent, type ReactNode, type Ref } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+  type Ref
+} from 'react';
 
 import * as styles from './canvas/Canvas.css.js';
 import { Canvas } from './canvas/Canvas.js';
 import { CanvasLabel } from './canvas/CanvasLabel.js';
 import { widgetDefaultSize, widgetMinSize } from './canvas/widgetInfo.js';
+import { isModifierShortcut } from './keys.js';
 import { DragLabel } from './palette/DragLabel.js';
 import { useWidgetLibrary } from './palette/useWidgetLibrary.js';
 import { PropertiesPanel } from './properties/PropertiesPanel.js';
@@ -63,6 +78,13 @@ export type PageEditorProps = Omit<
   | 'surround'
 > & {
   catalogue: Catalogue;
+  /** Receives Copy and Paste, for the header's menu (0006). */
+  clipboardRef?: Ref<PageEditorClipboard> | undefined;
+  /**
+   * The widget or shared subgrid last copied (0006). Paste adds a widget to the grid being edited,
+   * and a shared subgrid to the profile, but not inside another one (0026).
+   */
+  copied?: Copied | null | undefined;
   /** The shared subgrid entered, if any: its widgets are edited instead of the page's (0026). */
   enteredSubgridId?: string | null | undefined;
   /**
@@ -72,6 +94,8 @@ export type PageEditorProps = Omit<
   focusPageName?: boolean | undefined;
   /** `merge` names a run of typing in one field; changes with the same one are one undo step (0023). */
   onChange: (page: Page, merge?: string) => void;
+  /** Receives the selected widget or shared subgrid when it's copied; without it, nothing is copied (0006). */
+  onCopy?: ((copied: Copied) => void) | undefined;
   /** Deletes the page; greyed out without it, as on a profile's last page. */
   onDeletePage?: (() => void) | undefined;
   /** Duplicates the page; greyed out without it. */
@@ -95,6 +119,17 @@ export type PageEditorProps = Omit<
   unreachable?: boolean | undefined;
   /** Receives a `CanvasView`, to zoom from outside, e.g. the header's menu (0024). */
   viewRef?: Ref<CanvasView> | undefined;
+};
+
+/** Copy and Paste, which the header's menu offers, as do Ctrl+C and Ctrl+V (⌘C and ⌘V on a Mac; 0006). */
+export type PageEditorClipboard = {
+  /** Copies the selected widget or shared subgrid, if any. */
+  copy: () => void;
+  /**
+   * Adds a copy of what was copied where it was, and selects it: a widget to the grid being edited,
+   * a shared subgrid to the profile. Inside a shared subgrid, a shared subgrid isn't pasted (0026).
+   */
+  paste: () => void;
 };
 
 type Edited = {
@@ -138,8 +173,11 @@ const PAN_HINT = 'Use two fingers to move or zoom the page.';
  */
 export function PageEditor({
   catalogue,
+  clipboardRef,
+  copied = null,
   enteredSubgridId = null,
   focusPageName = false,
+  onCopy,
   onDeletePage,
   onDuplicatePage,
   onEnterSubgrid,
@@ -212,6 +250,69 @@ export function PageEditor({
 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [enteredSubgridId, onEnterSubgrid]);
+
+  const pastable = copied !== null && (copied.kind === 'widget' || (!entered && onSubgridsChange !== undefined));
+
+  function copy() {
+    const subgridId = entered ? undefined : subgridIdOf(selectedId);
+    const copiedNow =
+      selectedId === null
+        ? undefined
+        : subgridId === undefined
+          ? copyWidget(edited.page, layout, selectedId)
+          : copySubgrid(subgrids, subgridId);
+
+    if (copiedNow) {
+      onCopy?.(copiedNow);
+    }
+  }
+
+  function paste() {
+    if (!copied || !pastable) {
+      return;
+    }
+
+    if (copied.kind === 'subgrid') {
+      const pasted = pasteSubgrid(subgrids, copied);
+
+      onSubgridsChange?.(pasted.subgrids);
+      handleSelect(subgridWidgetId(pasted.id));
+
+      return;
+    }
+
+    const pasted = pasteWidget(edited.page, layout, copied, widgetMinSize(copied.widget, layout.grid));
+
+    edited.onChange(pasted.page);
+    handleSelect(pasted.id);
+  }
+
+  useImperativeHandle(clipboardRef, () => ({ copy, paste }));
+
+  const handleClipboardKey = useEffectEvent((event: KeyboardEvent) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const textSelected = window.getSelection()?.isCollapsed === false;
+
+    if (event.defaultPrevented || target?.closest('input, textarea, select, [contenteditable]')) {
+      return;
+    }
+
+    if (isModifierShortcut(event, 'c') && !textSelected && onCopy && selectedId !== null) {
+      copy();
+    } else if (isModifierShortcut(event, 'v') && pastable) {
+      paste();
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+  });
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleClipboardKey);
+
+    return () => window.removeEventListener('keydown', handleClipboardKey);
+  }, []);
 
   useImperativeHandle(viewRef, () => ({
     fit: () => canvasRef.current?.fit(),
@@ -471,6 +572,12 @@ export function PageEditor({
               entered={false}
               key={selectedSubgrid.id}
               onChange={(next, merge) => onSubgridsChange?.(withSubgrid(subgrids, next), merge)}
+              onDuplicate={() => {
+                const duplicated = duplicateSubgrid(subgrids, selectedSubgrid.id, pageLayout);
+
+                onSubgridsChange?.(duplicated.subgrids);
+                handleSelect(subgridWidgetId(duplicated.id));
+              }}
               onEnter={() => onEnterSubgrid?.(selectedSubgrid.id)}
               onRemove={() => {
                 onSubgridsChange?.(removeSubgrid(subgrids, selectedSubgrid.id));

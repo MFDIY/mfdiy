@@ -9,6 +9,8 @@ import { Typing, useTyping } from './fields.js';
 export type SubgridPropertiesProps = {
   entered: boolean;
   onChange: (subgrid: SharedSubgrid, merge?: string) => void;
+  /** Adds a copy of it beside it, as a widget's Duplicate does (0023). */
+  onDuplicate?: (() => void) | undefined;
   onEnter?: (() => void) | undefined;
   onExit?: (() => void) | undefined;
   onRemove?: (() => void) | undefined;
@@ -16,10 +18,19 @@ export type SubgridPropertiesProps = {
 };
 
 /**
- * A shared subgrid's properties (0026): its columns × rows, and Edit subgrid to enter it, or Exit
- * subgrid while it's entered and nothing in it is selected.
+ * A shared subgrid's properties (0026): Duplicate and Remove in the header, as a widget's (0023), its
+ * columns × rows, and Edit subgrid to enter it, or Exit subgrid while it's entered and nothing in it
+ * is selected.
  */
-export function SubgridProperties({ entered, onChange, onEnter, onExit, onRemove, subgrid }: SubgridPropertiesProps) {
+export function SubgridProperties({
+  entered,
+  onChange,
+  onDuplicate,
+  onEnter,
+  onExit,
+  onRemove,
+  subgrid
+}: SubgridPropertiesProps) {
   const typing = useTyping(subgrid.id, subgrid);
   const sidebar = usePanelForm() === 'sidebars';
 
@@ -58,12 +69,26 @@ export function SubgridProperties({ entered, onChange, onEnter, onExit, onRemove
                 Shared subgrid
               </Text>
             </Box>
+            {onDuplicate ? <IconButton icon='content_copy' label='Duplicate' onClick={onDuplicate} /> : null}
             {onRemove ? <IconButton icon='delete' label='Remove' onClick={onRemove} /> : null}
           </Box>
-        ) : onRemove ? (
-          <Button icon='delete' onClick={onRemove} width='full'>
-            Remove
-          </Button>
+        ) : onDuplicate || onRemove ? (
+          <Columns spacing='3x'>
+            {onDuplicate ? (
+              <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                <Button icon='content_copy' onClick={onDuplicate} width='full'>
+                  Duplicate
+                </Button>
+              </Box>
+            ) : null}
+            {onRemove ? (
+              <Box flexBasis='fluid' flexGrow='1' minWidth='none'>
+                <Button icon='delete' onClick={onRemove} width='full'>
+                  Remove
+                </Button>
+              </Box>
+            ) : null}
+          </Columns>
         ) : null}
       </Box>
       <Stack spacing='5x'>

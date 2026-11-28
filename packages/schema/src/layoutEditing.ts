@@ -83,7 +83,7 @@ function scaleAxis(start: number, span: number, from: number, to: number) {
 }
 
 /** The free position nearest to `wanted` for an area of that size, if there is one. */
-function nearestFreeArea(wanted: Area, grid: Grid, placed: readonly Area[]): Area | undefined {
+export function nearestFreeArea(wanted: Area, grid: Grid, placed: readonly Area[]): Area | undefined {
   let best: Area | undefined;
   let bestDistance = Infinity;
 
@@ -337,4 +337,38 @@ export function duplicateWidget(page: Page, layout: Layout, id: string): { page:
     ),
     id: copy.id
   };
+}
+
+/** A widget as it was copied: its settings, and where it was on the grid it was copied from (0006). */
+export type CopiedWidget = {
+  area: Area;
+  grid: Grid;
+  kind: 'widget';
+  widget: WidgetInstance;
+};
+
+/** A copy of the widget at `id`, to paste on any grid later; `undefined` if there's no such widget. */
+export function copyWidget(page: Page, layout: Layout, id: string): CopiedWidget | undefined {
+  const widget = page.widgets.find(candidate => candidate.id === id);
+  const area = layout.areas[id];
+
+  return widget && area ? { area, grid: layout.grid, kind: 'widget', widget: structuredClone(widget) } : undefined;
+}
+
+/**
+ * The page with a copied widget pasted on top, exactly where it was (0006): the same cells on a grid
+ * of the same size, otherwise the same share of the grid, scaled as when a grid's size changes and
+ * kept on it. Whatever is already there is overlapped.
+ */
+export function pasteWidget(
+  page: Page,
+  layout: Layout,
+  copied: CopiedWidget,
+  minSize: CellSize = SINGLE_CELL
+): { page: Page; id: string } {
+  const id = newWidgetId(page, copied.widget.type);
+  const from: Layout = { ...layout, grid: copied.grid, areas: { [id]: copied.area } };
+  const area = scaleLayout(from, layout.grid, { [id]: minSize }).areas[id] ?? copied.area;
+
+  return { page: addWidget(page, layout, { ...structuredClone(copied.widget), id }, area), id };
 }

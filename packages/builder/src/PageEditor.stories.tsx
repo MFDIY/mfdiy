@@ -1,6 +1,6 @@
 import type { Catalogue } from './palette/choices.js';
 import type { ProfileSettings } from './properties/ProfileProperties.js';
-import type { Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
+import type { Copied, CopiedWidget, Page, SharedSubgrid, WidgetInstance } from '@mfdiy/schema';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { builtInThemes, resolveInput, widgetManifests } from '@mfdiy/instruments';
@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { expect, screen, waitFor, within } from 'storybook/test';
 
 import { PageEditor } from './PageEditor.js';
+import { usesCommandKey } from './keys.js';
 
 const catalogue: Catalogue = {
   signals: [
@@ -77,8 +78,25 @@ const pageUnderStrip: Page = blankLayout
     )
   : blankPage;
 
+/** A fuel bar copied from a page of 12 × 8 cells, to paste on a page of another size (0006). */
+const copiedBar: CopiedWidget = {
+  area: { column: 2, row: 2, columnSpan: 3, rowSpan: 2 },
+  grid: { columns: 12, rows: 8 },
+  kind: 'widget',
+  widget: { id: 'fuel', type: 'bar', bindings: { value: { signal: 'fuel' } } }
+};
+
+/** Presses the platform's shortcut for a key, Ctrl or ⌘ with it. */
+function shortcut(key: string) {
+  const modifier = usesCommandKey ? 'Meta' : 'Control';
+
+  return `{${modifier}>}${key}{/${modifier}}`;
+}
+
 type DemoProps = {
   catalogue: Catalogue;
+  /** The widget or shared subgrid copied before the story starts (0006). */
+  copied?: Copied | null | undefined;
   /** The shared subgrid entered, if any (0026). */
   enteredSubgridId?: string | null | undefined;
   focusPageName?: boolean | undefined;
@@ -93,6 +111,7 @@ type DemoProps = {
 
 function Demo({
   catalogue,
+  copied: initialCopied = null,
   enteredSubgridId: initialEntered = null,
   focusPageName = false,
   page: initialPage = blankPage,
@@ -106,6 +125,7 @@ function Demo({
   const [page, setPage] = useState(initialPage);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelection);
   const [profile, setProfile] = useState(blankProfile);
+  const [copied, setCopied] = useState(initialCopied);
   const [layout] = page.layouts;
 
   return layout ? (
@@ -114,11 +134,13 @@ function Demo({
         <PageEditor
           aspectRatio={shapeRatio(profile.shape)}
           catalogue={catalogue}
+          copied={copied}
           documentTokens={builtInThemes.find(theme => theme.name === themeName)?.tokens}
           enteredSubgridId={entered}
           focusPageName={focusPageName}
           layout={layout}
           onChange={setPage}
+          onCopy={setCopied}
           onDeletePage={() => undefined}
           onDuplicatePage={() => undefined}
           onEnterSubgrid={id => {
@@ -482,5 +504,112 @@ export const LeavingWithASelection: Story = {
     blurActive();
     await userEvent.keyboard('{Escape}');
     await expect(within(canvasElement).getByRole('button', { name: 'Shared subgrid' })).toBeInTheDocument();
+  }
+};
+
+/** Pasted on a grid of another size, a copy covers the same share of it, and is selected (0006). */
+export const PastedOntoAnotherGrid: Story = {
+  tags: ['!dev'],
+  args: { copied: copiedBar },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.keyboard(shortcut('v'));
+    await expect(within(canvasElement).getByRole('button', { name: 'Bar fuel' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  }
+};
+
+/** Copying the selected widget and pasting it puts a copy on top of it, in the same cells (0006). */
+export const CopyAndPaste: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, selectedId: 'fuel' },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.keyboard(shortcut('c'));
+    await userEvent.keyboard(shortcut('v'));
+
+    const bars = canvas.getAllByRole('button', { name: 'Bar fuel' });
+
+    await expect(bars).toHaveLength(2);
+    await expect(bars[0]).toHaveAttribute('aria-pressed', 'false');
+    await expect(bars[1]).toHaveAttribute('aria-pressed', 'true');
+    await expect(bars[1]?.getBoundingClientRect()).toEqual(bars[0]?.getBoundingClientRect());
+  }
+};
+
+/** A shared subgrid is copied too, with its widgets, and pasted on top of itself: on every page, where it was (0006). */
+export const CopyAndPasteASharedSubgrid: Story = {
+  tags: ['!dev', '!visual'],
+  args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.keyboard(shortcut('c'));
+    await userEvent.keyboard(shortcut('v'));
+
+    const subgrids = within(canvasElement).getAllByRole('button', { name: 'Shared subgrid' });
+
+    await expect(subgrids).toHaveLength(2);
+    await expect(subgrids[1]).toHaveAttribute('aria-pressed', 'true');
+    await expect(subgrids[1]?.getBoundingClientRect()).toEqual(subgrids[0]?.getBoundingClientRect());
+  }
+};
+
+/** Shared subgrids don't nest: inside one, a shared subgrid isn't pasted (0026). */
+export const NoSharedSubgridInsideAnother: Story = {
+  tags: ['!dev', '!visual'],
+  args: {
+    copied: { kind: 'subgrid', subgrid: strip },
+    enteredSubgridId: 'subgrid-1',
+    page: pageWithBar,
+    subgrids: [strip]
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const before = canvas.getAllByRole('button').length;
+
+    await userEvent.keyboard(shortcut('v'));
+    await expect(canvas.getAllByRole('button')).toHaveLength(before);
+  }
+};
+
+/** Duplicate, in its properties as a widget's (0023), adds a copy in the nearest free spot, selected. */
+export const DuplicatingASharedSubgrid: Story = {
+  tags: ['!dev'],
+  args: { page: pageWithBar, selectedId: 'shared-subgrid:subgrid-1', subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+    const subgrids = within(canvasElement).getAllByRole('button', { name: 'Shared subgrid' });
+
+    await expect(subgrids).toHaveLength(2);
+    await expect(subgrids[1]).toHaveAttribute('aria-pressed', 'true');
+  }
+};
+
+/** Inside a shared subgrid, Paste adds the copy to the subgrid, not to the page around it (0006, 0026). */
+export const PastedIntoASharedSubgrid: Story = {
+  tags: ['!dev', '!visual'],
+  args: { copied: copiedBar, enteredSubgridId: 'subgrid-1', page: pageWithBar, subgrids: [strip] },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.keyboard(shortcut('v'));
+
+    const pasted = canvas.getAllByRole('button', { name: 'Bar fuel' }).find(bar => bar.ariaPressed === 'true');
+
+    await expect(pasted).toBeDefined();
+    await expect(canvas.getAllByRole('button', { name: /^Button / })).toHaveLength(2);
+  }
+};
+
+/** Typing keeps its own copy and paste: the shortcuts leave text fields alone. */
+export const ShortcutsLeaveTextFieldsAlone: Story = {
+  tags: ['!dev', '!visual'],
+  args: { copied: copiedBar },
+  play: async ({ canvasElement, userEvent }) => {
+    await userEvent.click(screen.getByRole('combobox'));
+    await userEvent.keyboard(shortcut('v'));
+    await expect(within(canvasElement).queryByRole('button', { name: 'Bar fuel' })).not.toBeInTheDocument();
   }
 };
