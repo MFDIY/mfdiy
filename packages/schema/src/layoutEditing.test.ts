@@ -7,15 +7,18 @@ import {
   addWidget,
   bringToFront,
   cellAt,
+  copyWidget,
   duplicateWidget,
   growArea,
   moveArea,
   newWidgetId,
+  pasteWidget,
   placeArea,
   removeWidget,
   resizeArea,
   scaleLayout,
-  withArea
+  withArea,
+  type CopiedWidget
 } from './layoutEditing.js';
 
 function area(column: number, row: number, columnSpan = 1, rowSpan = 1): Area {
@@ -320,5 +323,47 @@ describe('adding and removing widgets', () => {
 
     expect(next.widgets).toEqual([]);
     expect(v.safeParse(PageSchema, next).issues).toBeUndefined();
+  });
+});
+
+describe('copyWidget and pasteWidget', () => {
+  const page: Page = {
+    id: 'page',
+    name: 'Page',
+    widgets: [{ id: 'bar-1', type: 'bar', bindings: { value: { signal: 'fuel' } }, action: { page: 'other' } }],
+    layouts: [layoutOf({ 'bar-1': area(2, 2, 2, 1) })]
+  };
+  const layout = page.layouts[0] as Layout;
+  const copied = copyWidget(page, layout, 'bar-1');
+
+  it('copies the widget and where it is', () => {
+    expect(copied).toEqual({ area: area(2, 2, 2, 1), grid, widget: page.widgets[0] });
+    expect(copied?.widget).not.toBe(page.widgets[0]);
+    expect(copyWidget(page, layout, 'light-1')).toBeUndefined();
+  });
+
+  it('pastes into the same cells, on top of what is there, with a new id', () => {
+    const pasted = pasteWidget(page, layout, copied as CopiedWidget);
+
+    expect(pasted.id).toBe('bar-2');
+    expect(pasted.page.widgets.at(-1)).toEqual({ ...page.widgets[0], id: 'bar-2' });
+    expect(pasted.page.layouts[0]?.areas['bar-2']).toEqual(area(2, 2, 2, 1));
+    expect(v.safeParse(PageSchema, pasted.page).issues).toBeUndefined();
+  });
+
+  it('pastes the same share of a grid of another size', () => {
+    const other: Page = { id: 'other', name: 'Other', widgets: [], layouts: [layoutOf({}, { columns: 12, rows: 8 })] };
+    const pasted = pasteWidget(other, other.layouts[0] as Layout, copied as CopiedWidget);
+
+    expect(pasted.id).toBe('bar-1');
+    expect(pasted.page.layouts[0]?.areas['bar-1']).toEqual(area(3, 3, 4, 2));
+  });
+
+  it('keeps its minimum size, on the grid, when the share would be smaller', () => {
+    const small: Page = { id: 'small', name: 'Small', widgets: [], layouts: [layoutOf({}, { columns: 3, rows: 2 })] };
+    const pasted = pasteWidget(small, small.layouts[0] as Layout, copied as CopiedWidget, { columns: 2, rows: 1 });
+
+    expect(pasted.page.layouts[0]?.areas['bar-1']).toEqual(area(2, 2, 2, 1));
+    expect(v.safeParse(PageSchema, pasted.page).issues).toBeUndefined();
   });
 });

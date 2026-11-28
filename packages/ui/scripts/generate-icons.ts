@@ -13,6 +13,7 @@ const names = [
   'chevron_right',
   'close',
   'content_copy',
+  'content_paste',
   'delete',
   'edit',
   'fit_screen',

@@ -1,9 +1,16 @@
 import type { WatchedDocument } from '../documents/DocumentStore.js';
 import type { Edit } from '../documents/edit.js';
 import type { ProfileState } from '../routes/profile.js';
-import type { MfdDocument, Page } from '@mfdiy/schema';
+import type { CopiedWidget, MfdDocument, Page } from '@mfdiy/schema';
 
-import { EditorHeader, PageEditor, subgridWidgetId, type CanvasView } from '@mfdiy/builder';
+import {
+  EditorHeader,
+  modifierShortcut,
+  PageEditor,
+  subgridWidgetId,
+  type CanvasView,
+  type PageEditorClipboard
+} from '@mfdiy/builder';
 import { pageToken } from '@mfdiy/instruments';
 import {
   addPage,
@@ -62,6 +69,8 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   const [subgridId, setSubgridId] = useState<string | null>(null);
   /** A page just duplicated, whose name is focused when it's shown (0023). */
   const [focusNameOf, setFocusNameOf] = useState<string | null>(null);
+  /** The widget last copied, to paste on any page or shared subgrid of the profile (0006). */
+  const [copied, setCopied] = useState<CopiedWidget | null>(null);
 
   // Without unsaved changes there's nothing to keep once another device saves.
   const outdated =
@@ -75,6 +84,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
   // Set when leaving on purpose, as the changes are still there until the next render.
   const leavingRef = useRef(false);
   const viewRef = useRef<CanvasView>(null);
+  const clipboardRef = useRef<PageEditorClipboard>(null);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       dirty && !leavingRef.current && currentLocation.pathname !== nextLocation.pathname
@@ -105,6 +115,7 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
     ? entered.widgets.map(widget => widget.id)
     : [...(page?.widgets.map(widget => widget.id) ?? []), ...subgrids.map(subgrid => subgridWidgetId(subgrid.id))];
   const selected = selectedId !== null && selectable.includes(selectedId) ? selectedId : null;
+  const copyable = selected !== null && !subgrids.some(subgrid => subgridWidgetId(subgrid.id) === selected);
   const overlapping = pagesWithSubgridOverlap(document);
   const unreachable = unreachablePages(document);
 
@@ -255,6 +266,23 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
             exitLabel={`Back to ${document.name}`}
             menu={
               <>
+                <MenuItem
+                  disabled={!copyable}
+                  icon='content_copy'
+                  onClick={() => clipboardRef.current?.copy()}
+                  shortcut={modifierShortcut('C')}
+                >
+                  Copy
+                </MenuItem>
+                <MenuItem
+                  disabled={!copied}
+                  icon='content_paste'
+                  onClick={() => clipboardRef.current?.paste()}
+                  shortcut={modifierShortcut('V')}
+                >
+                  Paste
+                </MenuItem>
+                <MenuSeparator />
                 <MenuItem icon='zoom_in' onClick={() => viewRef.current?.zoomIn()} shortcut='+'>
                   Zoom in
                 </MenuItem>
@@ -295,12 +323,15 @@ export function Editor({ id, initialPageId, onLeave }: EditorProps) {
           <PageEditor
             aspectRatio={shapeRatio(document.shape)}
             catalogue={hello ?? emptyCatalogue}
+            clipboardRef={clipboardRef}
+            copied={copied}
             documentTokens={document.tokens}
             enteredSubgridId={entered?.id ?? null}
             focusPageName={focusNameOf === page.id}
             key={page.id}
             layout={layout}
             onChange={handleChange}
+            onCopy={setCopied}
             onDeletePage={document.pages.length > 1 ? () => handleDeletePage(page) : undefined}
             onDuplicatePage={() => handleDuplicatePage(page.id)}
             onEnterSubgrid={id => {
