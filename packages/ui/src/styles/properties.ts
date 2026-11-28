@@ -259,7 +259,7 @@ export const margin = {
 
 export const objectFit = ['contain', 'cover'] as const;
 
-export const opacity = ['0', '1'] as const;
+export const opacity = ['0', '0.5', '1'] as const;
 
 export const overflow = ['auto', 'clip', 'hidden', 'scroll', 'visible'] as const;
 

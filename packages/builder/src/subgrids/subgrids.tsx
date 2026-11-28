@@ -132,7 +132,7 @@ type SubgridContentsProps = {
 export function SubgridContents({ renderWidget, subgrid }: SubgridContentsProps) {
   return (
     <Box height='full' position='relative'>
-      <LayoutGrid className={styles.grid} grid={subgrid.grid} height='full'>
+      <LayoutGrid className={styles.grid} grid={subgrid.grid} height='full' opacity='0.5'>
         {subgrid.widgets.map(widget => {
           const area = subgrid.areas[widget.id];
 

@@ -759,7 +759,14 @@ type SurroundProps = {
 function Surround({ children, surround }: SurroundProps) {
   return (
     <Box height='full' position='relative'>
-      <LayoutGrid className={styles.grid} grid={surround.grid} height='full' isolation='isolate' pointerEvents='none'>
+      <LayoutGrid
+        className={styles.grid}
+        grid={surround.grid}
+        height='full'
+        isolation='isolate'
+        opacity='0.5'
+        pointerEvents='none'
+      >
         {surround.content}
       </LayoutGrid>
       <Box backgroundImage='canvas.shared' className={styles.cover} data-canvas='cover' position='absolute' />
